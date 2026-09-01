@@ -38,6 +38,8 @@ data class NoteRoute(val id: Long)
 
 data object SearchRoute
 
+data class TagRoute(val tag: String)
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun App() {
@@ -83,7 +85,11 @@ fun App() {
                         )
                     }
                     entry<DetailRoute> { route ->
-                        DetailScreen(itemId = route.id, onBack = { backStack.removeLastOrNull() })
+                        DetailScreen(
+                            itemId = route.id,
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenTag = { tag -> backStack.add(TagRoute(tag)) },
+                        )
                     }
                     entry<EventEditRoute> { route ->
                         EventEditorScreen(itemId = route.id, onBack = { backStack.removeLastOrNull() })
@@ -93,6 +99,14 @@ fun App() {
                     }
                     entry<SearchRoute> {
                         SearchScreen(
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenItem = ::openItem,
+                            onOpenTag = { tag -> backStack.add(TagRoute(tag)) },
+                        )
+                    }
+                    entry<TagRoute> { route ->
+                        com.tina.app.search.TagScreen(
+                            tag = route.tag,
                             onBack = { backStack.removeLastOrNull() },
                             onOpenItem = ::openItem,
                         )

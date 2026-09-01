@@ -103,6 +103,7 @@ private val REMINDER_OPTIONS = listOf(null, 0, 5, 10, 15, 30, 60)
 fun DetailScreen(
     itemId: Long,
     onBack: () -> Unit,
+    onOpenTag: (String) -> Unit = {},
     viewModel: DetailViewModel = koinViewModel(key = "detail-$itemId") { parametersOf(itemId) },
 ) {
     val item by viewModel.item.collectAsState()
@@ -160,6 +161,7 @@ fun DetailScreen(
         DetailContent(
             item = current,
             viewModel = viewModel,
+            onOpenTag = onOpenTag,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
@@ -171,7 +173,12 @@ fun DetailScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DetailContent(item: Item, viewModel: DetailViewModel, modifier: Modifier = Modifier) {
+private fun DetailContent(
+    item: Item,
+    viewModel: DetailViewModel,
+    onOpenTag: (String) -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
     val tz = TimeZone.currentSystemDefault()
     val today = remember { Clock.System.now().toLocalDateTime(tz).date }
     val use24h = LocalSettings.current.use24h
@@ -298,16 +305,27 @@ private fun DetailContent(item: Item, viewModel: DetailViewModel, modifier: Modi
             }
         }
 
-        OutlinedTextField(
-            value = tagsText,
-            onValueChange = {
-                tagsText = it
-                viewModel.setTags(it)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(Res.string.detail_tags)) },
-            placeholder = { Text(stringResource(Res.string.detail_tags_hint)) },
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            OutlinedTextField(
+                value = tagsText,
+                onValueChange = {
+                    tagsText = it
+                    viewModel.setTags(it)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(Res.string.detail_tags)) },
+                placeholder = { Text(stringResource(Res.string.detail_tags_hint)) },
+            )
+            if (item.tags.isNotEmpty()) {
+                androidx.compose.foundation.layout.FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    item.tags.forEach { tag ->
+                        AssistChip(onClick = { onOpenTag(tag) }, label = { Text("#$tag") })
+                    }
+                }
+            }
+        }
 
         OutlinedTextField(
             value = bodyText,

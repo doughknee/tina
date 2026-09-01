@@ -40,6 +40,7 @@ val commonModule = module {
     viewModel { (id: Long) -> EventEditorViewModel(id, get()) }
     viewModelOf(::NotesViewModel)
     viewModelOf(::SearchViewModel)
+    viewModel { (tag: String) -> com.tina.app.search.TagViewModel(tag, get()) }
     viewModel { (id: Long) -> NoteEditorViewModel(id, get()) }
 }
 

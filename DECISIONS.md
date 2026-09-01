@@ -1,5 +1,18 @@
 # Decisions
 
+## Tags + settings backup (REL-140/141, Sep 2026)
+
+- Backups now carry a `settings` block (nullable — v1.0 backups import fine).
+  The AI API key is included in plaintext: a backup that cannot restore the AI
+  config defeats its purpose for a single-user app; the file lives wherever
+  the user saves it, same trust level as the device.
+- Tag filtering happens in memory over `observeTagged()` (tags are one joined
+  column; a LIKE query risks substring false positives, and a personal app's
+  item count makes in-memory filtering free).
+- Tag entry points: browse chips on the empty search screen, tappable chips on
+  the detail screen. Rows deliberately do not render tags — the design pass
+  kept supporting lines to time + priority.
+
 ## AI improve (REL-136, Sep 2026)
 
 - Refinement modes: AUTO (apply silently, undo snackbar — original behavior),
