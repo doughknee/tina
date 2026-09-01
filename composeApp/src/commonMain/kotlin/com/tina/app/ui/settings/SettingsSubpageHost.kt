@@ -93,6 +93,9 @@ fun SettingsSubpageHost(
             title = stringResource(Res.string.whats_new_title),
             onBack = onBack,
             entries = listOf(
+                "1.3.1 — Capture, out of your way" to
+                    "The keyboard no longer opens with the app, the composer moved to the " +
+                        "bottom, and pages slide instead of zooming.",
                 "1.3 — Settings, rebuilt" to
                     "Grouped and searchable settings, Trash with restore, tag manager, " +
                         "daily summaries, app lock, auto-backup.",
