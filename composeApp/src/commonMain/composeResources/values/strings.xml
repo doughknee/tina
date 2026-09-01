@@ -141,6 +141,9 @@
     <string name="tab_ask">Ask</string>
     <string name="settings_ask">Ask page</string>
     <string name="settings_ask_desc">Chat with your data — the model can read everything in the app</string>
+    <string name="settings_ask_write">Allow changes from Ask</string>
+    <string name="settings_ask_write_desc">The model can complete, reschedule, edit, and delete when you ask — always undoable</string>
+    <string name="ask_applied">Changes applied</string>
     <string name="ask_placeholder">Ask about your stuff…</string>
     <string name="ask_hint">The model can see everything you’ve captured. Ask away.</string>
     <string name="ask_thinking">Thinking…</string>

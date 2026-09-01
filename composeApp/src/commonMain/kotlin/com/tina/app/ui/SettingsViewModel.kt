@@ -90,6 +90,10 @@ class SettingsViewModel(
         viewModelScope.launch { repository.setAiAskEnabled(enabled) }
     }
 
+    fun setAiAskWriteEnabled(enabled: Boolean) {
+        viewModelScope.launch { repository.setAiAskWriteEnabled(enabled) }
+    }
+
     /** Callback receives null on success, otherwise a human-readable failure reason. */
     fun testAi(onResult: (String?) -> Unit) {
         viewModelScope.launch {

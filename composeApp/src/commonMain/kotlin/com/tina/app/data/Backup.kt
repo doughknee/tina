@@ -19,6 +19,7 @@ data class BackupSettings(
     val aiRefineMode: String = "AUTO",
     val aiInstructions: String = "",
     val aiAskEnabled: Boolean = false,
+    val aiAskWriteEnabled: Boolean = false,
 )
 
 fun Settings.toBackupSettings(): BackupSettings = BackupSettings(
@@ -35,6 +36,7 @@ fun Settings.toBackupSettings(): BackupSettings = BackupSettings(
     aiRefineMode = aiRefineMode.name,
     aiInstructions = aiInstructions,
     aiAskEnabled = aiAskEnabled,
+    aiAskWriteEnabled = aiAskWriteEnabled,
 )
 
 @Serializable

@@ -34,6 +34,7 @@ data class Settings(
     val aiRefineMode: AiRefineMode = AiRefineMode.AUTO,
     val aiInstructions: String = "",
     val aiAskEnabled: Boolean = false,
+    val aiAskWriteEnabled: Boolean = false,
 )
 
 fun createSettingsStore(producePath: () -> String): DataStore<Preferences> =
@@ -52,6 +53,7 @@ private val KEY_AI_WORKSPACE_ID = stringPreferencesKey("aiWorkspaceId")
 private val KEY_AI_REFINE_MODE = stringPreferencesKey("aiRefineMode")
 private val KEY_AI_INSTRUCTIONS = stringPreferencesKey("aiInstructions")
 private val KEY_AI_ASK_ENABLED = booleanPreferencesKey("aiAskEnabled")
+private val KEY_AI_ASK_WRITE = booleanPreferencesKey("aiAskWriteEnabled")
 
 class SettingsRepository(private val store: DataStore<Preferences>) {
     val settings: Flow<Settings> = store.data.map { p ->
@@ -74,6 +76,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
             } ?: AiRefineMode.AUTO,
             aiInstructions = p[KEY_AI_INSTRUCTIONS] ?: "",
             aiAskEnabled = p[KEY_AI_ASK_ENABLED] ?: false,
+            aiAskWriteEnabled = p[KEY_AI_ASK_WRITE] ?: false,
         )
     }
 
@@ -99,6 +102,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     suspend fun setAiRefineMode(mode: AiRefineMode) = store.edit { it[KEY_AI_REFINE_MODE] = mode.name }
     suspend fun setAiInstructions(text: String) = store.edit { it[KEY_AI_INSTRUCTIONS] = text }
     suspend fun setAiAskEnabled(enabled: Boolean) = store.edit { it[KEY_AI_ASK_ENABLED] = enabled }
+    suspend fun setAiAskWriteEnabled(enabled: Boolean) = store.edit { it[KEY_AI_ASK_WRITE] = enabled }
 
     /** One atomic write restoring a backed-up settings block. */
     suspend fun applyBackup(s: BackupSettings) = store.edit { p ->
@@ -115,5 +119,6 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
         p[KEY_AI_REFINE_MODE] = s.aiRefineMode
         p[KEY_AI_INSTRUCTIONS] = s.aiInstructions
         p[KEY_AI_ASK_ENABLED] = s.aiAskEnabled
+        p[KEY_AI_ASK_WRITE] = s.aiAskWriteEnabled
     }
 }

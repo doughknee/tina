@@ -30,6 +30,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -61,9 +65,11 @@ import com.tina.app.resources.ask_sugg_1
 import com.tina.app.resources.ask_sugg_2
 import com.tina.app.resources.ask_sugg_3
 import com.tina.app.resources.ask_sugg_4
+import com.tina.app.resources.ask_applied
 import com.tina.app.resources.ask_thinking
 import com.tina.app.resources.capture_save
 import com.tina.app.resources.tab_ask
+import com.tina.app.resources.undo
 import com.tina.app.ai.ANTHROPIC_MODELS
 import com.tina.app.ai.ChatRole
 import com.tina.app.ai.ReasoningLevel
@@ -77,6 +83,19 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
     val listState = rememberLazyListState()
     var input by remember { mutableStateOf("") }
     var modelMenuOpen by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val appliedText = stringResource(Res.string.ask_applied)
+    val undoText = stringResource(Res.string.undo)
+
+    LaunchedEffect(viewModel.appliedNonce) {
+        if (viewModel.appliedNonce == 0) return@LaunchedEffect
+        val result = snackbarHostState.showSnackbar(
+            "$appliedText: ${viewModel.appliedCount}",
+            undoText,
+            duration = SnackbarDuration.Long,
+        )
+        if (result == SnackbarResult.ActionPerformed) viewModel.undoLastBatch()
+    }
 
     LaunchedEffect(viewModel.messages.size, viewModel.sending) {
         if (viewModel.messages.isNotEmpty()) {
@@ -92,6 +111,7 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.tab_ask)) },
