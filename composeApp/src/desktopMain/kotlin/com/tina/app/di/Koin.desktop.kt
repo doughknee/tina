@@ -10,6 +10,8 @@ import com.tina.app.notifications.NoopReminderScheduler
 import com.tina.app.notifications.Notifier
 import com.tina.app.notifications.PlatformNotifier
 import com.tina.app.notifications.ReminderScheduler
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
 import java.io.File
 import org.koin.dsl.module
 
@@ -28,4 +30,5 @@ val desktopModule = module {
     }
     single<Notifier> { PlatformNotifier() }
     single<ReminderScheduler> { NoopReminderScheduler }
+    single { HttpClient(CIO) }
 }

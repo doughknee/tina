@@ -233,6 +233,48 @@ class CaptureParserTest {
     @Test fun connectorInsideTitleKept() =
         assertEquals("prep for the demo", parse("prep for the demo tomorrow").title)
 
+    // --- newer parser rules ---
+
+    @Test fun nextMonth() = assertEquals(LocalDate(2026, 10, 2), parse("review lease next month").date)
+
+    @Test fun endOfWeek() = assertEquals(LocalDate(2026, 9, 6), parse("report end of week").date)
+
+    @Test fun endOfMonth() = assertEquals(LocalDate(2026, 9, 30), parse("invoice end of the month").date)
+
+    @Test fun dayBeforeMonth() = assertEquals(LocalDate(2027, 1, 5), parse("taxes 5 jan").date)
+
+    @Test fun inThirtyMinutes() {
+        val p = parse("tea in 30 min")
+        assertEquals(LocalTime(10, 30), p.time)
+        assertEquals(LocalDate(2026, 9, 2), p.date)
+        assertEquals(ItemType.EVENT, p.type)
+    }
+
+    @Test fun inTwoHoursRollsTime() = assertEquals(LocalTime(12, 0), parse("call in 2 hours").time)
+
+    @Test fun relativeTimePastMidnightRollsDate() {
+        val p = parseCapture("job in 15 hours", LocalDateTime(2026, 9, 2, 22, 0))
+        assertEquals(LocalDate(2026, 9, 3), p.date)
+        assertEquals(LocalTime(13, 0), p.time)
+    }
+
+    @Test fun bareAtFiveIsEvening() = assertEquals(LocalTime(17, 0), parse("gym at 5").time)
+
+    @Test fun bareAtNineIsMorning() = assertEquals(LocalTime(9, 0), parse("gym at 9").time)
+
+    @Test fun bareAtFifteenIs24h() = assertEquals(LocalTime(15, 0), parse("gym at 15").time)
+
+    @Test fun everyOtherWeek() = assertEquals("FREQ=WEEKLY;INTERVAL=2", parse("cleaning every other week").rrule)
+
+    @Test fun everyWeekdayWord() =
+        assertEquals("FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR", parse("standup every weekday").rrule)
+
+    @Test fun twoTimesConflictStaysInbox() {
+        val p = parse("call sam 3pm or 4pm")
+        assertEquals(ItemType.INBOX, p.type)
+        assertEquals("call sam 3pm or 4pm", p.title)
+    }
+
     @Test fun combinedKitchenSink() {
         val p = parse("lunch with sam tomorrow at noon #work !! for 2h")
         assertEquals(ItemType.EVENT, p.type)

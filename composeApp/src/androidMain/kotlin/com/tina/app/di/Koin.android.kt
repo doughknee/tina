@@ -11,6 +11,8 @@ import com.tina.app.notifications.AndroidReminderScheduler
 import com.tina.app.notifications.Notifier
 import com.tina.app.notifications.PlatformNotifier
 import com.tina.app.notifications.ReminderScheduler
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -29,4 +31,5 @@ val androidModule = module {
     }
     single<Notifier> { PlatformNotifier(androidContext()) }
     single<ReminderScheduler> { AndroidReminderScheduler(androidContext()) }
+    single { HttpClient(OkHttp) }
 }

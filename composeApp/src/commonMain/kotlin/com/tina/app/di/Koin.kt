@@ -1,5 +1,7 @@
 package com.tina.app.di
 
+import com.tina.app.ai.AiCaptureParser
+import com.tina.app.ai.CaptureRefiner
 import com.tina.app.calendar.CalendarViewModel
 import com.tina.app.calendar.EventEditorViewModel
 import com.tina.app.capture.CaptureViewModel
@@ -26,6 +28,8 @@ val commonModule = module {
     single { get<AppDatabase>().itemDao() }
     single { ItemRepository(get(), get()) }
     single { SettingsRepository(get()) }
+    single { AiCaptureParser(get(), get()) }
+    single { CaptureRefiner(get(), get(), get()) }
     viewModelOf(::CaptureViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::TodayViewModel)

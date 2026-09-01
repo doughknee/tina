@@ -65,6 +65,7 @@ import com.tina.app.data.ItemType
 import com.tina.app.data.Priority
 import com.tina.app.LocalSettings
 import com.tina.app.resources.Res
+import com.tina.app.resources.ai_refined
 import com.tina.app.resources.app_title
 import com.tina.app.resources.capture_placeholder
 import com.tina.app.resources.capture_save
@@ -116,6 +117,18 @@ fun CaptureScreen(
         // let the field attach before requesting focus (desktop logs a warning otherwise)
         withFrameNanos { }
         focusRequester.requestFocus()
+    }
+
+    val refinedText = stringResource(Res.string.ai_refined)
+    LaunchedEffect(Unit) {
+        viewModel.refinedEvents.collect { original ->
+            val result = snackbarHostState.showSnackbar(
+                message = refinedText,
+                actionLabel = undoText,
+                duration = SnackbarDuration.Short,
+            )
+            if (result == SnackbarResult.ActionPerformed) viewModel.undoRefinement(original)
+        }
     }
 
     fun saveNow() {

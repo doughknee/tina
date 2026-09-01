@@ -82,3 +82,16 @@ Running log of choices made without asking, newest last.
 - **Desktop notifications go through the system tray** (`TrayState.sendNotification`); reminder *scheduling* stays a desktop no-op — the desktop app isn't a background process, so alarms there would only ring while it's already open.
 - **The desktop distributable is the jpackage app-image** (self-contained folder with `tina.exe`). The MSI target is configured but needs WiX 3.x + admin (+ the .NET 3.5 feature) — not something an unattended build should install; command documented in the README.
 - **Desktop ProGuard is off**: Room/Koin/rich-editor reflection trips it and minification buys a personal app nothing.
+
+## AI-assisted capture parsing (REL-130)
+
+- **AI never sits in the hot path.** The regex parser stays the interactive layer (live chips, instant save); the LLM re-parses the raw text *after* save in a background scope that outlives the screen, upgrades the item only if meaningfully different, and shows a "Refined by AI — Undo" snackbar. Any AI failure silently falls back to the local parse; a capture the user edited mid-flight is never clobbered.
+- **"Any key" = the OpenAI-compatible chat protocol.** One small Ktor client (`POST {base}/chat/completions`) covers OpenAI, Ollama, and every compatible aggregator via the Custom provider; Anthropic gets a ~40-line native Messages API path (`x-api-key`, `anthropic-version: 2023-06-01`) since there's no official Anthropic KMP SDK to use from commonMain. No agent framework — this is one JSON-extraction call.
+- **Claude subscriptions can't be used** — only API keys; subscription auth is Claude-products-only.
+- **No `output_config`/effort params on the Anthropic call** — maximum model compatibility (older/smaller Claude models reject them); the parse is trivial either way.
+- **Provider switch seeds defaults atomically** (single DataStore edit) so the settings fields populate in the same emission as the provider — two edits raced the UI's local field state.
+- **API key lives in DataStore plaintext on-device** — single-user personal device, key never syncs; Android-Keystore encryption is available if this ever matters.
+- **`usesCleartextTraffic=true`** so a LAN Ollama (`http://192.168.x.x:11434`) works; INTERNET permission added (the app's first).
+- **Anchored "now"**: refinement resolves relative dates against the *capture* timestamp, not the refinement timestamp, so slow models don't shift "in 30 min".
+- **Parser upgrades** (still the offline floor): `next month`, `end of week/month`, `in 30 min`/`in 2 hours`, bare `at 5` (1–7 evening, 8–11 morning, 13+ 24h), `every other day/week/month/year`, `every weekday`, `5 jan` day-first dates, and multiple conflicting clock times now land in Inbox like conflicting dates do.
+- **Verified live** against a local Ollama (`qwen3-coder:30b`): "coffee with jess thursday around 130ish" → EVENT Thursday 13:00–14:00 titled "coffee with Jess", refined on-device end to end.

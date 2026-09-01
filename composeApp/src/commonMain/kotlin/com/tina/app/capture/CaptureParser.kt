@@ -33,6 +33,8 @@ private const val MONTHS =
     "january|february|march|april|june|july|august|september|october|november|december|" +
         "sept|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec"
 
+private val RE_EVERY_OTHER = Regex("""\bevery\s+other\s+(day|week|month|year)\b""", RegexOption.IGNORE_CASE)
+private val RE_EVERY_WEEKDAY_WORD = Regex("""\bevery\s+weekday\b""", RegexOption.IGNORE_CASE)
 private val RE_EVERY_WEEKDAY = Regex("""\bevery\s+($WEEKDAYS)\b""", RegexOption.IGNORE_CASE)
 private val RE_EVERY_UNIT = Regex("""\bevery\s+(day|week|month|year)\b""", RegexOption.IGNORE_CASE)
 private val RE_DURATION_H = Regex(
@@ -42,6 +44,9 @@ private val RE_DURATION_H = Regex(
 private val RE_DURATION_M = Regex("""\bfor\s+(\d{1,4})\s*m(?:in(?:ute)?s?)?\b""", RegexOption.IGNORE_CASE)
 private val RE_TIME_COLON = Regex("""(?:\bat\s+)?\b(\d{1,2}):(\d{2})\s*(am|pm)?\b""", RegexOption.IGNORE_CASE)
 private val RE_TIME_AMPM = Regex("""(?:\bat\s+)?\b(\d{1,2})\s*(am|pm)\b""", RegexOption.IGNORE_CASE)
+private val RE_TIME_AT_BARE = Regex("""\bat\s+(\d{1,2})\b(?!\s*:|\s*(?:am|pm))""", RegexOption.IGNORE_CASE)
+private val RE_IN_REL_TIME =
+    Regex("""\bin\s+(\d{1,3})\s*(min(?:ute)?s?|h(?:(?:ou)?rs?)?)\b""", RegexOption.IGNORE_CASE)
 private val RE_TONIGHT = Regex("""\btonight\b""", RegexOption.IGNORE_CASE)
 private val TIME_WORDS = listOf(
     Regex("""\bnoon\b""", RegexOption.IGNORE_CASE) to LocalTime(12, 0),
@@ -53,9 +58,13 @@ private val TIME_WORDS = listOf(
 private val RE_TODAY = Regex("""\btoday\b""", RegexOption.IGNORE_CASE)
 private val RE_TOMORROW = Regex("""\btomorrow\b|\btmrw\b""", RegexOption.IGNORE_CASE)
 private val RE_NEXT_WEEK = Regex("""\bnext\s+week\b""", RegexOption.IGNORE_CASE)
+private val RE_NEXT_MONTH = Regex("""\bnext\s+month\b""", RegexOption.IGNORE_CASE)
+private val RE_END_OF_WEEK = Regex("""\bend\s+of\s+(?:the\s+)?week\b""", RegexOption.IGNORE_CASE)
+private val RE_END_OF_MONTH = Regex("""\bend\s+of\s+(?:the\s+)?month\b""", RegexOption.IGNORE_CASE)
 private val RE_IN_N = Regex("""\bin\s+(\d{1,3})\s+(day|week|month)s?\b""", RegexOption.IGNORE_CASE)
 private val RE_WEEKDAY = Regex("""\b(next\s+)?($WEEKDAYS)\b""", RegexOption.IGNORE_CASE)
 private val RE_MONTH_DAY = Regex("""\b($MONTHS)\s+(\d{1,2})(?:st|nd|rd|th)?\b""", RegexOption.IGNORE_CASE)
+private val RE_DAY_MONTH = Regex("""\b(\d{1,2})(?:st|nd|rd|th)?\s+($MONTHS)\b""", RegexOption.IGNORE_CASE)
 private val RE_NUMERIC_MD = Regex("""\b(\d{1,2})/(\d{1,2})\b""")
 
 private val CONNECTORS = setOf("on", "at", "in", "for", "by", "due", "the", "a", "an", "and")
@@ -134,20 +143,38 @@ fun parseCapture(
 
     var rrule: String? = null
     var rruleWeekday: DayOfWeek? = null
-    val everyWeekday = RE_EVERY_WEEKDAY.find(text)
-    if (everyWeekday != null) {
-        rruleWeekday = weekdayFrom(everyWeekday.groupValues[1])
-        rrule = "FREQ=WEEKLY;BYDAY=${byDayCode(rruleWeekday)}"
-        text = text.removeRange(everyWeekday.range)
-    } else {
-        RE_EVERY_UNIT.find(text)?.let {
-            rrule = when (it.groupValues[1].lowercase()) {
-                "day" -> "FREQ=DAILY"
-                "week" -> "FREQ=WEEKLY"
-                "month" -> "FREQ=MONTHLY"
-                else -> "FREQ=YEARLY"
+    val everyOther = RE_EVERY_OTHER.find(text)
+    val everyWeekdayWord = if (everyOther == null) RE_EVERY_WEEKDAY_WORD.find(text) else null
+    val everyWeekday = if (everyOther == null && everyWeekdayWord == null) RE_EVERY_WEEKDAY.find(text) else null
+    when {
+        everyOther != null -> {
+            rrule = when (everyOther.groupValues[1].lowercase()) {
+                "day" -> "FREQ=DAILY;INTERVAL=2"
+                "week" -> "FREQ=WEEKLY;INTERVAL=2"
+                "month" -> "FREQ=MONTHLY;INTERVAL=2"
+                else -> "FREQ=YEARLY;INTERVAL=2"
             }
-            text = text.removeRange(it.range)
+            text = text.removeRange(everyOther.range)
+        }
+        everyWeekdayWord != null -> {
+            rrule = "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"
+            text = text.removeRange(everyWeekdayWord.range)
+        }
+        everyWeekday != null -> {
+            rruleWeekday = weekdayFrom(everyWeekday.groupValues[1])
+            rrule = "FREQ=WEEKLY;BYDAY=${byDayCode(rruleWeekday)}"
+            text = text.removeRange(everyWeekday.range)
+        }
+        else -> {
+            RE_EVERY_UNIT.find(text)?.let {
+                rrule = when (it.groupValues[1].lowercase()) {
+                    "day" -> "FREQ=DAILY"
+                    "week" -> "FREQ=WEEKLY"
+                    "month" -> "FREQ=MONTHLY"
+                    else -> "FREQ=YEARLY"
+                }
+                text = text.removeRange(it.range)
+            }
         }
     }
 
@@ -167,6 +194,10 @@ fun parseCapture(
 
     var time: LocalTime? = null
     var dateFromTimeWord: LocalDate? = null
+
+    // Collect explicit clock times first; more than one distinct time is ambiguous.
+    data class TimeHit(val range: IntRange, val time: LocalTime)
+    val timeHits = mutableListOf<TimeHit>()
     for (match in RE_TIME_COLON.findAll(text)) {
         val h = match.groupValues[1].toInt()
         val m = match.groupValues[2].toInt()
@@ -177,24 +208,54 @@ fun parseCapture(
             ampm == "am" -> if (h == 12) 0 else h
             else -> if (h == 12) 12 else h + 12
         }
-        if (hour != null && m <= 59) {
-            time = LocalTime(hour, m)
+        if (hour != null && m <= 59) timeHits += TimeHit(match.range, LocalTime(hour, m))
+    }
+    for (match in RE_TIME_AMPM.findAll(text)) {
+        if (timeHits.any { it.range.intersects(match.range) }) continue
+        val h = match.groupValues[1].toInt()
+        if (h !in 1..12) continue
+        val hour = if (match.groupValues[2].equals("am", true)) {
+            if (h == 12) 0 else h
+        } else {
+            if (h == 12) 12 else h + 12
+        }
+        timeHits += TimeHit(match.range, LocalTime(hour, 0))
+    }
+    if (timeHits.map { it.time }.distinct().size > 1) {
+        // "3pm or 4pm": don't guess, let the human decide.
+        return ParsedCapture(title = input, type = ItemType.INBOX, tags = tags)
+    }
+    timeHits.firstOrNull()?.let {
+        time = it.time
+        text = text.removeRange(it.range)
+    }
+
+    if (time == null) {
+        // "in 30 min" / "in 2 hours": relative to now, pins both date and time
+        RE_IN_REL_TIME.find(text)?.let { match ->
+            val amount = match.groupValues[1].toInt()
+            val minutes = if (match.groupValues[2].startsWith("h", ignoreCase = true)) amount * 60 else amount
+            val total = now.hour * 60 + now.minute + minutes
+            time = LocalTime((total % 1440) / 60, total % 60)
+            dateFromTimeWord = now.date.plus(total / 1440, DateTimeUnit.DAY)
             text = text.removeRange(match.range)
-            break
         }
     }
     if (time == null) {
-        for (match in RE_TIME_AMPM.findAll(text)) {
+        // bare "at 5": 1-7 reads as evening, 8-11 as morning
+        RE_TIME_AT_BARE.find(text)?.let { match ->
             val h = match.groupValues[1].toInt()
-            if (h !in 1..12) continue
-            val hour = if (match.groupValues[2].equals("am", true)) {
-                if (h == 12) 0 else h
-            } else {
-                if (h == 12) 12 else h + 12
+            val hour = when {
+                h == 0 -> 0
+                h in 1..7 -> h + 12
+                h in 8..12 -> if (h == 12) 12 else h
+                h in 13..23 -> h
+                else -> null
             }
-            time = LocalTime(hour, 0)
-            text = text.removeRange(match.range)
-            break
+            if (hour != null) {
+                time = LocalTime(hour, 0)
+                text = text.removeRange(match.range)
+            }
         }
     }
     if (time == null) {
@@ -224,6 +285,9 @@ fun parseCapture(
     collect(RE_TODAY) { today }
     collect(RE_TOMORROW) { today.plus(1, DateTimeUnit.DAY) }
     collect(RE_NEXT_WEEK) { nextOccurrence(today, firstDayOfWeek) }
+    collect(RE_NEXT_MONTH) { today.plus(1, DateTimeUnit.MONTH) }
+    collect(RE_END_OF_WEEK) { today.plus(7 - today.dayOfWeek.isoDayNumber, DateTimeUnit.DAY) }
+    collect(RE_END_OF_MONTH) { kotlinx.datetime.YearMonth(today.year, today.month).lastDay }
     collect(RE_IN_N) { m ->
         val n = m.groupValues[1].toInt()
         when (m.groupValues[2].lowercase()) {
@@ -237,6 +301,7 @@ fun parseCapture(
         if (m.groupValues[1].isNotEmpty()) base.plus(7, DateTimeUnit.DAY) else base
     }
     collect(RE_MONTH_DAY) { m -> resolveMonthDay(monthFrom(m.groupValues[1]), m.groupValues[2].toInt(), today) }
+    collect(RE_DAY_MONTH) { m -> resolveMonthDay(monthFrom(m.groupValues[2]), m.groupValues[1].toInt(), today) }
     collect(RE_NUMERIC_MD) { m -> resolveMonthDay(m.groupValues[1].toInt(), m.groupValues[2].toInt(), today) }
 
     val resolved = hits.filter { it.date != null }

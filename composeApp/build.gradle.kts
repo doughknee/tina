@@ -33,6 +33,7 @@ kotlin {
             implementation(libs.androidx.datastore.preferences)
             implementation(libs.reorderable)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.client.core)
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.koin.core)
@@ -53,11 +54,13 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.androidx.work.runtime)
             implementation(libs.androidx.glance.appwidget)
+            implementation(libs.ktor.client.okhttp)
         }
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.ktor.client.cio)
             }
         }
     }

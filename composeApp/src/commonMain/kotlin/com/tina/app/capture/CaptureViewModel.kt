@@ -22,9 +22,13 @@ enum class ChipKind { DATE, TIME, DURATION, PRIORITY, RECURRENCE }
 class CaptureViewModel(
     private val repository: ItemRepository,
     settingsRepository: SettingsRepository,
+    private val refiner: com.tina.app.ai.CaptureRefiner,
 ) : ViewModel() {
     private val settings = settingsRepository.settings
         .stateIn(viewModelScope, SharingStarted.Eagerly, Settings())
+
+    /** Emits the pre-refinement item whenever the AI upgraded a capture (for the undo snackbar). */
+    val refinedEvents = kotlinx.coroutines.flow.MutableSharedFlow<com.tina.app.data.Item>(extraBufferCapacity = 4)
 
     var text by mutableStateOf("")
         private set
@@ -89,8 +93,12 @@ class CaptureViewModel(
     fun save(onSaved: () -> Unit = {}) {
         if (text.isBlank()) return
         val effective = effective()
+        val raw = text
         viewModelScope.launch {
             lastSavedId = repository.capture(effective, tz, settings.value.defaultReminderMinutes)
+            lastSavedId?.let { id ->
+                refiner.refineInBackground(id, raw) { original, _ -> refinedEvents.tryEmit(original) }
+            }
             text = ""
             removedKinds = emptySet()
             removedTags = emptySet()
@@ -104,5 +112,9 @@ class CaptureViewModel(
         val id = lastSavedId ?: return
         lastSavedId = null
         viewModelScope.launch { repository.delete(id) }
+    }
+
+    fun undoRefinement(original: com.tina.app.data.Item) {
+        viewModelScope.launch { repository.update(original) }
     }
 }

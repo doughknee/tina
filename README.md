@@ -11,6 +11,7 @@ A personal capture, calendar, tasks, and notes app for one user. No accounts, no
 - **Calendar**: month view with per-day dots, week strip, day agenda. Long-press a day to capture for that date. Full event editor: all-day, start/end, repeat (incl. custom RRULE), reminder, color, notes.
 - **Notes**: staggered grid, pinned first, search, colors, and a rich text editor (bold/italic/underline/headings/lists) that autosaves.
 - **Reminders**: exact alarms that survive reboots, with Done / Snooze 10 min / Snooze 1 hour actions. Done completes without opening the app.
+- **AI parsing (optional, bring-your-own-key)**: Settings → AI parsing. Point it at a local **Ollama** (base URL like `http://<your-pc>:11434/v1` + a model name), a **Claude** API key, an **OpenAI** key, or any **custom** OpenAI-compatible endpoint. The built-in parser still handles the instant capture; the AI re-parses in the background and quietly upgrades the item (with undo) — so "coffee w/ jess thursday around 130ish" becomes a real Thursday 1:00 PM event. Cloud providers see your capture text; Ollama keeps everything local.
 - **Everything else**: global search, a Today home-screen widget with tappable checkboxes, JSON export/import via the system file picker, dynamic color (Material You), edge-to-edge, predictive back.
 
 Non-obvious product decisions live in [DECISIONS.md](DECISIONS.md).

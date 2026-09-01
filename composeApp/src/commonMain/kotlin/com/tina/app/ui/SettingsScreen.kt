@@ -27,19 +27,37 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import com.tina.app.data.AiProvider
 import com.tina.app.data.ThemeMode
 import com.tina.app.data.rememberBackupHandlers
 import com.tina.app.resources.Res
+import com.tina.app.resources.ai_api_key
+import com.tina.app.resources.ai_base_url
+import com.tina.app.resources.ai_model
+import com.tina.app.resources.ai_privacy_note
+import com.tina.app.resources.ai_provider_anthropic
+import com.tina.app.resources.ai_provider_custom
+import com.tina.app.resources.ai_provider_off
+import com.tina.app.resources.ai_provider_ollama
+import com.tina.app.resources.ai_provider_openai
+import com.tina.app.resources.ai_test
+import com.tina.app.resources.ai_test_fail
+import com.tina.app.resources.ai_test_ok
 import com.tina.app.resources.back
+import com.tina.app.resources.settings_ai
 import com.tina.app.resources.export_data
 import com.tina.app.resources.export_done
 import com.tina.app.resources.import_data
@@ -194,6 +212,32 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(Res.string.settings_ai), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AiProvider.entries.forEach { provider ->
+                        FilterChip(
+                            selected = settings.aiProvider == provider,
+                            onClick = { viewModel.setAiProvider(provider) },
+                            label = {
+                                Text(
+                                    when (provider) {
+                                        AiProvider.OFF -> stringResource(Res.string.ai_provider_off)
+                                        AiProvider.OLLAMA -> stringResource(Res.string.ai_provider_ollama)
+                                        AiProvider.ANTHROPIC -> stringResource(Res.string.ai_provider_anthropic)
+                                        AiProvider.OPENAI -> stringResource(Res.string.ai_provider_openai)
+                                        AiProvider.CUSTOM -> stringResource(Res.string.ai_provider_custom)
+                                    },
+                                )
+                            },
+                        )
+                    }
+                }
+                if (settings.aiProvider != AiProvider.OFF) {
+                    AiConfigFields(settings, viewModel, snackbarHostState)
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(Res.string.settings_data), style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = backupHandlers.export) {
@@ -204,6 +248,72 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun AiConfigFields(
+    settings: com.tina.app.data.Settings,
+    viewModel: SettingsViewModel,
+    snackbarHostState: SnackbarHostState,
+) {
+    val scope = rememberCoroutineScope()
+    val okText = stringResource(Res.string.ai_test_ok)
+    val failText = stringResource(Res.string.ai_test_fail)
+    var baseUrl by remember(settings.aiProvider) { mutableStateOf(settings.aiBaseUrl) }
+    var model by remember(settings.aiProvider) { mutableStateOf(settings.aiModel) }
+    var apiKey by remember(settings.aiProvider) { mutableStateOf(settings.aiApiKey) }
+    var testing by remember { mutableStateOf(false) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedTextField(
+            value = baseUrl,
+            onValueChange = {
+                baseUrl = it
+                viewModel.setAiBaseUrl(it)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(Res.string.ai_base_url)) },
+            singleLine = true,
+        )
+        OutlinedTextField(
+            value = model,
+            onValueChange = {
+                model = it
+                viewModel.setAiModel(it)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(Res.string.ai_model)) },
+            singleLine = true,
+        )
+        OutlinedTextField(
+            value = apiKey,
+            onValueChange = {
+                apiKey = it
+                viewModel.setAiApiKey(it)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(Res.string.ai_api_key)) },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+        )
+        Text(
+            stringResource(Res.string.ai_privacy_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlinedButton(
+            onClick = {
+                testing = true
+                viewModel.testAi { ok ->
+                    testing = false
+                    scope.launch { snackbarHostState.showSnackbar(if (ok) okText else failText) }
+                }
+            },
+            enabled = !testing,
+        ) {
+            Text(stringResource(Res.string.ai_test))
         }
     }
 }
