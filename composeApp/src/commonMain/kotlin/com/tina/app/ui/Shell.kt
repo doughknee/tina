@@ -19,6 +19,15 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.unit.IntOffset
+import com.tina.app.ui.capture.CaptureSuggestions
+import kotlin.math.roundToInt
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -101,6 +110,7 @@ fun Shell(
     val selectedTab = tabs.firstOrNull { it.name == selectedName && it != TinaTab.ASK } ?: TinaTab.AGENDA
     // deliberately not saveable: the bar always comes back in capture mode
     var askOpen by remember { mutableStateOf(false) }
+    var captureFocused by remember { mutableStateOf(false) }
     var searchFocusNonce by remember { mutableIntStateOf(0) }
 
     val captureViewModel: CaptureViewModel = koinViewModel()
@@ -109,6 +119,7 @@ fun Shell(
     val notesViewModel: NotesViewModel = koinViewModel()
     val snackbarHostState = remember { SnackbarHostState() }
     val captureFocus = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     fun showTab(tab: TinaTab) {
         selectedName = tab.name
@@ -172,9 +183,9 @@ fun Shell(
                     onAskModeChange = { askOpen = it && askEnabled },
                     onAskSend = askViewModel::send,
                     askBusy = askViewModel.sending,
-                    onOpenItem = onOpenItem,
                     snackbarHostState = snackbarHostState,
                     focusRequester = captureFocus,
+                    onFocusChanged = { captureFocused = it },
                     viewModel = captureViewModel,
                 )
             },
@@ -212,54 +223,100 @@ fun Shell(
 
                 SaveBurst(trigger = captureViewModel.saveCount, modifier = Modifier.align(Alignment.Center))
 
+                // the TRY / RECENT sheet rises while the empty capture field has focus
+                val suggestionsOpen = !askOpen && captureFocused && captureViewModel.text.isBlank()
+                ShellSheet(
+                    visible = suggestionsOpen,
+                    onDismiss = { focusManager.clearFocus() },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                ) {
+                    CaptureSuggestions(captureViewModel, onOpenItem)
+                }
+
                 // Ask: a sheet over the page, with the bar still visible under it in ask mode
-                AnimatedVisibility(visible = askOpen, enter = fadeIn(), exit = fadeOut()) {
+                ShellSheet(
+                    visible = askOpen,
+                    onDismiss = { askOpen = false },
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxHeight(0.72f),
+                ) {
+                    AskSheet(viewModel = askViewModel, snackbarHostState = snackbarHostState)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * A sheet drawn inside the shell rather than a ModalBottomSheet, so the capture bar stays
+ * visible and usable under it. Scrim tap, handle tap, a downward drag on the handle, and
+ * system back all dismiss.
+ */
+@Composable
+private fun ShellSheet(
+    visible: Boolean,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val dismissDistance = with(LocalDensity.current) { 80.dp.toPx() }
+    var drag by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(visible) { drag = 0f }
+    Box(Modifier.fillMaxSize()) {
+        AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut()) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onDismiss,
+                    ),
+            )
+        }
+        AnimatedVisibility(
+            visible = visible,
+            modifier = modifier,
+            enter = slideInVertically { it } + fadeIn(),
+            exit = slideOutVertically { it } + fadeOut(),
+        ) {
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                modifier = Modifier.fillMaxWidth().offset { IntOffset(0, drag.roundToInt()) },
+            ) {
+                Column(Modifier.fillMaxWidth()) {
                     Box(
                         Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
+                            .fillMaxWidth()
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                            ) { askOpen = false },
-                    )
-                }
-                AnimatedVisibility(
-                    visible = askOpen,
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    enter = slideInVertically { it } + fadeIn(),
-                    exit = slideOutVertically { it } + fadeOut(),
-                ) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceContainerLow,
-                        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                        modifier = Modifier.fillMaxWidth().fillMaxHeight(0.72f),
-                    ) {
-                        Column(Modifier.fillMaxSize()) {
-                            // ponytail: tap the handle to dismiss; a real drag-to-dismiss can come later
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null,
-                                    ) { askOpen = false }
-                                    .padding(vertical = 12.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Box(
-                                    Modifier
-                                        .width(32.dp)
-                                        .height(4.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                            RoundedCornerShape(2.dp),
-                                        ),
-                                )
+                                onClick = onDismiss,
+                            )
+                            .pointerInput(Unit) {
+                                detectVerticalDragGestures(
+                                    onDragEnd = {
+                                        if (drag > dismissDistance) onDismiss()
+                                        drag = 0f
+                                    },
+                                    onDragCancel = { drag = 0f },
+                                ) { _, dy -> drag = (drag + dy).coerceAtLeast(0f) }
                             }
-                            AskSheet(viewModel = askViewModel, snackbarHostState = snackbarHostState)
-                        }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Box(
+                            Modifier
+                                .width(32.dp)
+                                .height(4.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                    RoundedCornerShape(2.dp),
+                                ),
+                        )
                     }
+                    content()
                 }
             }
         }

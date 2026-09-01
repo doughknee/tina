@@ -142,9 +142,10 @@ fun CaptureBar(
     onAskModeChange: (Boolean) -> Unit,
     onAskSend: (String) -> Unit,
     askBusy: Boolean,
-    onOpenItem: (Item) -> Unit,
     snackbarHostState: SnackbarHostState,
     focusRequester: FocusRequester,
+    /** The shell shows the suggestions sheet while the empty field has focus. */
+    onFocusChanged: (Boolean) -> Unit,
     viewModel: CaptureViewModel,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -210,14 +211,6 @@ fun CaptureBar(
     val micVisible = !askMode && speech.available && settings.voiceCapture
 
     Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-        // the old Capture tab's TRY examples and recents, only while the field is empty and focused
-        AnimatedVisibility(
-            visible = !askMode && focused && viewModel.text.isBlank(),
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically(),
-        ) {
-            CaptureSuggestions(viewModel, onOpenItem)
-        }
         AnimatedVisibility(
             visible = !askMode && viewModel.text.isNotBlank(),
             enter = fadeIn() + expandVertically(),
@@ -259,7 +252,10 @@ fun CaptureBar(
                         .weight(1f)
                         .padding(horizontal = 12.dp, vertical = 12.dp)
                         .focusRequester(focusRequester)
-                        .onFocusChanged { focused = it.isFocused }
+                        .onFocusChanged {
+                            focused = it.isFocused
+                            onFocusChanged(it.isFocused)
+                        }
                         .onPreviewKeyEvent { event ->
                             // physical keyboards: Enter sends, Shift+Enter makes a newline
                             if (event.key == Key.Enter && event.type == KeyEventType.KeyDown && !event.isShiftPressed) {
@@ -314,8 +310,9 @@ fun CaptureBar(
     }
 }
 
+/** The old Capture tab's TRY examples and recents; the shell hosts this in a sheet. */
 @Composable
-private fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit) {
+fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit) {
     val recent by viewModel.recent.collectAsState()
     val use24h = LocalSettings.current.use24h
     val now = remember(recent) { Clock.System.now() }
@@ -326,7 +323,7 @@ private fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -
         stringResource(Res.string.capture_try_3),
     )
 
-    Column(Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+    Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
         Text(
             stringResource(Res.string.capture_try).uppercase(),
             style = MaterialTheme.typography.labelMedium,
