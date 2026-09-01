@@ -218,8 +218,9 @@ fun CaptureBar(
     val micVisible = !askMode && speech.available && settings.voiceCapture
 
     Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+        // while focused the sheet shows these; inline is the fallback once the keyboard is gone
         AnimatedVisibility(
-            visible = !askMode && viewModel.text.isNotBlank(),
+            visible = !askMode && !focused && viewModel.text.isNotBlank(),
             enter = fadeIn() + expandVertically(),
             exit = fadeOut() + shrinkVertically(),
         ) {
@@ -434,7 +435,7 @@ fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit) 
 
 /** Live parse chips: what tina understood, each removable, the type cycling on tap. */
 @Composable
-private fun CaptureChips(viewModel: CaptureViewModel) {
+fun CaptureChips(viewModel: CaptureViewModel, modifier: Modifier = Modifier) {
     if (viewModel.text.isBlank()) return
     val effective = viewModel.effective()
     val today = remember(viewModel.text) {
@@ -453,7 +454,7 @@ private fun CaptureChips(viewModel: CaptureViewModel) {
     }
 
     FlowRow(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        modifier = modifier.fillMaxWidth().padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         val typeText = typeLabel(effective.type)

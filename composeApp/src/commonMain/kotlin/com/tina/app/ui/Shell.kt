@@ -28,7 +28,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.IntOffset
+import com.tina.app.ui.capture.CaptureChips
 import com.tina.app.ui.capture.CaptureSuggestions
+import androidx.compose.animation.togetherWith
 import kotlin.math.roundToInt
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -129,8 +131,8 @@ fun Shell(
     val captureFocus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
-    // the TRY / RECENT sheet rises while the empty capture field has focus
-    val suggestionsOpen = !askOpen && captureFocused && captureViewModel.text.isBlank()
+    // the capture sheet rises while the field has focus: starters when empty, parse chips while typing
+    val suggestionsOpen = !askOpen && captureFocused
 
     fun showTab(tab: TinaTab) {
         selectedName = tab.name
@@ -250,7 +252,17 @@ fun Shell(
                     onDismiss = { focusManager.clearFocus() },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 ) {
-                    CaptureSuggestions(captureViewModel, onOpenItem)
+                    AnimatedContent(
+                        targetState = captureViewModel.text.isBlank(),
+                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        label = "capture-sheet",
+                    ) { empty ->
+                        if (empty) {
+                            CaptureSuggestions(captureViewModel, onOpenItem)
+                        } else {
+                            CaptureChips(captureViewModel, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                        }
+                    }
                 }
 
                 // Ask: a sheet over the page, with the bar still visible under it in ask mode
