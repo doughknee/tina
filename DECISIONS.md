@@ -1,5 +1,22 @@
 # Decisions
 
+## Ask chats (REL-145, Sep 2026)
+
+- Schema v2 → v3 uses a **hand-written additive migration**, not destructive
+  fallback: it only CREATEs the `chats` / `chat_messages` tables and their
+  index. Items must survive app updates — verified on the emulator against a
+  populated v2 database before the release went to the phone.
+- Chats persist in Room (not DataStore): message lists are unbounded and want
+  a real query/ordering story.
+- Each chat remembers its own model override and reasoning level, so reopening
+  an old conversation restores how it was being run.
+- Titles auto-derive from the first message (first 48 chars) — no title-
+  generation call, which would cost a round trip for cosmetics.
+- Chat deletion is instant with undo (snapshot of the chat + its messages held
+  in memory), matching the app's no-confirmation-dialogs rule.
+- Ask context is rebuilt from the live database on every question even in an
+  old chat, so answers never go stale against a resumed conversation.
+
 ## Ask page (REL-142, Sep 2026)
 
 - Architecture: context stuffing, not MCP/tool-calling. The whole database is
