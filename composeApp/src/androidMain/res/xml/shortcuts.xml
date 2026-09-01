@@ -1,0 +1,12 @@
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="capture"
+        android:enabled="true"
+        android:icon="@drawable/ic_capture"
+        android:shortcutShortLabel="@string/shortcut_capture">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.tina.app"
+            android:targetClass="com.tina.app.MainActivity" />
+    </shortcut>
+</shortcuts>

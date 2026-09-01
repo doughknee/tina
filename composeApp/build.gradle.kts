@@ -35,6 +35,10 @@ kotlin {
             implementation(libs.calendar.compose)
             implementation(libs.richeditor.compose)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.material.icons.extended)
+            implementation(libs.jetbrains.lifecycle.viewmodel.compose)
+            implementation(libs.koin.compose.viewmodel)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -43,6 +47,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.androidx.work.runtime)
+            implementation(libs.androidx.glance.appwidget)
         }
         val desktopMain by getting {
             dependencies {
@@ -91,8 +96,21 @@ dependencies {
     add("kspDesktop", libs.androidx.room.compiler)
 }
 
+configurations.configureEach {
+    resolutionStrategy {
+        // richeditor 1.1.0 pulls material3 1.11.0-alpha07, whose Android mapping is
+        // compiled against foundation 1.11.0-beta02 and crashes (AbstractMethodError in
+        // TextFieldDefaults) on foundation 1.12.0. Pin the stable CMP 1.12 pairing.
+        force("org.jetbrains.compose.material3:material3:${libs.versions.material3Cmp.get()}")
+    }
+}
+
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+compose.resources {
+    packageOfResClass = "com.tina.app.resources"
 }
 
 compose.desktop {
