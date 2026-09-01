@@ -119,9 +119,13 @@ fun TodayScreen(
             Box(Modifier.fillMaxSize().padding(padding))
             return@Scaffold
         }
+        Column(Modifier.fillMaxSize().padding(padding)) {
+        com.tina.app.notifications.ReminderPermissionBanner(
+            Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
         if (state.sections.isEmpty()) {
             Column(
-                Modifier.fillMaxSize().padding(padding),
+                Modifier.fillMaxWidth().weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
@@ -138,7 +142,7 @@ fun TodayScreen(
                     modifier = Modifier.padding(top = 16.dp),
                 )
             }
-            return@Scaffold
+            return@Column
         }
 
         val anytimeEntries = state.sections.firstOrNull { it.first == TodaySection.ANYTIME }?.second.orEmpty()
@@ -156,7 +160,7 @@ fun TodayScreen(
             }
         }
 
-        LazyColumn(Modifier.fillMaxSize().padding(padding), state = listState) {
+        LazyColumn(Modifier.fillMaxWidth().weight(1f), state = listState) {
             state.sections.forEach { (section, entries) ->
                 item(key = "header-$section") {
                     Text(
@@ -231,6 +235,7 @@ fun TodayScreen(
                     }
                 }
             }
+        }
         }
     }
 }

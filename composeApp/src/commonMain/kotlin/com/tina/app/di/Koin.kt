@@ -23,7 +23,7 @@ import org.koin.dsl.module
 val commonModule = module {
     single { buildDatabase(get()) }
     single { get<AppDatabase>().itemDao() }
-    single { ItemRepository(get()) }
+    single { ItemRepository(get(), get()) }
     single { SettingsRepository(get()) }
     viewModelOf(::CaptureViewModel)
     viewModelOf(::SettingsViewModel)

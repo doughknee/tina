@@ -78,6 +78,11 @@
     <string name="event_color">Color</string>
     <string name="color_default">Default</string>
 
+    <string name="reminders_banner_title">Turn on reminders</string>
+    <string name="reminders_banner_body">To ring on time, tina needs permission to notify you and to schedule exact alarms.</string>
+    <string name="reminders_allow_notifications">Allow notifications</string>
+    <string name="reminders_allow_exact">Allow exact alarms</string>
+
     <string name="notes_empty">Thoughts land here</string>
     <string name="note_new">New note</string>
     <string name="note_untitled">Untitled</string>

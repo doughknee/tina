@@ -73,4 +73,7 @@ interface ItemDao {
 
     @Query("UPDATE items SET title = :title, updatedAt = :at WHERE id = :id")
     suspend fun rename(id: Long, title: String, at: Long)
+
+    @Query("SELECT * FROM items WHERE reminderOffsetMinutes IS NOT NULL AND completed = 0")
+    suspend fun getRemindable(): List<Item>
 }

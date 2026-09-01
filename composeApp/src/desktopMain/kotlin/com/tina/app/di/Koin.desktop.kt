@@ -6,8 +6,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tina.app.data.AppDatabase
 import com.tina.app.data.createSettingsStore
+import com.tina.app.notifications.NoopReminderScheduler
 import com.tina.app.notifications.Notifier
 import com.tina.app.notifications.PlatformNotifier
+import com.tina.app.notifications.ReminderScheduler
 import java.io.File
 import org.koin.dsl.module
 
@@ -25,4 +27,5 @@ val desktopModule = module {
         }
     }
     single<Notifier> { PlatformNotifier() }
+    single<ReminderScheduler> { NoopReminderScheduler }
 }

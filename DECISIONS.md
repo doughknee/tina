@@ -55,3 +55,12 @@ Running log of choices made without asking, newest last.
 - **Headings are font-size spans** (24sp/20sp bold) rather than semantic H1/H2 — same rendering, simpler toggle model.
 - **Editor-initiated deletes surface their undo snackbar on the Notes list** via a shared activity-scoped NotesViewModel flag, so undo survives the back navigation.
 - **Parameterized ViewModels get per-item Koin keys** (`detail-$id`, `event-$id`, `note-$id`) — without a key the activity-scoped store would hand every screen the first item's VM.
+
+## Phase 7 — reminders
+
+- **Scheduling lives in the repository**: every mutation that can change a reminder (insert/update/complete/delete/reschedule/type change) re-arms or cancels through a `ReminderScheduler` expect-style interface; UI code never touches alarms. Desktop binds a no-op.
+- **One alarm per item** (PendingIntent keyed by item id). Recurring events re-arm their next occurrence when they fire; snoozing replaces that arm until the snoozed alarm fires and re-arms it. Ceiling: snoozing past the next occurrence's reminder skips that reminder once.
+- **Exact alarms degrade gracefully**: without SCHEDULE_EXACT_ALARM the same alarm is set inexact (≤1h window) rather than not at all; the Today banner offers both grants and re-checks on resume. Verified via dumpsys: window=1h before grant, window=0 after.
+- **Tasks need a due time to ring** — a date-only task has no meaningful alarm moment.
+- **Boot + cold-start both re-arm everything** (alarms don't survive reboot; cold-start covers app updates and force-stops).
+- **Notification "Done" completes tasks without opening the app**; events get only snooze actions because "done" means nothing for an event.

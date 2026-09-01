@@ -7,8 +7,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tina.app.data.AppDatabase
 import com.tina.app.data.createSettingsStore
+import com.tina.app.notifications.AndroidReminderScheduler
 import com.tina.app.notifications.Notifier
 import com.tina.app.notifications.PlatformNotifier
+import com.tina.app.notifications.ReminderScheduler
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -26,4 +28,5 @@ val androidModule = module {
         }
     }
     single<Notifier> { PlatformNotifier(androidContext()) }
+    single<ReminderScheduler> { AndroidReminderScheduler(androidContext()) }
 }

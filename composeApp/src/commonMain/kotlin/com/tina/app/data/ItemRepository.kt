@@ -1,6 +1,8 @@
 package com.tina.app.data
 
 import com.tina.app.capture.ParsedCapture
+import com.tina.app.notifications.NoopReminderScheduler
+import com.tina.app.notifications.ReminderScheduler
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +20,7 @@ const val DEFAULT_REMINDER_MINUTES = 10
 
 class ItemRepository(
     private val dao: ItemDao,
+    private val scheduler: ReminderScheduler = NoopReminderScheduler,
     private val clock: Clock = Clock.System,
 ) {
     private fun nowMillis(): Long = clock.now().toEpochMilliseconds()
@@ -42,22 +45,48 @@ class ItemRepository(
     fun observeTasksDueBetween(from: LocalDate, to: LocalDate): Flow<List<Item>> =
         dao.observeTasksDueBetween(from.toEpochDays().toInt(), to.toEpochDays().toInt())
 
-    suspend fun insert(item: Item): Long = dao.insert(item)
+    suspend fun insert(item: Item): Long {
+        val id = dao.insert(item)
+        scheduler.schedule(item.copy(id = id))
+        return id
+    }
 
-    suspend fun update(item: Item) = dao.update(item.copy(updatedAt = nowMillis()))
+    suspend fun update(item: Item) {
+        val updated = item.copy(updatedAt = nowMillis())
+        dao.update(updated)
+        scheduler.schedule(updated)
+    }
 
-    suspend fun delete(id: Long) = dao.delete(id)
+    suspend fun delete(id: Long) {
+        dao.delete(id)
+        scheduler.cancel(id)
+    }
 
     /** Restore a previously deleted item (undo); keeps its old id. */
-    suspend fun restore(item: Item): Long = dao.insert(item)
+    suspend fun restore(item: Item): Long = insert(item)
 
-    suspend fun complete(id: Long) = dao.complete(id, nowMillis())
-    suspend fun uncomplete(id: Long) = dao.uncomplete(id, nowMillis())
+    suspend fun complete(id: Long) {
+        dao.complete(id, nowMillis())
+        scheduler.cancel(id)
+    }
 
-    suspend fun changeType(id: Long, type: ItemType) = dao.changeType(id, type, nowMillis())
+    suspend fun uncomplete(id: Long) {
+        dao.uncomplete(id, nowMillis())
+        dao.get(id)?.let(scheduler::schedule)
+    }
 
-    suspend fun reschedule(id: Long, day: LocalDate?) =
+    suspend fun changeType(id: Long, type: ItemType) {
+        dao.changeType(id, type, nowMillis())
+        dao.get(id)?.let(scheduler::schedule)
+    }
+
+    suspend fun reschedule(id: Long, day: LocalDate?) {
         dao.reschedule(id, day?.toEpochDays()?.toInt(), nowMillis())
+        dao.get(id)?.let(scheduler::schedule)
+    }
+
+    /** Re-arm every pending reminder (boot, app start). */
+    suspend fun rescheduleAllReminders() = scheduler.rescheduleAll(dao.getRemindable())
 
     suspend fun setSortOrder(id: Long, sortOrder: Long) = dao.setSortOrder(id, sortOrder)
 
@@ -70,7 +99,7 @@ class ItemRepository(
         defaultReminderMinutes: Int = DEFAULT_REMINDER_MINUTES,
     ): Long {
         val now = clock.now().toLocalDateTime(tz)
-        return dao.insert(itemFromCapture(parsed, now, tz, defaultReminderMinutes))
+        return insert(itemFromCapture(parsed, now, tz, defaultReminderMinutes))
     }
 
     /** Expand an event's occurrences (recurring or not) within a range. */
