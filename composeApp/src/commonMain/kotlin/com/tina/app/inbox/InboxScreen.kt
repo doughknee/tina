@@ -25,6 +25,8 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import com.tina.app.ui.rememberUndoWindow
+import com.tina.app.ui.showUndo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -68,6 +70,7 @@ fun InboxScreen(
 ) {
     val items by viewModel.items.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
     val sortedText = stringResource(Res.string.sorted)
     val deletedText = stringResource(Res.string.deleted)
@@ -78,8 +81,7 @@ fun InboxScreen(
     fun withUndo(message: String, action: () -> Unit, undo: () -> Unit) {
         action()
         scope.launch {
-            val result = snackbarHostState.showSnackbar(message, undoText, duration = SnackbarDuration.Short)
-            if (result == SnackbarResult.ActionPerformed) undo()
+            if (snackbarHostState.showUndo(message, undoText, undoWindow)) undo()
         }
     }
 

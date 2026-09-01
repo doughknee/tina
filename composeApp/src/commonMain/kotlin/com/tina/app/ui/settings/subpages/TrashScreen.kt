@@ -39,6 +39,8 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import com.tina.app.ui.rememberUndoWindow
+import com.tina.app.ui.showUndo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -129,6 +131,7 @@ fun TrashScreen(onBack: () -> Unit, viewModel: TrashViewModel = koinViewModel())
     val items by viewModel.items.collectAsState()
     val settings by viewModel.settings.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
     val now = remember(items) { Clock.System.now().toEpochMilliseconds() }
 
@@ -211,10 +214,7 @@ fun TrashScreen(onBack: () -> Unit, viewModel: TrashViewModel = koinViewModel())
                     onPurge = {
                         viewModel.purge(entry)
                         scope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                purgedText, undoText, duration = SnackbarDuration.Short,
-                            )
-                            if (result == SnackbarResult.ActionPerformed) viewModel.undoPurge()
+                            if (snackbarHostState.showUndo(purgedText, undoText, undoWindow)) viewModel.undoPurge()
                         }
                     },
                     modifier = Modifier.animateItem(),

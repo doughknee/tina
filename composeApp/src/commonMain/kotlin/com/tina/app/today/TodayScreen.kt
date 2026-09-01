@@ -34,6 +34,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import com.tina.app.ui.rememberUndoWindow
+import com.tina.app.ui.showUndo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -85,6 +87,7 @@ fun TodayScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
     val use24h = LocalSettings.current.use24h
@@ -95,8 +98,7 @@ fun TodayScreen(
     fun deleteWithUndo(delete: () -> Unit, undo: () -> Unit) {
         delete()
         scope.launch {
-            val result = snackbarHostState.showSnackbar(deletedText, undoText, duration = SnackbarDuration.Short)
-            if (result == SnackbarResult.ActionPerformed) undo()
+            if (snackbarHostState.showUndo(deletedText, undoText, undoWindow)) undo()
         }
     }
 

@@ -46,6 +46,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import com.tina.app.ui.rememberUndoWindow
+import com.tina.app.ui.showUndo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -107,6 +109,7 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
     var input by remember { mutableStateOf("") }
     var modelMenuOpen by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoWindow = rememberUndoWindow()
     val appliedText = stringResource(Res.string.ask_applied)
     val undoText = stringResource(Res.string.undo)
 
@@ -118,22 +121,12 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
 
     LaunchedEffect(viewModel.appliedNonce) {
         if (viewModel.appliedNonce == 0) return@LaunchedEffect
-        val result = snackbarHostState.showSnackbar(
-            "$appliedText: ${viewModel.appliedCount}",
-            undoText,
-            duration = SnackbarDuration.Long,
-        )
-        if (result == SnackbarResult.ActionPerformed) viewModel.undoLastBatch()
+        if (snackbarHostState.showUndo("$appliedText: ${viewModel.appliedCount}", undoText, undoWindow)) viewModel.undoLastBatch()
     }
 
     LaunchedEffect(viewModel.chatDeletedNonce) {
         if (viewModel.chatDeletedNonce == 0) return@LaunchedEffect
-        val result = snackbarHostState.showSnackbar(
-            chatDeletedText,
-            undoText,
-            duration = SnackbarDuration.Short,
-        )
-        if (result == SnackbarResult.ActionPerformed) viewModel.undoDeleteChat()
+        if (snackbarHostState.showUndo(chatDeletedText, undoText, undoWindow)) viewModel.undoDeleteChat()
     }
 
     LaunchedEffect(viewModel.messages.size, viewModel.sending) {

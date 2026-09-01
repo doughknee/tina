@@ -21,6 +21,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import com.tina.app.ui.rememberUndoWindow
+import com.tina.app.ui.showUndo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -98,6 +100,7 @@ fun TagScreen(
 ) {
     val items by viewModel.items.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
     val deletedText = stringResource(Res.string.deleted)
     val undoText = stringResource(Res.string.undo)
@@ -160,10 +163,7 @@ fun TagScreen(
                         onDelete = {
                             viewModel.delete(item)
                             scope.launch {
-                                val result = snackbarHostState.showSnackbar(
-                                    deletedText, undoText, duration = SnackbarDuration.Short,
-                                )
-                                if (result == SnackbarResult.ActionPerformed) viewModel.undoDelete()
+                                if (snackbarHostState.showUndo(deletedText, undoText, undoWindow)) viewModel.undoDelete()
                             }
                         },
                         onRename = { viewModel.rename(item, it) },

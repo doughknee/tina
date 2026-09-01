@@ -38,7 +38,10 @@ data class TodayUiState(
     val inboxCount: Int = 0,
 )
 
-class TodayViewModel(private val repository: ItemRepository) : ViewModel() {
+class TodayViewModel(
+    private val repository: ItemRepository,
+    private val settingsRepository: com.tina.app.data.SettingsRepository,
+) : ViewModel() {
     private val tz = TimeZone.currentSystemDefault()
     private var lastDeleted: Item? = null
 
@@ -50,8 +53,14 @@ class TodayViewModel(private val repository: ItemRepository) : ViewModel() {
             repository.observeTasksForDay(today, tz),
             repository.observeEventsIntersecting(dayStart, dayEnd),
             repository.observeInboxCount(),
-        ) { tasks, events, inboxCount ->
-            TodayUiState(today, buildSections(tasks, events, today, dayStart, dayEnd), inboxCount)
+            settingsRepository.settings,
+        ) { tasks, events, inboxCount, settings ->
+            val visible = if (settings.showCompletedInToday) tasks else tasks.filter { !it.completed }
+            TodayUiState(
+                today,
+                buildSections(visible, events, today, dayStart, dayEnd, settings),
+                inboxCount,
+            )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TodayUiState())
 
@@ -68,6 +77,7 @@ class TodayViewModel(private val repository: ItemRepository) : ViewModel() {
         today: LocalDate,
         dayStart: Long,
         dayEnd: Long,
+        settings: com.tina.app.data.Settings,
     ): List<Pair<TodaySection, List<TodayEntry>>> {
         val todayEpoch = today.toEpochDays().toInt()
 
@@ -97,9 +107,14 @@ class TodayViewModel(private val repository: ItemRepository) : ViewModel() {
 
         val sections = listOf(
             TodaySection.OVERDUE to overdue.sortedWith(compareBy({ it.item.dueDate }, { minutes(it.time) })),
-            TodaySection.MORNING to timed.filter { minutes(it.time) < 12 * 60 }.sortedWith(byTime),
-            TodaySection.AFTERNOON to timed.filter { minutes(it.time) in (12 * 60) until (17 * 60) }.sortedWith(byTime),
-            TodaySection.EVENING to timed.filter { minutes(it.time) >= 17 * 60 }.sortedWith(byTime),
+            TodaySection.MORNING to
+                timed.filter { minutes(it.time) < settings.afternoonStartMinutes }.sortedWith(byTime),
+            TodaySection.AFTERNOON to
+                timed.filter {
+                    minutes(it.time) in settings.afternoonStartMinutes until settings.eveningStartMinutes
+                }.sortedWith(byTime),
+            TodaySection.EVENING to
+                timed.filter { minutes(it.time) >= settings.eveningStartMinutes }.sortedWith(byTime),
             TodaySection.ANYTIME to anytime.sortedWith(
                 compareBy({ it.item.completed }, { it.item.sortOrder }),
             ),

@@ -51,6 +51,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import com.tina.app.ui.rememberUndoWindow
+import com.tina.app.ui.showUndo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -139,6 +141,7 @@ fun CaptureScreen(
     val focusRequester = remember { FocusRequester() }
     val haptic = LocalHapticFeedback.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
     val capturedText = stringResource(Res.string.captured)
     val undoText = stringResource(Res.string.undo)
@@ -154,25 +157,24 @@ fun CaptureScreen(
     val refinedText = stringResource(Res.string.ai_refined)
     LaunchedEffect(Unit) {
         viewModel.refinedEvents.collect { original ->
-            val result = snackbarHostState.showSnackbar(
-                message = refinedText,
-                actionLabel = undoText,
-                duration = SnackbarDuration.Short,
-            )
-            if (result == SnackbarResult.ActionPerformed) viewModel.undoRefinement(original)
+            if (snackbarHostState.showUndo(message = refinedText, actionLabel = undoText, undoWindow)) viewModel.undoRefinement(original)
         }
     }
+
+    val keepKeyboardUp = LocalSettings.current.keepKeyboardUp
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
 
     fun saveNow() {
         viewModel.save {
             haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+            // off: drop focus so the keyboard closes and the capture screen settles
+            if (!keepKeyboardUp) {
+                focusManager.clearFocus()
+                keyboard?.hide()
+            }
             scope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    message = capturedText,
-                    actionLabel = undoText,
-                    duration = SnackbarDuration.Short,
-                )
-                if (result == SnackbarResult.ActionPerformed) viewModel.undoLastSave()
+                if (snackbarHostState.showUndo(message = capturedText, actionLabel = undoText, undoWindow)) viewModel.undoLastSave()
             }
         }
     }
@@ -275,10 +277,7 @@ fun CaptureScreen(
                     onApply = { updated, original ->
                         viewModel.applyImprovement(updated)
                         scope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                improvedText, undoText, duration = SnackbarDuration.Short,
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
+                            if (snackbarHostState.showUndo(improvedText, undoText, undoWindow)) {
                                 viewModel.applyImprovement(original)
                             }
                         }

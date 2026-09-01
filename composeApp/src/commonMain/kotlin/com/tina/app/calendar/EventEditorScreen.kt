@@ -51,6 +51,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
+import com.tina.app.ui.rememberUndoWindow
+import com.tina.app.ui.showUndo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -133,6 +135,7 @@ fun EventEditorScreen(
     val item by viewModel.item.collectAsState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
     var showImprove by remember { mutableStateOf(false) }
     val improvedText = stringResource(Res.string.improve_applied)
@@ -171,10 +174,7 @@ fun EventEditorScreen(
                 onApply = { updated, original ->
                     viewModel.applyImprovement(updated)
                     scope.launch {
-                        val result = snackbarHostState.showSnackbar(
-                            improvedText, undoText, duration = SnackbarDuration.Short,
-                        )
-                        if (result == SnackbarResult.ActionPerformed) {
+                        if (snackbarHostState.showUndo(improvedText, undoText, undoWindow)) {
                             viewModel.applyImprovement(original)
                         }
                     }

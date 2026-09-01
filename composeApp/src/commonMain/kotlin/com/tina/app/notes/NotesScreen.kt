@@ -39,6 +39,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import com.tina.app.ui.rememberUndoWindow
+import com.tina.app.ui.showUndo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -83,14 +85,14 @@ fun NotesScreen(
     val pendingUndo by viewModel.pendingUndo.collectAsState()
     var searching by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoWindow = rememberUndoWindow()
     val deletedText = stringResource(Res.string.deleted)
     val undoText = stringResource(Res.string.undo)
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     LaunchedEffect(pendingUndo) {
         val item = pendingUndo ?: return@LaunchedEffect
-        val result = snackbarHostState.showSnackbar(deletedText, undoText, duration = SnackbarDuration.Short)
-        if (result == SnackbarResult.ActionPerformed) viewModel.undoDelete() else viewModel.clearPendingUndo()
+        if (snackbarHostState.showUndo(deletedText, undoText, undoWindow)) viewModel.undoDelete() else viewModel.clearPendingUndo()
     }
 
     Scaffold(

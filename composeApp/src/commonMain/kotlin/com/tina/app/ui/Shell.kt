@@ -62,8 +62,14 @@ fun Shell(
     val askEnabled = settings.aiAskEnabled &&
         settings.aiProvider != com.tina.app.data.AiProvider.OFF
     val tabs = if (askEnabled) TinaTab.entries.toList() else TinaTab.entries.filter { it != TinaTab.ASK }
-    // saved by name, not index, so toggling the Ask tab never shifts the selection
-    var selectedName by rememberSaveable { mutableStateOf(TinaTab.CAPTURE.name) }
+    // saved by name, not index, so toggling the Ask tab never shifts the selection.
+    // LAST relies on rememberSaveable surviving process death; the others pin a start tab.
+    val startTab = when (settings.openAppTo) {
+        com.tina.app.data.OpenAppTo.CAPTURE -> TinaTab.CAPTURE.name
+        com.tina.app.data.OpenAppTo.TODAY -> TinaTab.TODAY.name
+        com.tina.app.data.OpenAppTo.LAST -> TinaTab.CAPTURE.name
+    }
+    var selectedName by rememberSaveable(settings.openAppTo) { mutableStateOf(startTab) }
     val selectedTab = tabs.firstOrNull { it.name == selectedName } ?: TinaTab.CAPTURE
     val captureViewModel: CaptureViewModel = koinViewModel()
     val notesViewModel: NotesViewModel = koinViewModel()

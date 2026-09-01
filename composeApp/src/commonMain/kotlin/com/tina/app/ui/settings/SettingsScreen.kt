@@ -56,6 +56,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
+import com.tina.app.ui.rememberUndoWindow
+import com.tina.app.ui.showUndo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -276,6 +278,7 @@ fun SettingsScreen(
     val stats by viewModel.stats.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
@@ -309,12 +312,7 @@ fun SettingsScreen(
         onClearCompleted = {
             viewModel.clearCompleted()
             scope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    clearedText,
-                    undoText,
-                    duration = SnackbarDuration.Long,
-                )
-                if (result == SnackbarResult.ActionPerformed) viewModel.undoClearCompleted()
+                if (snackbarHostState.showUndo(clearedText, undoText, undoWindow)) viewModel.undoClearCompleted()
             }
         },
         onExport = backupHandlers.export,
@@ -569,8 +567,7 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Navigation(
                 id = "openAppTo",
-                enabled = false,
-                title = stringResource(Res.string.set_open_app_to),
+                                title = stringResource(Res.string.set_open_app_to),
                 supporting = openToLabel,
                 keywords = listOf("start", "launch", "home"),
                 onClick = { onNavigate(SettingsDestination.OPEN_APP_TO) },
@@ -665,8 +662,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "keepKeyboard",
-                enabled = false,
-                title = stringResource(Res.string.set_keep_keyboard),
+                                title = stringResource(Res.string.set_keep_keyboard),
                 supporting = stringResource(Res.string.set_keep_keyboard_sub),
                 keywords = listOf("keyboard", "ime"),
                 checked = settings.keepKeyboardUp,
@@ -690,8 +686,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Navigation(
                 id = "undoWindow",
-                enabled = false,
-                title = stringResource(Res.string.set_undo_window),
+                                title = stringResource(Res.string.set_undo_window),
                 supporting = stringResource(Res.string.set_undo_window_sub, settings.undoWindowSeconds),
                 keywords = listOf("snackbar", "undo"),
                 onClick = { onNavigate(SettingsDestination.UNDO_WINDOW) },
@@ -730,31 +725,27 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Value(
                 id = "daySections",
-                enabled = false,
-                title = stringResource(Res.string.set_day_sections),
+                                title = stringResource(Res.string.set_day_sections),
                 supporting = stringResource(Res.string.set_day_sections_sub),
                 keywords = listOf("morning", "afternoon", "evening", "tonight"),
             ),
             SettingsRow.TimeRow(
                 id = "morning",
-                enabled = false,
-                title = stringResource(Res.string.set_morning),
+                                title = stringResource(Res.string.set_morning),
                 keywords = listOf("morning"),
                 timeLabel = minutesLabel(settings.morningStartMinutes, use24h),
                 onClick = { onPickTime(TimeTarget.MORNING) },
             ),
             SettingsRow.TimeRow(
                 id = "afternoon",
-                enabled = false,
-                title = stringResource(Res.string.set_afternoon),
+                                title = stringResource(Res.string.set_afternoon),
                 keywords = listOf("afternoon"),
                 timeLabel = minutesLabel(settings.afternoonStartMinutes, use24h),
                 onClick = { onPickTime(TimeTarget.AFTERNOON) },
             ),
             SettingsRow.TimeRow(
                 id = "evening",
-                enabled = false,
-                title = stringResource(Res.string.set_evening),
+                                title = stringResource(Res.string.set_evening),
                 keywords = listOf("evening", "tonight"),
                 timeLabel = minutesLabel(settings.eveningStartMinutes, use24h),
                 onClick = { onPickTime(TimeTarget.EVENING) },
@@ -871,8 +862,7 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Switch(
                 id = "showCompleted",
-                enabled = false,
-                title = stringResource(Res.string.set_show_completed),
+                                title = stringResource(Res.string.set_show_completed),
                 supporting = stringResource(Res.string.set_show_completed_sub),
                 keywords = listOf("done", "finished"),
                 checked = settings.showCompletedInToday,
