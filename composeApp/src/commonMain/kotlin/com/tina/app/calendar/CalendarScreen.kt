@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarViewMonth
@@ -78,6 +78,7 @@ import com.tina.app.resources.settings
 import com.tina.app.resources.undo
 import com.tina.app.resources.weekdays_full
 import com.tina.app.ui.ItemRow
+import com.tina.app.ui.SectionCardItem
 import com.tina.app.ui.timeLabel
 import kotlin.time.Instant
 import kotlinx.coroutines.launch
@@ -252,29 +253,31 @@ fun CalendarScreen(
                 }
             } else {
                 LazyColumn(Modifier.weight(1f)) {
-                    items(agenda, key = { "${it.item.id}-${it.time}" }) { entry ->
-                        ItemRow(
-                            item = entry.item,
-                            today = today,
-                            timeText = entry.time?.let { timeLabel(it, settings.use24h) },
-                            onToggleComplete = if (entry.item.type == ItemType.TASK) {
-                                { viewModel.toggleComplete(entry.item) }
-                            } else null,
-                            onDelete = {
-                                viewModel.delete(entry.item)
-                                scope.launch {
-                                    val result = snackbarHostState.showSnackbar(
-                                        deletedText, undoText, duration = SnackbarDuration.Short,
-                                    )
-                                    if (result == SnackbarResult.ActionPerformed) viewModel.undoDelete()
-                                }
-                            },
-                            onRename = { viewModel.rename(entry.item, it) },
-                            onReschedule = if (entry.item.type == ItemType.TASK) {
-                                { viewModel.reschedule(entry.item, it) }
-                            } else null,
-                            onOpen = { onOpenItem(entry.item) },
-                        )
+                    itemsIndexed(agenda, key = { _, it -> "${it.item.id}-${it.time}" }) { index, entry ->
+                        SectionCardItem(index, agenda.size) {
+                            ItemRow(
+                                item = entry.item,
+                                today = today,
+                                timeText = entry.time?.let { timeLabel(it, settings.use24h) },
+                                onToggleComplete = if (entry.item.type == ItemType.TASK) {
+                                    { viewModel.toggleComplete(entry.item) }
+                                } else null,
+                                onDelete = {
+                                    viewModel.delete(entry.item)
+                                    scope.launch {
+                                        val result = snackbarHostState.showSnackbar(
+                                            deletedText, undoText, duration = SnackbarDuration.Short,
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) viewModel.undoDelete()
+                                    }
+                                },
+                                onRename = { viewModel.rename(entry.item, it) },
+                                onReschedule = if (entry.item.type == ItemType.TASK) {
+                                    { viewModel.reschedule(entry.item, it) }
+                                } else null,
+                                onOpen = { onOpenItem(entry.item) },
+                            )
+                        }
                     }
                 }
             }

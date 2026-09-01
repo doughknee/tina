@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inbox
@@ -59,6 +59,7 @@ import com.tina.app.resources.tab_today
 import com.tina.app.resources.today_empty
 import com.tina.app.resources.undo
 import com.tina.app.ui.ItemRow
+import com.tina.app.ui.SectionCardItem
 import com.tina.app.ui.dateLabel
 import com.tina.app.ui.timeLabel
 import kotlinx.coroutines.launch
@@ -207,20 +208,53 @@ fun TodayScreen(
                         color = if (section == TodaySection.OVERDUE) {
                             MaterialTheme.colorScheme.error
                         } else {
-                            MaterialTheme.colorScheme.primary
+                            MaterialTheme.colorScheme.onSurfaceVariant
                         },
-                        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
+                        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 20.dp, bottom = 8.dp),
                     )
                 }
 
                 if (section == TodaySection.ANYTIME) {
-                    items(localAnytime, key = ::anytimeKey) { entry ->
+                    itemsIndexed(localAnytime, key = { _, entry -> anytimeKey(entry) }) { index, entry ->
                         ReorderableItem(reorderableState, key = anytimeKey(entry)) { _ ->
+                            SectionCardItem(index, localAnytime.size) {
+                                ItemRow(
+                                    item = entry.item,
+                                    today = today,
+                                    timeText = null,
+                                    dateText = null,
+                                    onToggleComplete = if (entry.item.type == ItemType.TASK) {
+                                        { viewModel.toggleComplete(entry.item) }
+                                    } else null,
+                                    onDelete = {
+                                        deleteWithUndo({ viewModel.delete(entry.item) }, viewModel::undoDelete)
+                                    },
+                                    onRename = { viewModel.rename(entry.item, it) },
+                                    onReschedule = { viewModel.reschedule(entry.item, it) },
+                                    onOpen = { onOpenItem(entry.item) },
+                                    selected = flatEntries.indexOf(entry) == keyboardSelection,
+                                    modifier = Modifier.longPressDraggableHandle(
+                                        onDragStarted = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        },
+                                        onDragStopped = {
+                                            viewModel.persistAnytimeOrder(localAnytime.map { it.item.id })
+                                        },
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    itemsIndexed(entries, key = { _, it -> "$section-${it.item.id}-${it.time}" }) { index, entry ->
+                        SectionCardItem(index, entries.size) {
                             ItemRow(
                                 item = entry.item,
                                 today = today,
-                                timeText = null,
-                                dateText = null,
+                                timeText = entry.time?.let { timeLabel(it, use24h) },
+                                dateText = if (section == TodaySection.OVERDUE) {
+                                    entry.item.dueLocalDate?.let { dateLabel(it, today) }
+                                } else null,
                                 onToggleComplete = if (entry.item.type == ItemType.TASK) {
                                     { viewModel.toggleComplete(entry.item) }
                                 } else null,
@@ -228,42 +262,13 @@ fun TodayScreen(
                                     deleteWithUndo({ viewModel.delete(entry.item) }, viewModel::undoDelete)
                                 },
                                 onRename = { viewModel.rename(entry.item, it) },
-                                onReschedule = { viewModel.reschedule(entry.item, it) },
+                                onReschedule = if (entry.item.type == ItemType.TASK) {
+                                    { viewModel.reschedule(entry.item, it) }
+                                } else null,
                                 onOpen = { onOpenItem(entry.item) },
                                 selected = flatEntries.indexOf(entry) == keyboardSelection,
-                                modifier = Modifier.longPressDraggableHandle(
-                                    onDragStarted = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    },
-                                    onDragStopped = {
-                                        viewModel.persistAnytimeOrder(localAnytime.map { it.item.id })
-                                    },
-                                ),
                             )
                         }
-                    }
-                } else {
-                    items(entries, key = { "$section-${it.item.id}-${it.time}" }) { entry ->
-                        ItemRow(
-                            item = entry.item,
-                            today = today,
-                            timeText = entry.time?.let { timeLabel(it, use24h) },
-                            dateText = if (section == TodaySection.OVERDUE) {
-                                entry.item.dueLocalDate?.let { dateLabel(it, today) }
-                            } else null,
-                            onToggleComplete = if (entry.item.type == ItemType.TASK) {
-                                { viewModel.toggleComplete(entry.item) }
-                            } else null,
-                            onDelete = {
-                                deleteWithUndo({ viewModel.delete(entry.item) }, viewModel::undoDelete)
-                            },
-                            onRename = { viewModel.rename(entry.item, it) },
-                            onReschedule = if (entry.item.type == ItemType.TASK) {
-                                { viewModel.reschedule(entry.item, it) }
-                            } else null,
-                            onOpen = { onOpenItem(entry.item) },
-                            selected = flatEntries.indexOf(entry) == keyboardSelection,
-                        )
                     }
                 }
             }
