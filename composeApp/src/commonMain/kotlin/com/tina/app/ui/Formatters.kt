@@ -12,6 +12,7 @@ import com.tina.app.resources.every_day
 import com.tina.app.resources.every_month
 import com.tina.app.resources.every_week
 import com.tina.app.resources.every_weekday
+import com.tina.app.resources.every_weekday_days
 import com.tina.app.resources.every_year
 import com.tina.app.resources.months_short
 import com.tina.app.resources.repeats
@@ -83,6 +84,7 @@ fun recurrenceLabel(rrule: String): String {
     val rule = parseRrule(rrule) ?: return stringResource(Res.string.repeats)
     val weekday = rule.byDay.firstOrNull()
     return when {
+        rule.byDay.size == 5 -> stringResource(Res.string.every_weekday_days)
         weekday != null && rule.byDay.size == 1 ->
             stringResource(Res.string.every_weekday, stringArrayResource(Res.array.weekdays_full)[weekday.isoDayNumber - 1])
         else -> when (rule.freq) {

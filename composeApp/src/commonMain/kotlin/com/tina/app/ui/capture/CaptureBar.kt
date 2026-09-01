@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -165,6 +168,14 @@ fun CaptureBar(
             withFrameNanos { }
             focusRequester.requestFocus()
         }
+    }
+
+    // Android: the keyboard going away is the user saying "done" — drop focus so the
+    // suggestions panel folds instead of squatting on half the screen. Desktop has no IME.
+    // isImeVisible is Android-only; the inset height is the common-code equivalent
+    val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    LaunchedEffect(imeVisible) {
+        if (com.tina.app.ui.settings.Platform.isAndroid && !imeVisible && focused) focusManager.clearFocus()
     }
 
     LaunchedEffect(Unit) {

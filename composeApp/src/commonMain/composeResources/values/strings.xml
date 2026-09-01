@@ -40,6 +40,7 @@
     <string name="dup_keep">Keep both</string>
     <string name="dup_merged">Merged</string>
     <string name="horizon_later">Later</string>
+    <string name="every_weekday_days">Weekdays</string>
     <string name="back">Back</string>
 
     <string name="settings">Settings</string>

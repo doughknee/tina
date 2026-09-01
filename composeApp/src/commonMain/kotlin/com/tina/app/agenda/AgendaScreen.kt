@@ -636,7 +636,7 @@ private fun SeriesRow(
                 item = item,
                 today = today,
                 timeText = supporting,
-                leadingIcon = if (week) null else Icons.Outlined.Repeat,
+                leadingIcon = Icons.Outlined.Repeat,
                 // Rule 6: the checkbox completes the next occurrence only
                 onToggleComplete = { viewModel.completeOccurrence(item.id, row.nextDue) },
                 onDelete = { onDelete(item) },
@@ -820,7 +820,10 @@ private fun GroupHeader(group: AgendaGroup, granularity: Granularity, today: Loc
                 DaySection.EVENING -> Res.string.section_evening
             },
         )
-        is GroupKey.Day -> dateLabel(key.date, today)
+        is GroupKey.Day -> {
+            val weekdays = stringArrayResource(Res.array.weekdays_full)
+            "${weekdays[key.date.dayOfWeek.isoDayNumber - 1].take(3)} ${key.date.day}"
+        }
         is GroupKey.Horizon -> stringResource(
             when (key.bucket) {
                 HorizonBucket.TODAY -> Res.string.date_today
