@@ -135,6 +135,8 @@
     <string name="capture_try_1">lunch with sam tomorrow at noon</string>
     <string name="capture_try_2">#home !! fix the gate</string>
     <string name="capture_try_3">water plants every friday</string>
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
     <string name="time_just_now">just now</string>
     <string name="time_min_ago">%1$s m ago</string>
     <string name="time_hr_ago">%1$s h ago</string>

@@ -1,5 +1,10 @@
 package com.tina.app.notes
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,12 +21,14 @@ import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatListNumbered
 import androidx.compose.material.icons.outlined.FormatUnderlined
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -39,6 +46,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -51,6 +60,7 @@ import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import com.tina.app.resources.Res
 import com.tina.app.resources.back
 import com.tina.app.resources.delete
+import com.tina.app.resources.event_color
 import com.tina.app.resources.fmt_bold
 import com.tina.app.resources.fmt_bullets
 import com.tina.app.resources.fmt_heading
@@ -61,6 +71,8 @@ import com.tina.app.resources.fmt_underline
 import com.tina.app.resources.note_pin
 import com.tina.app.resources.note_unpin
 import com.tina.app.resources.note_untitled
+import com.tina.app.resources.state_off
+import com.tina.app.resources.state_on
 import com.tina.app.ui.ColorSwatchRow
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -84,6 +96,7 @@ fun NoteEditorScreen(
     val richTextState = rememberRichTextState()
     var titleText by remember { mutableStateOf("") }
     var loaded by remember { mutableStateOf(false) }
+    var showColors by remember { mutableStateOf(false) }
 
     // Load once; afterwards the editor is the source of truth and autosaves.
     LaunchedEffect(item?.id) {
@@ -121,6 +134,17 @@ fun NoteEditorScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showColors = !showColors }) {
+                        Icon(
+                            Icons.Outlined.Palette,
+                            stringResource(Res.string.event_color),
+                            tint = if (showColors) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                    }
                     IconButton(onClick = viewModel::togglePin) {
                         Icon(
                             Icons.Outlined.PushPin,
@@ -168,8 +192,14 @@ fun NoteEditorScreen(
                 singleLine = true,
             )
 
-            Row(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                ColorSwatchRow(selected = item?.color, onSelect = viewModel::setColor)
+            AnimatedVisibility(
+                visible = showColors,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
+            ) {
+                Row(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    ColorSwatchRow(selected = item?.color, onSelect = viewModel::setColor)
+                }
             }
 
             RichTextEditor(
@@ -238,5 +268,15 @@ private fun FormatToolbar(state: RichTextState, modifier: Modifier = Modifier) {
 
 @Composable
 private fun FormatButton(active: Boolean, onClick: () -> Unit, icon: @Composable () -> Unit) {
-    FilledIconToggleButton(checked = active, onCheckedChange = { onClick() }, content = icon)
+    val stateText = stringResource(if (active) Res.string.state_on else Res.string.state_off)
+    IconToggleButton(
+        checked = active,
+        onCheckedChange = { onClick() },
+        modifier = Modifier.semantics { stateDescription = stateText },
+        colors = IconButtonDefaults.iconToggleButtonColors(
+            checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        ),
+        content = icon,
+    )
 }

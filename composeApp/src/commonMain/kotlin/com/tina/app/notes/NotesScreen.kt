@@ -1,6 +1,8 @@
 package com.tina.app.notes
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -170,8 +172,8 @@ fun NotesScreen(
             columns = StaggeredGridCells.Fixed(if (gridMode) 2 else 1),
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalItemSpacing = 12.dp,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalItemSpacing = 8.dp,
         ) {
             items(notes, key = { it.id }) { note ->
                 NoteCard(
@@ -193,40 +195,45 @@ private fun NoteCard(note: Item, onClick: () -> Unit, onTogglePin: () -> Unit) {
                 ?: MaterialTheme.colorScheme.surfaceContainerHigh,
         ),
     ) {
-        Column(Modifier.padding(start = 16.dp, end = 4.dp, bottom = 16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Box {
+            Column(Modifier.padding(16.dp)) {
                 Text(
                     note.title.ifBlank { stringResource(Res.string.note_untitled) },
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f).padding(top = 8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(end = 28.dp),
                 )
-                IconButton(onClick = onTogglePin) {
-                    Icon(
-                        Icons.Outlined.PushPin,
-                        stringResource(if (note.pinned) Res.string.note_unpin else Res.string.note_pin),
-                        modifier = Modifier.size(18.dp),
-                        tint = if (note.pinned) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.outline
-                        },
-                    )
+                note.body?.let { body ->
+                    val preview = remember(body) { htmlPreview(body) }
+                    if (preview.isNotBlank()) {
+                        Text(
+                            preview,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 6,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
                 }
             }
-            note.body?.let { body ->
-                val preview = remember(body) { htmlPreview(body) }
-                if (preview.isNotBlank()) {
-                    Text(
-                        preview,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = if (note.pinned) 10 else 8,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(end = 12.dp),
-                    )
-                }
+            Box(
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .clickable(onClick = onTogglePin)
+                    .padding(12.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.PushPin,
+                    stringResource(if (note.pinned) Res.string.note_unpin else Res.string.note_pin),
+                    modifier = Modifier.size(16.dp),
+                    tint = if (note.pinned) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
             }
         }
     }
