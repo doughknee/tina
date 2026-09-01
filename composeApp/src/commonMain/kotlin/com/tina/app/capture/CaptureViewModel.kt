@@ -19,6 +19,8 @@ import kotlinx.datetime.toLocalDateTime
 
 enum class ChipKind { DATE, TIME, DURATION, PRIORITY, RECURRENCE }
 
+data class Starters(val titles: List<String> = emptyList(), val tags: List<String> = emptyList())
+
 class CaptureViewModel(
     private val repository: ItemRepository,
     settingsRepository: SettingsRepository,
@@ -33,6 +35,29 @@ class CaptureViewModel(
     /** Last three captures, newest first — shown while the field is empty. */
     val recent = repository.observeRecent()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /**
+     * One-tap starters from the user's own history: titles captured more than once (minus
+     * what is already in recents) and the most-used tags. No model involved, so it is instant.
+     */
+    val starters: kotlinx.coroutines.flow.StateFlow<Starters> =
+        kotlinx.coroutines.flow.combine(repository.observeAll(), recent) { items, recent ->
+            val recentKeys = recent.map { com.tina.app.agenda.normalizeTitle(it.title) }.toSet()
+            val titles = items
+                .filter { it.title.isNotBlank() }
+                .groupBy { com.tina.app.agenda.normalizeTitle(it.title) }
+                .filter { (key, group) -> group.size >= 2 && key !in recentKeys }
+                .entries
+                .sortedByDescending { (_, group) -> group.size }
+                .take(3)
+                .map { (_, group) -> group.maxBy { it.createdAt }.title }
+            val tags = items.flatMap { it.tags }
+                .groupingBy { it }.eachCount().entries
+                .sortedByDescending { it.value }
+                .take(2)
+                .map { it.key }
+            Starters(titles, tags)
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, Starters())
 
     var text by mutableStateOf("")
         private set

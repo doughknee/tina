@@ -169,6 +169,12 @@
     <string name="capture_save">Save</string>
     <string name="capture_voice">Voice capture</string>
     <string name="capture_try">Try</string>
+    <string name="capture_start">Start with</string>
+    <string name="starter_today">Today</string>
+    <string name="starter_tomorrow">Tomorrow</string>
+    <string name="starter_next_week">Next week</string>
+    <string name="starter_every_day">Every day</string>
+    <string name="starter_at_9">9 AM</string>
     <string name="capture_recent">Recent</string>
     <string name="capture_try_1">lunch with sam tomorrow at noon</string>
     <string name="capture_try_2">#home !! fix the gate</string>

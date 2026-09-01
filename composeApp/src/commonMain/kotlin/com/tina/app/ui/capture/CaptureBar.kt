@@ -42,6 +42,7 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilledIconButton
@@ -101,11 +102,13 @@ import com.tina.app.resources.ai_refined
 import com.tina.app.resources.ask_placeholder
 import com.tina.app.resources.capture_placeholder
 import com.tina.app.resources.capture_recent
+import com.tina.app.resources.capture_start
+import com.tina.app.resources.starter_today
+import com.tina.app.resources.starter_tomorrow
+import com.tina.app.resources.starter_next_week
+import com.tina.app.resources.starter_every_day
+import com.tina.app.resources.starter_at_9
 import com.tina.app.resources.capture_save
-import com.tina.app.resources.capture_try
-import com.tina.app.resources.capture_try_1
-import com.tina.app.resources.capture_try_2
-import com.tina.app.resources.capture_try_3
 import com.tina.app.resources.capture_type_state
 import com.tina.app.resources.capture_voice
 import com.tina.app.resources.captured
@@ -310,44 +313,27 @@ fun CaptureBar(
     }
 }
 
-/** The old Capture tab's TRY examples and recents; the shell hosts this in a sheet. */
+/**
+ * The capture sheet: recents on top, then one-tap starters right above the field. Starters
+ * come from the user's own history and the parser's own vocabulary, so a tap either
+ * re-captures something familiar or drops in a token the parser understands and shows
+ * the resulting chip immediately.
+ */
 @Composable
 fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit) {
     val recent by viewModel.recent.collectAsState()
+    val starters by viewModel.starters.collectAsState()
     val use24h = LocalSettings.current.use24h
     val now = remember(recent) { Clock.System.now() }
     val today = remember(recent) { now.toLocalDateTime(TimeZone.currentSystemDefault()).date }
-    val suggestions = listOf(
-        stringResource(Res.string.capture_try_1),
-        stringResource(Res.string.capture_try_2),
-        stringResource(Res.string.capture_try_3),
-    )
 
-    Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-        Text(
-            stringResource(Res.string.capture_try).uppercase(),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 4.dp),
-        )
-        Row(
-            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            suggestions.forEach { suggestion ->
-                SuggestionChip(
-                    onClick = { viewModel.prefill(suggestion) },
-                    label = { Text(suggestion) },
-                    icon = { Icon(Icons.Outlined.AutoAwesome, null, Modifier.size(18.dp)) },
-                )
-            }
-        }
+    Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
         if (recent.isNotEmpty()) {
             Text(
                 stringResource(Res.string.capture_recent).uppercase(),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp, top = 12.dp),
+                modifier = Modifier.padding(start = 4.dp),
             )
             recent.take(3).forEach { item ->
                 Row(
@@ -398,6 +384,45 @@ fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit) 
                         )
                     }
                 }
+            }
+        }
+
+        Text(
+            stringResource(Res.string.capture_start).uppercase(),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 4.dp, top = if (recent.isEmpty()) 0.dp else 12.dp),
+        )
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            // things captured more than once: a tap re-captures them
+            starters.titles.forEach { title ->
+                SuggestionChip(
+                    onClick = { viewModel.prefill("$title ") },
+                    label = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    icon = { Icon(Icons.Outlined.Replay, null, Modifier.size(18.dp)) },
+                )
+            }
+            starters.tags.forEach { tag ->
+                SuggestionChip(
+                    onClick = { viewModel.prefill("#$tag ") },
+                    label = { Text("#$tag") },
+                )
+            }
+            // parser tokens: the chip appears under the field the moment one is inserted
+            listOf(
+                Res.string.starter_today to "today ",
+                Res.string.starter_tomorrow to "tomorrow ",
+                Res.string.starter_next_week to "next week ",
+                Res.string.starter_every_day to "every day ",
+                Res.string.starter_at_9 to "at 9am ",
+            ).forEach { (label, token) ->
+                SuggestionChip(
+                    onClick = { viewModel.prefill(token) },
+                    label = { Text(stringResource(label)) },
+                )
             }
         }
     }
