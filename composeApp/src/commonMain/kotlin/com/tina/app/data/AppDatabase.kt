@@ -12,7 +12,7 @@ import androidx.sqlite.execSQL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
-@Database(entities = [Item::class, ChatEntity::class, ChatMessageEntity::class], version = 3)
+@Database(entities = [Item::class, ChatEntity::class, ChatMessageEntity::class], version = 4)
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -47,11 +47,18 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
     override fun initialize(): AppDatabase
 }
 
+/** Additive: adds the soft-delete column. Existing items keep NULL and stay visible. */
+private val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE `items` ADD COLUMN `deletedAt` INTEGER")
+    }
+}
+
 fun buildDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase =
     builder
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
-        .addMigrations(MIGRATION_2_3)
+        .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
         // v1 was the pre-feature scaffold with an empty placeholder table; nothing worth migrating
         .fallbackToDestructiveMigration(dropAllTables = true)
         .build()

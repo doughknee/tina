@@ -94,4 +94,37 @@ class ItemRepositoryTest {
         repo.restore(loaded)
         assertEquals("keep me", repo.get(id)!!.title)
     }
+
+    @Test fun deleteMovesToTrashAndRestoreKeepsOneRow() = runBlocking {
+        val id = repo.insert(item("trash me"))
+        repo.delete(id)
+        val trashed = repo.observeTrash().first()
+        assertEquals(listOf(id), trashed.map { it.id })
+
+        repo.restore(trashed.single())
+        assertEquals(0, repo.observeTrash().first().size)
+        // restoring must not duplicate the row
+        assertEquals(1, repo.allItems().count { it.title == "trash me" })
+    }
+
+    @Test fun purgeRemovesOnlyExpiredTrash() = runBlocking {
+        val old = repo.insert(item("old"))
+        val fresh = repo.insert(item("fresh"))
+        repo.delete(old)
+        repo.delete(fresh)
+        // age the first one past a 30-day window
+        val aged = repo.observeTrash().first().first { it.id == old }
+        db.itemDao().update(aged.copy(deletedAt = 1L))
+
+        repo.purgeExpiredTrash(retentionDays = 30)
+        assertEquals(listOf(fresh), repo.observeTrash().first().map { it.id })
+    }
+
+    @Test fun trashedItemsStayOutOfListsAndReminders() = runBlocking {
+        val id = repo.insert(item("hidden").copy(reminderOffsetMinutes = 10))
+        repo.delete(id)
+        assertNull(repo.get(id))
+        assertEquals(0, repo.allItems().count { it.id == id })
+        assertEquals(0, repo.search("hidden").first().size)
+    }
 }

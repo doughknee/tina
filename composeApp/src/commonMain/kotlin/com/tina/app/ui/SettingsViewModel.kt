@@ -129,17 +129,34 @@ class SettingsViewModel(
     fun deleteEverything() = launchEdit { itemRepository.deleteEverything() }
 
     /** Counts shown as supporting text on the Data / Organisation rows. */
-    data class Stats(val items: Int = 0, val completed: Int = 0, val tags: Int = 0)
+    data class Stats(val items: Int = 0, val completed: Int = 0, val tags: Int = 0, val trashed: Int = 0)
 
-    val stats: kotlinx.coroutines.flow.StateFlow<Stats> = itemRepository.observeAll()
-        .map { all ->
-            Stats(
-                items = all.size,
-                completed = all.count { it.completed },
-                tags = all.flatMap { it.tags }.distinct().size,
-            )
-        }
-        .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000), Stats())
+    val stats: kotlinx.coroutines.flow.StateFlow<Stats> = kotlinx.coroutines.flow.combine(
+        itemRepository.observeAll(),
+        itemRepository.observeTrashCount(),
+    ) { all, trashed ->
+        Stats(
+            items = all.size,
+            completed = all.count { it.completed },
+            tags = all.flatMap { it.tags }.distinct().size,
+            trashed = trashed,
+        )
+    }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000), Stats())
+
+    private var clearedBatch: List<com.tina.app.data.Item> = emptyList()
+
+    /** Soft-deletes completed items so they land in Trash; the snackbar can put them back. */
+    fun clearCompleted() = launchEdit {
+        val done = itemRepository.allItems().filter { it.completed }
+        clearedBatch = done
+        done.forEach { itemRepository.delete(it.id) }
+    }
+
+    fun undoClearCompleted() = launchEdit {
+        val batch = clearedBatch
+        clearedBatch = emptyList()
+        batch.forEach { itemRepository.restore(it) }
+    }
 
     /** Callback receives null on success, otherwise a human-readable failure reason. */
     fun testAi(onResult: (String?) -> Unit) {

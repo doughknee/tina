@@ -224,10 +224,11 @@
     <string name="set_auto_backup">Auto-backup</string>
     <string name="set_auto_backup_sub">Weekly, keeps the last 4</string>
     <string name="set_trash">Trash</string>
-    <string name="set_trash_sub">%1$d items · kept %2$s</string>
+    <string name="set_trash_sub">%1$d in trash · kept %2$s</string>
     <string name="set_clear_completed">Clear completed</string>
-    <string name="set_clear_completed_sub">%1$d done items</string>
+    <string name="set_clear_completed_sub">%1$d done</string>
     <string name="set_clear">Clear</string>
+    <string name="set_cleared_completed">Completed items cleared</string>
     <string name="set_delete_all">Delete everything</string>
     <string name="set_delete_all_sub">Hold the button for 2 seconds. No dialog, no undo.</string>
     <string name="set_delete_all_action">Hold to delete…</string>

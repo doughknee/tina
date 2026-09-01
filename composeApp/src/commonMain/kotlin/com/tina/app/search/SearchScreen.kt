@@ -68,14 +68,22 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-class SearchViewModel(private val repository: ItemRepository) : ViewModel() {
+class SearchViewModel(
+    private val repository: ItemRepository,
+    settingsRepository: com.tina.app.data.SettingsRepository,
+) : ViewModel() {
     val query = MutableStateFlow("")
     private var lastDeleted: Item? = null
 
+    private val includeTrashed = settingsRepository.settings
+        .map { it.searchCompleted }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val results: StateFlow<List<Item>> = query.flatMapLatest { q ->
-        if (q.isBlank()) flowOf(emptyList()) else repository.search(q.trim())
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val results: StateFlow<List<Item>> = kotlinx.coroutines.flow.combine(query, includeTrashed) { q, t -> q to t }
+        .flatMapLatest { (q, includeTrash) ->
+            if (q.isBlank()) flowOf(emptyList()) else repository.search(q.trim(), includeTrash)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /** Every distinct tag in use, for the browse row shown while the query is empty. */
     val tags: StateFlow<List<String>> = repository.observeTagged()

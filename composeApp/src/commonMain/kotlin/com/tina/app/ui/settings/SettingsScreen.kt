@@ -46,8 +46,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -145,8 +147,15 @@ import com.tina.app.resources.set_app_lock
 import com.tina.app.resources.set_app_lock_sub
 import com.tina.app.resources.set_auto_backup
 import com.tina.app.resources.set_auto_backup_sub
+import com.tina.app.resources.set_clear
+import com.tina.app.resources.set_clear_completed
+import com.tina.app.resources.set_clear_completed_sub
+import com.tina.app.resources.set_cleared_completed
 import com.tina.app.resources.set_close_tray
 import com.tina.app.resources.set_close_tray_sub
+import com.tina.app.resources.set_trash
+import com.tina.app.resources.set_trash_sub
+import com.tina.app.resources.undo
 import com.tina.app.resources.set_contrast
 import com.tina.app.resources.set_daily_agenda
 import com.tina.app.resources.set_daily_agenda_sub
@@ -246,7 +255,9 @@ private val REMINDER_OPTIONS = listOf(0, 5, 10, 15, 30, 60)
 private val FIRST_DAY_OPTIONS = listOf(DayOfWeek.MONDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
 
 /** Chevron rows are real destinations; the host maps these to routes. */
-enum class SettingsDestination { OPEN_APP_TO, UNDO_WINDOW, CONTRAST, WIDGETS, SHORTCUTS, WHATS_NEW, LICENSES }
+enum class SettingsDestination {
+    OPEN_APP_TO, UNDO_WINDOW, CONTRAST, WIDGETS, SHORTCUTS, WHATS_NEW, LICENSES, TRASH
+}
 
 /** Which time a [SettingsRow.TimeRow] edits. */
 private enum class TimeTarget { MORNING, AFTERNOON, EVENING, DAILY_AGENDA, OVERDUE_NUDGE }
@@ -272,6 +283,8 @@ fun SettingsScreen(
     var query by remember { mutableStateOf("") }
     var highlightedRowId by remember { mutableStateOf<String?>(null) }
 
+    val clearedText = stringResource(Res.string.set_cleared_completed)
+    val undoText = stringResource(Res.string.undo)
     val exportDoneText = stringResource(Res.string.export_done)
     val importFailedText = stringResource(Res.string.import_failed)
     val backupHandlers = rememberBackupHandlers(
@@ -293,6 +306,17 @@ fun SettingsScreen(
         viewModel = viewModel,
         onNavigate = onNavigate,
         onPickTime = { timeTarget = it },
+        onClearCompleted = {
+            viewModel.clearCompleted()
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    clearedText,
+                    undoText,
+                    duration = SnackbarDuration.Long,
+                )
+                if (result == SnackbarResult.ActionPerformed) viewModel.undoClearCompleted()
+            }
+        },
         onExport = backupHandlers.export,
         onImport = backupHandlers.restore,
         snackbarHostState = snackbarHostState,
@@ -491,6 +515,7 @@ private fun rememberSettingsSections(
     viewModel: SettingsViewModel,
     onNavigate: (SettingsDestination) -> Unit,
     onPickTime: (TimeTarget) -> Unit,
+    onClearCompleted: () -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
     snackbarHostState: SnackbarHostState,
@@ -898,6 +923,22 @@ private fun rememberSettingsSections(
                 checked = settings.autoBackup,
                 onCheckedChange = viewModel::setAutoBackup,
             ),
+            SettingsRow.Navigation(
+                id = "trash",
+                title = stringResource(Res.string.set_trash),
+                supporting = stringResource(Res.string.set_trash_sub, stats.trashed, retentionLabel.lowercase()),
+                keywords = listOf("deleted", "bin", "restore", "recover"),
+                onClick = { onNavigate(SettingsDestination.TRASH) },
+            ),
+            SettingsRow.Destructive(
+                id = "clearCompleted",
+                title = stringResource(Res.string.set_clear_completed),
+                supporting = stringResource(Res.string.set_clear_completed_sub, stats.completed),
+                keywords = listOf("done", "tidy", "clean"),
+                visible = stats.completed > 0,
+                actionLabel = stringResource(Res.string.set_clear),
+                onAction = onClearCompleted,
+            ),
             SettingsRow.Custom(
                 id = "deleteAll",
                 title = stringResource(Res.string.set_delete_all),
@@ -1221,18 +1262,9 @@ private fun AiConfigCollapse(
  */
 @Composable
 private fun DeleteEverythingCard(viewModel: SettingsViewModel, snackbarHostState: SnackbarHostState) {
-    val progress = remember { Animatable(0f) }
-    val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
-    var halfway by remember { mutableStateOf(false) }
     val deletedText = stringResource(Res.string.set_deleted_all)
     val holdLabel = stringResource(Res.string.set_delete_all_action)
-
-    fun fire() {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        viewModel.deleteEverything()
-        scope.launch { snackbarHostState.showSnackbar(deletedText) }
-    }
 
     Surface(
         color = MaterialTheme.colorScheme.errorContainer,
@@ -1251,49 +1283,13 @@ private fun DeleteEverythingCard(viewModel: SettingsViewModel, snackbarHostState
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 modifier = Modifier.padding(bottom = 12.dp),
             )
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(44.dp)
-                    .clip(RoundedCornerShape(22.dp))
-                    .background(MaterialTheme.colorScheme.error)
-                    // TalkBack alternative: holding a moving target is not an accessible gesture
-                    .semantics { onLongClick(label = holdLabel) { fire(); true } }
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = {
-                                halfway = false
-                                val done = try {
-                                    progress.animateTo(1f, tween(2000))
-                                    true
-                                } catch (_: Throwable) {
-                                    false
-                                }
-                                if (done && progress.value >= 1f) fire()
-                                progress.snapTo(0f)
-                            },
-                        )
-                    },
-                contentAlignment = Alignment.Center,
-            ) {
-                Box(
-                    Modifier
-                        .fillMaxWidth(progress.value)
-                        .height(44.dp)
-                        .background(MaterialTheme.colorScheme.onErrorContainer),
-                )
-                Text(
-                    stringResource(Res.string.set_delete_all_action),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onError,
-                )
-            }
-            LaunchedEffect(progress.value) {
-                if (!halfway && progress.value >= 0.5f) {
-                    halfway = true
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                }
-            }
+            HoldToConfirm(
+                label = holdLabel,
+                onConfirm = {
+                    viewModel.deleteEverything()
+                    scope.launch { snackbarHostState.showSnackbar(deletedText) }
+                },
+            )
         }
     }
 }

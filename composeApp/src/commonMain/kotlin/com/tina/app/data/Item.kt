@@ -43,6 +43,8 @@ data class Item(
     val endAt: Long? = null,
     val allDay: Boolean = false,
     val recurrence: String? = null,
+    /** Set when the item is in the Trash; null everywhere else. Purged after the retention window. */
+    val deletedAt: Long? = null,
 ) {
     val dueLocalDate: LocalDate? get() = dueDate?.let { LocalDate.fromEpochDays(it) }
     val dueLocalTime: LocalTime? get() = dueTime?.let { LocalTime(it / 60, it % 60) }

@@ -2,13 +2,17 @@ package com.tina.app.ui.settings
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -37,10 +41,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -294,6 +304,69 @@ fun ChipRailRow(row: SettingsRow.ChipRailRow) {
                     modifier = Modifier.semantics { this.selected = selected },
                 )
             }
+        }
+    }
+}
+
+/**
+ * Hold-to-confirm instead of a dialog. A tap cannot fire it and releasing early
+ * cancels; TalkBack gets a long-press action rather than a moving target.
+ */
+@Composable
+fun HoldToConfirm(
+    label: String,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier,
+    holdMillis: Int = 2000,
+) {
+    val progress = remember { androidx.compose.animation.core.Animatable(0f) }
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val hapticsOn = com.tina.app.LocalSettings.current.haptics
+    var halfway by remember { mutableStateOf(false) }
+
+    fun buzz() {
+        if (hapticsOn) {
+            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+        }
+    }
+
+    Box(
+        modifier
+            .fillMaxWidth()
+            .height(44.dp)
+            .clip(RoundedCornerShape(22.dp))
+            .background(MaterialTheme.colorScheme.error)
+            .semantics { onLongClick(label = label) { buzz(); onConfirm(); true } }
+            .pointerInput(holdMillis) {
+                detectTapGestures(
+                    onPress = {
+                        halfway = false
+                        val completed = runCatching {
+                            progress.animateTo(1f, androidx.compose.animation.core.tween(holdMillis))
+                            true
+                        }.getOrDefault(false)
+                        if (completed && progress.value >= 1f) {
+                            buzz()
+                            onConfirm()
+                        }
+                        progress.snapTo(0f)
+                    },
+                )
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth(progress.value)
+                .height(44.dp)
+                .background(MaterialTheme.colorScheme.onErrorContainer),
+        )
+        Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onError)
+    }
+    LaunchedEffect(progress.value) {
+        if (!halfway && progress.value >= 0.5f) {
+            halfway = true
+            buzz()
         }
     }
 }

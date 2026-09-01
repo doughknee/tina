@@ -1,5 +1,28 @@
 # Decisions
 
+## Settings rebuild (REL-146, Sep 2026)
+
+- **material3 1.9.0 ships no expressive components.** Probed the artifact directly:
+  `ButtonGroup`, `ToggleButton`, `LargeFlexibleTopAppBar` and `LoadingIndicator`
+  are absent; `MotionScheme` and both opt-in markers are present. Upgrading is not
+  an option — 1.9.0 is pinned against richeditor's ABI-broken 1.11.0-alpha07, which
+  crashed the app before. So the design's documented fallbacks are used
+  (`SingleChoiceSegmentedButtonRow`, `LargeTopAppBar`, `CircularProgressIndicator`),
+  each marked `// TODO(expressive)`.
+- Settings are **data, not layout**: `SettingsSection`/`SettingsRow` are built once
+  and rendered generically, which is what makes search, platform filtering and
+  scroll-to-row possible without duplicating rows. Row titles are resolved Strings
+  rather than StringResources so search can match them directly.
+- Platform differences **hide** rows via `expect object Platform`; a dead toggle is
+  worse than no toggle.
+- Grouped list = 2dp gaps + per-row corner morphing, no dividers.
+- **Soft delete (schema v4).** `deletedAt` column; `delete()` moves an item to Trash
+  and a launch-time job purges past the retention window. `get()`/`observe()` exclude
+  trashed rows deliberately — otherwise reminders could fire and the Ask page could
+  act on deleted items. `getAnyById()` is the restore path's escape hatch, and
+  `restore()` clears the flag rather than re-inserting, so undo can't duplicate a row.
+  A pre-existing repository test caught exactly this and was right to.
+
 ## Ask chats (REL-145, Sep 2026)
 
 - Schema v2 → v3 uses a **hand-written additive migration**, not destructive

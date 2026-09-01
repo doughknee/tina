@@ -68,13 +68,40 @@ class ItemRepository(
         scheduler.schedule(updated)
     }
 
+    /** Soft delete — the row moves to Trash rather than disappearing. */
     suspend fun delete(id: Long) {
-        dao.delete(id)
+        dao.softDelete(id, nowMillis())
         scheduler.cancel(id)
     }
 
-    /** Restore a previously deleted item (undo); keeps its old id. */
-    suspend fun restore(item: Item): Long = insert(item)
+    /**
+     * Undo path. The row usually still exists (soft-deleted), so clear the flag;
+     * only re-insert if it was already purged.
+     */
+    suspend fun restore(item: Item): Long {
+        val existing = dao.getAnyById(item.id)
+        return if (existing != null) {
+            dao.undelete(item.id, nowMillis())
+            scheduler.schedule(existing.copy(deletedAt = null))
+            item.id
+        } else {
+            insert(item.copy(deletedAt = null))
+        }
+    }
+
+    fun observeTrash(): Flow<List<Item>> = dao.observeTrash()
+    fun observeTrashCount(): Flow<Int> = dao.observeTrashCount()
+
+    /** Permanent, single item. */
+    suspend fun purge(id: Long) = dao.purge(id)
+
+    suspend fun emptyTrash() = dao.emptyTrash()
+
+    /** Runs at launch; keeps the Trash inside its retention window. */
+    suspend fun purgeExpiredTrash(retentionDays: Int?) {
+        if (retentionDays == null) return
+        dao.purgeOlderThan(nowMillis() - retentionDays * 24L * 60 * 60 * 1000)
+    }
 
     suspend fun complete(id: Long) {
         dao.complete(id, nowMillis())
@@ -119,7 +146,8 @@ class ItemRepository(
         return imported
     }
 
-    fun search(query: String): Flow<List<Item>> = dao.search(query)
+    fun search(query: String, includeTrashed: Boolean = false): Flow<List<Item>> =
+        dao.search(query, includeTrashed)
 
     suspend fun setSortOrder(id: Long, sortOrder: Long) = dao.setSortOrder(id, sortOrder)
 

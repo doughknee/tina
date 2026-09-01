@@ -3,6 +3,7 @@ package com.tina.app.di
 import com.tina.app.ai.AiCaptureParser
 import com.tina.app.ai.CaptureRefiner
 import com.tina.app.ask.AskViewModel
+import com.tina.app.ui.settings.subpages.TrashViewModel
 import com.tina.app.calendar.CalendarViewModel
 import com.tina.app.calendar.EventEditorViewModel
 import com.tina.app.capture.CaptureViewModel
@@ -34,6 +35,7 @@ val commonModule = module {
     single { com.tina.app.ai.AiChat(get(), get()) }
     single { get<com.tina.app.data.AppDatabase>().chatDao() }
     viewModelOf(::AskViewModel)
+    viewModelOf(::TrashViewModel)
     single { CaptureRefiner(get(), get(), get(), get()) }
     viewModelOf(::CaptureViewModel)
     viewModelOf(::SettingsViewModel)
