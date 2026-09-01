@@ -150,6 +150,19 @@ fun CalendarScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        com.tina.app.ui.KeyBus.events.collect { command ->
+            val current = viewModel.selectedDate.value
+            when (command) {
+                com.tina.app.ui.KeyCommand.LEFT -> jumpTo(current.plus(-1, DateTimeUnit.DAY))
+                com.tina.app.ui.KeyCommand.RIGHT -> jumpTo(current.plus(1, DateTimeUnit.DAY))
+                com.tina.app.ui.KeyCommand.UP -> jumpTo(current.plus(-7, DateTimeUnit.DAY))
+                com.tina.app.ui.KeyCommand.DOWN -> jumpTo(current.plus(7, DateTimeUnit.DAY))
+                else -> Unit
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

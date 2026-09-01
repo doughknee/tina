@@ -93,6 +93,30 @@ fun TodayScreen(
         }
     }
 
+    // Desktop keyboard navigation: arrows select, Enter completes, Delete deletes.
+    var keyboardSelection by remember { mutableStateOf(-1) }
+    val flatEntries = state.sections.flatMap { it.second }
+    LaunchedEffect(Unit) {
+        com.tina.app.ui.KeyBus.events.collect { command ->
+            val entries = viewModel.state.value.sections.flatMap { it.second }
+            when (command) {
+                com.tina.app.ui.KeyCommand.DOWN ->
+                    keyboardSelection = (keyboardSelection + 1).coerceIn(0, entries.lastIndex.coerceAtLeast(0))
+                com.tina.app.ui.KeyCommand.UP ->
+                    keyboardSelection = (keyboardSelection - 1).coerceAtLeast(0)
+                com.tina.app.ui.KeyCommand.CONFIRM ->
+                    entries.getOrNull(keyboardSelection)?.let { entry ->
+                        if (entry.item.type == ItemType.TASK) viewModel.toggleComplete(entry.item)
+                    }
+                com.tina.app.ui.KeyCommand.DELETE ->
+                    entries.getOrNull(keyboardSelection)?.let { entry ->
+                        deleteWithUndo({ viewModel.delete(entry.item) }, viewModel::undoDelete)
+                    }
+                else -> Unit
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -206,6 +230,7 @@ fun TodayScreen(
                                 onRename = { viewModel.rename(entry.item, it) },
                                 onReschedule = { viewModel.reschedule(entry.item, it) },
                                 onOpen = { onOpenItem(entry.item) },
+                                selected = flatEntries.indexOf(entry) == keyboardSelection,
                                 modifier = Modifier.longPressDraggableHandle(
                                     onDragStarted = {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -237,6 +262,7 @@ fun TodayScreen(
                                 { viewModel.reschedule(entry.item, it) }
                             } else null,
                             onOpen = { onOpenItem(entry.item) },
+                            selected = flatEntries.indexOf(entry) == keyboardSelection,
                         )
                     }
                 }

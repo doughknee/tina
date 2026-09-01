@@ -1,22 +1,24 @@
 # tina
 
-Kotlin Multiplatform + Compose Multiplatform scaffold. Two targets: **Android** (primary) and **JVM desktop**. No features yet — just a blank Material 3 screen with the plumbing wired up.
+A personal capture, calendar, tasks, and notes app for one user. No accounts, no cloud, no sync — everything lives in Room on the device. Kotlin Multiplatform + Compose Multiplatform; Android first, JVM desktop second.
 
-## Stack
+**The core principle**: capturing or completing anything takes under 2 seconds and zero decisions. Nothing is required except a line of text. No confirmation dialogs anywhere — undo everywhere instead.
 
-- Kotlin 2.4.10, Compose Multiplatform 1.12.0, Gradle 9.5.0, AGP 9.1.1
-- Single module `composeApp` with `commonMain` / `androidMain` / `desktopMain` source sets
-- Material 3 + material3-adaptive; dynamic color (Material You) on Android (minSdk 31), static scheme on desktop; edge-to-edge + predictive back enabled
-- Navigation 3 (`org.jetbrains.androidx.navigation3:navigation3-ui`) with one placeholder route
-- Room (KMP) + bundled SQLite driver — placeholder `Note` entity/DAO exposed via `Flow`, DB lives at `getDatabasePath("tina.db")` on Android and `~/.tina/tina.db` on desktop
-- Koin DI — `initKoin(platformModule)` from `commonMain`, platform modules in `androidMain`/`desktopMain`
-- Wired but unused: kizitonwose Calendar, Compose Rich Editor, WorkManager (Android only)
-- `Notifier` expect/actual stub for local notifications (no-op on both platforms for now)
+## What it does
+
+- **Capture**: the app opens to a text field with the keyboard up. Type naturally — `lunch with sam tomorrow at noon #work !!` — and a pure-Kotlin parser turns date words, times, `!`/`!!` priority, `#tags`, durations (`for 2h`), and recurrence (`every friday`) into removable chips. Enter saves. Voice capture via the system recognizer. Capture also works from a home-screen widget, a quick-settings tile, an app-icon long-press, and the Android share sheet (shared text is saved instantly).
+- **Today**: everything due or scheduled today plus overdue, in time order (Overdue / Morning / Afternoon / Evening / Anytime), with an inbox badge for one-tap triage (Today · Tomorrow · This week · Someday · Event · Note). Swipe right completes, swipe left deletes, tap edits the title inline, long-press drags to reorder.
+- **Calendar**: month view with per-day dots, week strip, day agenda. Long-press a day to capture for that date. Full event editor: all-day, start/end, repeat (incl. custom RRULE), reminder, color, notes.
+- **Notes**: staggered grid, pinned first, search, colors, and a rich text editor (bold/italic/underline/headings/lists) that autosaves.
+- **Reminders**: exact alarms that survive reboots, with Done / Snooze 10 min / Snooze 1 hour actions. Done completes without opening the app.
+- **Everything else**: global search, a Today home-screen widget with tappable checkboxes, JSON export/import via the system file picker, dynamic color (Material You), edge-to-edge, predictive back.
+
+Non-obvious product decisions live in [DECISIONS.md](DECISIONS.md).
 
 ## Prerequisites
 
 - JDK 17+ on `JAVA_HOME` (this machine: Temurin 21 at `C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`)
-- Android SDK — path is read from `local.properties` (`sdk.dir=...`), currently `C:\Users\doni\AppData\Local\Android\Sdk`
+- Android SDK — path read from `local.properties` (`sdk.dir=...`), currently `C:\Users\doni\AppData\Local\Android\Sdk`
 
 ## Run
 
@@ -26,27 +28,23 @@ Kotlin Multiplatform + Compose Multiplatform scaffold. Two targets: **Android** 
 .\gradlew :composeApp:run
 ```
 
-**Android** (device/emulator connected via adb):
+Desktop shortcuts: `Ctrl+N` focus capture · `N` new item on the current tab · `Ctrl+F` search · arrows move the calendar / select rows on Today · `Enter` completes the selected row · `Delete` deletes it.
+
+**Android** (device/emulator via adb):
 
 ```
 .\gradlew :composeApp:installDebug
 ```
 
-then open the "tina" app — or build the APK without installing:
+## Release builds
 
-```
-.\gradlew :composeApp:assembleDebug
-```
-
-APK: `composeApp\build\outputs\apk\debug\composeApp-debug.apk`
-
-## Release APK (sideloadable)
+**Android APK (sideloadable):**
 
 ```
 .\gradlew :composeApp:assembleRelease
 ```
 
-APK: `composeApp\build\outputs\apk\release\composeApp-release.apk`
+APK: `composeApp\build\outputs\apk\release\composeApp-release.apk` — install with `adb install -r <apk>`.
 
 Signing uses the self-signed keystore referenced by `keystore.properties` (both gitignored). On a fresh clone, regenerate them:
 
@@ -62,4 +60,19 @@ keyAlias=tina
 keyPassword=tina-local-release
 ```
 
-Note: sideload updates must be signed with the same keystore, so back `release.keystore` up if you distribute anything.
+Sideload updates must be signed with the same keystore — back `release.keystore` up if you distribute anything.
+
+**Desktop distributable (Windows):**
+
+```
+.\gradlew :composeApp:createReleaseDistributable
+```
+
+Output: `composeApp\build\compose\binaries\main-release\app\tina\` — a self-contained folder with `tina.exe` (bundled JRE, no install needed; zip it to share). An MSI installer is also configured (`.\gradlew :composeApp:packageReleaseMsi`) but requires the [WiX Toolset 3.x](https://wixtoolset.org) on PATH.
+
+Desktop data lives in `~\.tina\` (`tina.db`, `settings.preferences_pb`).
+
+## Development
+
+- Tests (parser, recurrence, reminders, backup, repository — runs on JVM): `.\gradlew :composeApp:desktopTest`
+- One `items` table holds every entity type; type changes are lossless. See [DECISIONS.md](DECISIONS.md) for the data-model and parser rules.

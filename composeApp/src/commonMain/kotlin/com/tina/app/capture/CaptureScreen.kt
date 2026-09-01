@@ -41,6 +41,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -48,6 +49,12 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -105,7 +112,11 @@ fun CaptureScreen(
     val capturedText = stringResource(Res.string.captured)
     val undoText = stringResource(Res.string.undo)
 
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    LaunchedEffect(Unit) {
+        // let the field attach before requesting focus (desktop logs a warning otherwise)
+        withFrameNanos { }
+        focusRequester.requestFocus()
+    }
 
     fun saveNow() {
         viewModel.save {
@@ -147,7 +158,21 @@ fun CaptureScreen(
                 TextField(
                     value = viewModel.text,
                     onValueChange = viewModel::onTextChange,
-                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onPreviewKeyEvent { event ->
+                            // physical keyboards: Enter saves, Shift+Enter makes a newline
+                            if (event.key == Key.Enter &&
+                                event.type == KeyEventType.KeyDown &&
+                                !event.isShiftPressed
+                            ) {
+                                saveNow()
+                                true
+                            } else {
+                                false
+                            }
+                        },
                     textStyle = MaterialTheme.typography.headlineSmall,
                     placeholder = {
                         Text(

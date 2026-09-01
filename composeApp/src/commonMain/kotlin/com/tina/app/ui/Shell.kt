@@ -9,6 +9,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -19,6 +20,7 @@ import com.tina.app.capture.CaptureScreen
 import com.tina.app.capture.CaptureViewModel
 import com.tina.app.data.Item
 import com.tina.app.notes.NotesScreen
+import com.tina.app.notes.NotesViewModel
 import com.tina.app.resources.Res
 import com.tina.app.today.TodayScreen
 import kotlinx.datetime.number
@@ -48,6 +50,23 @@ fun Shell(
     var selectedIndex by rememberSaveable { mutableStateOf(0) }
     val selectedTab = TinaTab.entries[selectedIndex]
     val captureViewModel: CaptureViewModel = koinViewModel()
+    val notesViewModel: NotesViewModel = koinViewModel()
+
+    LaunchedEffect(Unit) {
+        KeyBus.events.collect { command ->
+            when (command) {
+                KeyCommand.FOCUS_CAPTURE -> selectedIndex = 0
+                KeyCommand.SEARCH -> onOpenSearch()
+                KeyCommand.NEW_ITEM ->
+                    if (TinaTab.entries[selectedIndex] == TinaTab.NOTES) {
+                        notesViewModel.createNote(onOpenNote)
+                    } else {
+                        selectedIndex = 0
+                    }
+                else -> Unit
+            }
+        }
+    }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {

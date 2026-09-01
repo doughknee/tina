@@ -81,6 +81,7 @@ fun ItemRow(
     onToggleComplete: (() -> Unit)? = null,
     onReschedule: ((LocalDate?) -> Unit)? = null,
     onOpen: (() -> Unit)? = null,
+    selected: Boolean = false,
     extraContent: (@Composable () -> Unit)? = null,
 )
 {
@@ -138,6 +139,7 @@ fun ItemRow(
             onRename = onRename,
             onReschedule = onReschedule,
             onOpen = onOpen,
+            selected = selected,
             extraContent = extraContent,
         )
     }
@@ -153,6 +155,7 @@ private fun RowContent(
     onRename: (String) -> Unit,
     onReschedule: ((LocalDate?) -> Unit)?,
     onOpen: (() -> Unit)?,
+    selected: Boolean,
     extraContent: (@Composable () -> Unit)?,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -163,7 +166,10 @@ private fun RowContent(
     Column(
         Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(
+                if (selected) MaterialTheme.colorScheme.surfaceContainerHighest
+                else MaterialTheme.colorScheme.surface,
+            )
             .clickable {
                 editText = item.title
                 editing = true

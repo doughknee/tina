@@ -122,6 +122,11 @@ compose.desktop {
     application {
         mainClass = "com.tina.app.MainKt"
 
+        buildTypes.release.proguard {
+            // Room/Koin/richeditor reflection trips ProGuard; size is irrelevant for a personal app
+            isEnabled.set(false)
+        }
+
         nativeDistributions {
             targetFormats(TargetFormat.Msi)
             packageName = "tina"

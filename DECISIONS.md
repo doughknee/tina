@@ -73,3 +73,12 @@ Running log of choices made without asking, newest last.
 - **Shared element transitions** ride Navigation 3's `LocalNavAnimatedContentScope`: item titles morph between list rows and detail/editor screens; rows without an active `SharedTransitionScope` render normally (desktop safe).
 - **M3 audit result**: every control is a stock M3 component (chips, segmented buttons, switches, cards, checkboxes, snackbars, pickers); type comes exclusively from `MaterialTheme.typography`, color exclusively from `colorScheme` (the only literal colors are user-chosen item swatches); spacing sits on the 4/8dp grid; the only custom-drawn things are the save burst (theme colors) and calendar day cells (spec'd shapes). Empty states are Material icons + body text, no image assets.
 - **Tap audit (from home screen)**: capture = open + type + send (1 tap past typing; Enter = 0); complete = 1 tap (or 1 swipe); triage = 1 tap; reschedule = 2 taps (chip + choice); capture-from-widget = 1 tap to keyboard-up. Nothing exceeds budget; zero confirmation dialogs anywhere — destructive paths all use undo snackbars.
+
+## Phase 9 — desktop
+
+- **Keyboard commands ride a tiny shared-flow bus** the window emits into and the active screen collects from; Android never emits, so the bus is inert there. Plain-letter shortcuts can't fire while typing because focused text fields consume their keys before the window handler sees them.
+- **Enter saves capture, Shift+Enter inserts a newline** — wired on the field itself so hardware keyboards behave the same on both platforms.
+- **NavigationSuiteScaffold's automatic rail is the wide-screen layout**; detail screens stay single-pane. At this app's information density a second permanent pane would mostly show an empty editor — deliberately skipped, revisit if desktop use disagrees.
+- **Desktop notifications go through the system tray** (`TrayState.sendNotification`); reminder *scheduling* stays a desktop no-op — the desktop app isn't a background process, so alarms there would only ring while it's already open.
+- **The desktop distributable is the jpackage app-image** (self-contained folder with `tina.exe`). The MSI target is configured but needs WiX 3.x + admin (+ the .NET 3.5 feature) — not something an unattended build should install; command documented in the README.
+- **Desktop ProGuard is off**: Room/Koin/rich-editor reflection trips it and minification buys a personal app nothing.
