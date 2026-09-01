@@ -47,6 +47,8 @@ import com.tina.app.data.ThemeMode
 import com.tina.app.data.rememberBackupHandlers
 import com.tina.app.resources.Res
 import com.tina.app.resources.ai_api_key
+import com.tina.app.resources.ai_workspace_id
+import com.tina.app.resources.ai_workspace_id_hint
 import com.tina.app.resources.ai_base_url
 import com.tina.app.resources.ai_model
 import com.tina.app.resources.ai_privacy_note
@@ -286,6 +288,7 @@ private fun AiConfigFields(
     var baseUrl by remember(settings.aiProvider) { mutableStateOf(settings.aiBaseUrl) }
     var model by remember(settings.aiProvider) { mutableStateOf(settings.aiModel) }
     var apiKey by remember(settings.aiProvider) { mutableStateOf(settings.aiApiKey) }
+    var workspaceId by remember(settings.aiProvider) { mutableStateOf(settings.aiWorkspaceId) }
     var testing by remember { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -320,6 +323,19 @@ private fun AiConfigFields(
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
         )
+        if (settings.aiProvider == AiProvider.ANTHROPIC) {
+            OutlinedTextField(
+                value = workspaceId,
+                onValueChange = {
+                    workspaceId = it
+                    viewModel.setAiWorkspaceId(it)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(Res.string.ai_workspace_id)) },
+                supportingText = { Text(stringResource(Res.string.ai_workspace_id_hint)) },
+                singleLine = true,
+            )
+        }
         Text(
             stringResource(Res.string.ai_privacy_note),
             style = MaterialTheme.typography.bodySmall,

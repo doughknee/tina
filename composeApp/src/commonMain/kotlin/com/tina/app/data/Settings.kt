@@ -27,6 +27,7 @@ data class Settings(
     val aiBaseUrl: String = "",
     val aiModel: String = "",
     val aiApiKey: String = "",
+    val aiWorkspaceId: String = "",
 )
 
 fun createSettingsStore(producePath: () -> String): DataStore<Preferences> =
@@ -41,6 +42,7 @@ private val KEY_AI_PROVIDER = stringPreferencesKey("aiProvider")
 private val KEY_AI_BASE_URL = stringPreferencesKey("aiBaseUrl")
 private val KEY_AI_MODEL = stringPreferencesKey("aiModel")
 private val KEY_AI_API_KEY = stringPreferencesKey("aiApiKey")
+private val KEY_AI_WORKSPACE_ID = stringPreferencesKey("aiWorkspaceId")
 
 class SettingsRepository(private val store: DataStore<Preferences>) {
     val settings: Flow<Settings> = store.data.map { p ->
@@ -57,6 +59,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
             aiBaseUrl = p[KEY_AI_BASE_URL] ?: "",
             aiModel = p[KEY_AI_MODEL] ?: "",
             aiApiKey = p[KEY_AI_API_KEY] ?: "",
+            aiWorkspaceId = p[KEY_AI_WORKSPACE_ID] ?: "",
         )
     }
 
@@ -78,4 +81,5 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     suspend fun setAiBaseUrl(url: String) = store.edit { it[KEY_AI_BASE_URL] = url.trim() }
     suspend fun setAiModel(model: String) = store.edit { it[KEY_AI_MODEL] = model.trim() }
     suspend fun setAiApiKey(key: String) = store.edit { it[KEY_AI_API_KEY] = key.trim() }
+    suspend fun setAiWorkspaceId(id: String) = store.edit { it[KEY_AI_WORKSPACE_ID] = id.trim() }
 }

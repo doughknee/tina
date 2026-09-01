@@ -74,6 +74,10 @@ class SettingsViewModel(
         viewModelScope.launch { repository.setAiApiKey(key) }
     }
 
+    fun setAiWorkspaceId(id: String) {
+        viewModelScope.launch { repository.setAiWorkspaceId(id) }
+    }
+
     /** Callback receives null on success, otherwise a human-readable failure reason. */
     fun testAi(onResult: (String?) -> Unit) {
         viewModelScope.launch {

@@ -210,6 +210,10 @@ class AiCaptureParser(
             contentType(ContentType.Application.Json)
             header("x-api-key", settings.aiApiKey.trim())
             header("anthropic-version", "2023-06-01")
+            // multi-workspace identity-linked keys must name their target workspace
+            settings.aiWorkspaceId.trim().takeIf { it.isNotEmpty() }?.let {
+                header("anthropic-workspace-id", it)
+            }
             setBody(body.toString())
         }
         if (!response.status.isSuccess()) {
