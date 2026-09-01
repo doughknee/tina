@@ -83,6 +83,7 @@ fun ItemRow(
     onReschedule: ((LocalDate?) -> Unit)? = null,
     onOpen: (() -> Unit)? = null,
     selected: Boolean = false,
+    leading: Boolean = true,
     extraContent: (@Composable () -> Unit)? = null,
 )
 {
@@ -141,6 +142,7 @@ fun ItemRow(
             onReschedule = onReschedule,
             onOpen = onOpen,
             selected = selected,
+            leading = leading,
             extraContent = extraContent,
         )
     }
@@ -157,6 +159,7 @@ private fun RowContent(
     onReschedule: ((LocalDate?) -> Unit)?,
     onOpen: (() -> Unit)?,
     selected: Boolean,
+    leading: Boolean,
     extraContent: (@Composable () -> Unit)?,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -182,7 +185,9 @@ private fun RowContent(
             Modifier.defaultMinSize(minHeight = if (twoLine) 72.dp else 56.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (onToggleComplete != null) {
+            if (!leading) {
+                // no leading widget (inbox rows: the type is the whole point of triage)
+            } else if (onToggleComplete != null) {
                 Checkbox(
                     checked = item.completed,
                     onCheckedChange = {

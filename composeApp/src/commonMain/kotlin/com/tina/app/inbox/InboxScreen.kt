@@ -1,14 +1,14 @@
 package com.tina.app.inbox
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Inbox
@@ -40,7 +40,9 @@ import com.tina.app.resources.date_today
 import com.tina.app.resources.date_tomorrow
 import com.tina.app.resources.deleted
 import com.tina.app.resources.inbox
+import com.tina.app.resources.inbox_captured
 import com.tina.app.resources.inbox_empty
+import com.tina.app.resources.inbox_empty_sub
 import com.tina.app.resources.sorted
 import com.tina.app.resources.triage_make_event
 import com.tina.app.resources.triage_make_note
@@ -48,6 +50,8 @@ import com.tina.app.resources.triage_someday
 import com.tina.app.resources.triage_this_week
 import com.tina.app.resources.undo
 import com.tina.app.ui.ItemRow
+import com.tina.app.ui.SectionCardItem
+import com.tina.app.ui.relativeAge
 import kotlin.time.Clock
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -103,55 +107,84 @@ fun InboxScreen(
                 Icon(
                     Icons.Outlined.Inbox,
                     contentDescription = null,
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier.size(48.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
                     stringResource(Res.string.inbox_empty),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(top = 16.dp),
+                )
+                Text(
+                    stringResource(Res.string.inbox_empty_sub),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
             return@Scaffold
         }
 
-        LazyColumn(Modifier.fillMaxSize().padding(padding)) {
-            items(items, key = { it.id }) { item ->
-                ItemRow(
-                    item = item,
-                    today = today,
-                    onDelete = {
-                        withUndo(deletedText, { viewModel.deleteWithSnapshot(item) }, viewModel::undoDelete)
-                    },
-                    onRename = { viewModel.rename(item, it) },
-                    onOpen = { onOpenItem(item) },
-                    extraContent = {
-                        FlowRow(
-                            Modifier.padding(start = 48.dp, bottom = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            TriageChip(stringResource(Res.string.date_today)) {
-                                withUndo(sortedText, { viewModel.triage(item, TriageAction.TODAY) }, viewModel::undoTriage)
+        val nowMillis = remember(items) { Clock.System.now().toEpochMilliseconds() }
+        LazyColumn(
+            Modifier.fillMaxSize().padding(padding),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(vertical = 4.dp),
+        ) {
+            itemsIndexed(items, key = { _, it -> it.id }) { _, item ->
+                SectionCardItem(0, 1, Modifier.animateItem()) {
+                    ItemRow(
+                        item = item,
+                        today = today,
+                        leading = false,
+                        timeText = stringResource(
+                            Res.string.inbox_captured,
+                            relativeAge(nowMillis - item.createdAt),
+                        ),
+                        onDelete = {
+                            withUndo(deletedText, { viewModel.deleteWithSnapshot(item) }, viewModel::undoDelete)
+                        },
+                        onRename = { viewModel.rename(item, it) },
+                        onOpen = { onOpenItem(item) },
+                        extraContent = {
+                            LazyRow(
+                                Modifier.padding(bottom = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                item {
+                                    TriageChip(stringResource(Res.string.date_today)) {
+                                        withUndo(sortedText, { viewModel.triage(item, TriageAction.TODAY) }, viewModel::undoTriage)
+                                    }
+                                }
+                                item {
+                                    TriageChip(stringResource(Res.string.date_tomorrow)) {
+                                        withUndo(sortedText, { viewModel.triage(item, TriageAction.TOMORROW) }, viewModel::undoTriage)
+                                    }
+                                }
+                                item {
+                                    TriageChip(stringResource(Res.string.triage_this_week)) {
+                                        withUndo(sortedText, { viewModel.triage(item, TriageAction.THIS_WEEK) }, viewModel::undoTriage)
+                                    }
+                                }
+                                item {
+                                    TriageChip(stringResource(Res.string.triage_someday)) {
+                                        withUndo(sortedText, { viewModel.triage(item, TriageAction.SOMEDAY) }, viewModel::undoTriage)
+                                    }
+                                }
+                                item {
+                                    TriageChip(stringResource(Res.string.triage_make_event)) {
+                                        withUndo(sortedText, { viewModel.triage(item, TriageAction.MAKE_EVENT) }, viewModel::undoTriage)
+                                    }
+                                }
+                                item {
+                                    TriageChip(stringResource(Res.string.triage_make_note)) {
+                                        withUndo(sortedText, { viewModel.triage(item, TriageAction.MAKE_NOTE) }, viewModel::undoTriage)
+                                    }
+                                }
                             }
-                            TriageChip(stringResource(Res.string.date_tomorrow)) {
-                                withUndo(sortedText, { viewModel.triage(item, TriageAction.TOMORROW) }, viewModel::undoTriage)
-                            }
-                            TriageChip(stringResource(Res.string.triage_this_week)) {
-                                withUndo(sortedText, { viewModel.triage(item, TriageAction.THIS_WEEK) }, viewModel::undoTriage)
-                            }
-                            TriageChip(stringResource(Res.string.triage_someday)) {
-                                withUndo(sortedText, { viewModel.triage(item, TriageAction.SOMEDAY) }, viewModel::undoTriage)
-                            }
-                            TriageChip(stringResource(Res.string.triage_make_event)) {
-                                withUndo(sortedText, { viewModel.triage(item, TriageAction.MAKE_EVENT) }, viewModel::undoTriage)
-                            }
-                            TriageChip(stringResource(Res.string.triage_make_note)) {
-                                withUndo(sortedText, { viewModel.triage(item, TriageAction.MAKE_NOTE) }, viewModel::undoTriage)
-                            }
-                        }
-                    },
-                )
+                        },
+                    )
+                }
             }
         }
     }

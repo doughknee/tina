@@ -30,7 +30,9 @@
     <string name="date_none">No date</string>
 
     <string name="inbox">Inbox</string>
-    <string name="inbox_empty">Inbox zero. Nice.</string>
+    <string name="inbox_empty">Inbox zero</string>
+    <string name="inbox_empty_sub">Everything is filed</string>
+    <string name="inbox_captured">captured %1$s</string>
     <string name="triage_this_week">This week</string>
     <string name="triage_someday">Someday</string>
     <string name="triage_make_event">Event</string>

@@ -16,6 +16,10 @@ import com.tina.app.resources.every_year
 import com.tina.app.resources.months_short
 import com.tina.app.resources.repeats
 import com.tina.app.resources.time_am
+import com.tina.app.resources.time_day_ago
+import com.tina.app.resources.time_hr_ago
+import com.tina.app.resources.time_just_now
+import com.tina.app.resources.time_min_ago
 import com.tina.app.resources.time_pm
 import com.tina.app.resources.weekdays_full
 import kotlinx.datetime.LocalDate
@@ -37,6 +41,17 @@ fun dateLabel(date: LocalDate, today: LocalDate): String {
             val month = stringArrayResource(Res.array.months_short)[date.month.number - 1]
             if (date.year == today.year) "$month ${date.day}" else "$month ${date.day}, ${date.year}"
         }
+    }
+}
+
+@Composable
+fun relativeAge(ageMillis: Long): String {
+    val minutes = ageMillis / 60_000
+    return when {
+        minutes < 1 -> stringResource(Res.string.time_just_now)
+        minutes < 60 -> stringResource(Res.string.time_min_ago, minutes.toString())
+        minutes < 60 * 24 -> stringResource(Res.string.time_hr_ago, (minutes / 60).toString())
+        else -> stringResource(Res.string.time_day_ago, (minutes / (60 * 24)).toString())
     }
 }
 

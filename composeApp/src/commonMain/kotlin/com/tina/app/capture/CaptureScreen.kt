@@ -90,10 +90,6 @@ import com.tina.app.resources.capture_try_2
 import com.tina.app.resources.capture_try_3
 import com.tina.app.resources.capture_voice
 import com.tina.app.resources.captured
-import com.tina.app.resources.time_day_ago
-import com.tina.app.resources.time_hr_ago
-import com.tina.app.resources.time_just_now
-import com.tina.app.resources.time_min_ago
 import com.tina.app.resources.chip_remove
 import com.tina.app.resources.priority_high
 import com.tina.app.resources.priority_low
@@ -107,6 +103,7 @@ import com.tina.app.resources.undo
 import com.tina.app.ui.dateLabel
 import com.tina.app.ui.durationLabel
 import com.tina.app.ui.recurrenceLabel
+import com.tina.app.ui.relativeAge
 import com.tina.app.ui.timeLabel
 import kotlin.time.Clock
 import kotlinx.coroutines.launch
@@ -350,17 +347,6 @@ private fun CaptureEmptyState(viewModel: CaptureViewModel) {
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun relativeAge(ageMillis: Long): String {
-    val minutes = ageMillis / 60_000
-    return when {
-        minutes < 1 -> stringResource(Res.string.time_just_now)
-        minutes < 60 -> stringResource(Res.string.time_min_ago, minutes.toString())
-        minutes < 60 * 24 -> stringResource(Res.string.time_hr_ago, (minutes / 60).toString())
-        else -> stringResource(Res.string.time_day_ago, (minutes / (60 * 24)).toString())
     }
 }
 
