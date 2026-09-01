@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.launch
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -332,6 +334,10 @@ private fun ShellSheet(
     // the dragged offset survives a dismiss so the exit slide continues from where the
     // finger left it; resetting it on close made the sheet jump back up first
     val drag = remember { Animatable(0f) }
+    // the drag gesture is set up once, so it must read the *current* dismiss handler and
+    // visibility — a stale capture kept calling the pre-draft handler
+    val currentDismiss by rememberUpdatedState(onDismiss)
+    val currentVisible by rememberUpdatedState(visible)
     LaunchedEffect(visible) { if (visible) drag.snapTo(0f) }
     Box(Modifier.fillMaxSize()) {
         AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut()) {
@@ -369,8 +375,16 @@ private fun ShellSheet(
                             .pointerInput(Unit) {
                                 detectVerticalDragGestures(
                                     onDragEnd = {
-                                        if (drag.value > dismissDistance) onDismiss()
-                                        else scope.launch { drag.animateTo(0f) }
+                                        if (drag.value > dismissDistance) {
+                                            currentDismiss()
+                                            // a dismiss that only opened a prompt leaves the sheet up: settle it
+                                            scope.launch {
+                                                withFrameNanos { }
+                                                if (currentVisible) drag.animateTo(0f)
+                                            }
+                                        } else {
+                                            scope.launch { drag.animateTo(0f) }
+                                        }
                                     },
                                     onDragCancel = { scope.launch { drag.animateTo(0f) } },
                                 ) { _, dy ->
