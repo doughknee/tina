@@ -254,5 +254,33 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
         p[KEY_AI_INSTRUCTIONS] = s.aiInstructions
         p[KEY_AI_ASK_ENABLED] = s.aiAskEnabled
         p[KEY_AI_ASK_WRITE] = s.aiAskWriteEnabled
+        p[KEY_AI_WIFI_ONLY] = s.aiWifiOnly
+        p[KEY_OPEN_APP_TO] = s.openAppTo
+        p[KEY_HAPTICS] = s.haptics
+        p[KEY_REDUCE_MOTION] = s.reduceMotion
+        p[KEY_CONTRAST] = s.contrast
+        p[KEY_PURE_BLACK] = s.pureBlack
+        p[KEY_QS_TILE] = s.quickSettingsTile
+        p[KEY_KEEP_KEYBOARD] = s.keepKeyboardUp
+        p[KEY_VOICE_CAPTURE] = s.voiceCapture
+        p[KEY_UNDO_SECONDS] = s.undoWindowSeconds
+        p[KEY_MORNING] = s.morningStartMinutes
+        p[KEY_AFTERNOON] = s.afternoonStartMinutes
+        p[KEY_EVENING] = s.eveningStartMinutes
+        p[KEY_DAILY_AGENDA] = s.dailyAgenda
+        p[KEY_DAILY_AGENDA_MIN] = s.dailyAgendaMinutes
+        p[KEY_OVERDUE_NUDGE] = s.overdueNudge
+        p[KEY_OVERDUE_NUDGE_MIN] = s.overdueNudgeMinutes
+        p[KEY_INBOX_REMINDER] = s.inboxReminder
+        p[KEY_INBOX_REMINDER_DAYS] = s.inboxReminderDays
+        p[KEY_SHOW_COMPLETED] = s.showCompletedInToday
+        p[KEY_SEARCH_COMPLETED] = s.searchCompleted
+        p[KEY_APP_LOCK] = s.appLock
+        p[KEY_APP_LOCK_GRACE] = s.appLockGraceSeconds
+        p[KEY_HIDE_SWITCHER] = s.hideInAppSwitcher
+        p[KEY_AUTO_BACKUP] = s.autoBackup
+        p[KEY_TRASH_RETENTION] = s.trashRetention
+        p[KEY_LAUNCH_AT_LOGIN] = s.launchAtLogin
+        p[KEY_CLOSE_TO_TRAY] = s.closeToTray
     }
 }

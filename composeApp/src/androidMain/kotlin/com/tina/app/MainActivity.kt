@@ -1,21 +1,48 @@
 package com.tina.app
 
+import android.app.KeyguardManager
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import com.tina.app.data.SettingsRepository
 import com.tina.app.today.TodayWidget
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
     private val settingsRepository: SettingsRepository by inject()
+
+    /** When the app last went to the background; drives the app-lock grace period. */
+    private var backgroundedAt = 0L
+    private var locked by mutableStateOf(false)
+
+    private val unlockLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            locked = false
+            backgroundedAt = 0L
+        } else {
+            // refusing to unlock leaves nothing to show
+            finish()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -32,12 +59,46 @@ class MainActivity : ComponentActivity() {
                 }
         }
 
-        setContent { App() }
+        setContent {
+            if (locked) {
+                // opaque cover so nothing is readable behind the system prompt
+                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface))
+            } else {
+                App()
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        lifecycleScope.launch {
+            val settings = settingsRepository.settings.first()
+            if (!settings.appLock || backgroundedAt == 0L) return@launch
+            val away = System.currentTimeMillis() - backgroundedAt
+            if (away < settings.appLockGraceSeconds * 1000L) return@launch
+            promptUnlock()
+        }
     }
 
     override fun onStop() {
         super.onStop()
+        backgroundedAt = System.currentTimeMillis()
         // keep the home-screen widget in sync with whatever changed in-app
         lifecycleScope.launch { TodayWidget().updateAll(applicationContext) }
+    }
+
+    /**
+     * Uses the system credential prompt (PIN / pattern / biometric) rather than pulling in
+     * androidx.biometric — one fewer dependency for the same result.
+     */
+    private fun promptUnlock() {
+        val keyguard = getSystemService(KeyguardManager::class.java)
+        if (keyguard?.isDeviceSecure != true) return
+        val intent = keyguard.createConfirmDeviceCredentialIntent(
+            getString(R.string.app_name),
+            getString(R.string.lock_prompt),
+        ) ?: return
+        locked = true
+        unlockLauncher.launch(intent)
     }
 }

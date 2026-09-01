@@ -32,6 +32,12 @@ class TinaApp : Application(), KoinComponent {
             val retention = settingsRepository.settings.first().trashRetention
             repository.purgeExpiredTrash(retention.days)
         }
+        scope.launch {
+            settingsRepository.settings
+                .map { it.autoBackup }
+                .distinctUntilChanged()
+                .collect { com.tina.app.data.AutoBackupScheduler.sync(this@TinaApp, it) }
+        }
         // digest alarms follow the settings that describe them
         scope.launch {
             settingsRepository.settings

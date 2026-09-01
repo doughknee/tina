@@ -16,6 +16,21 @@
 - Platform differences **hide** rows via `expect object Platform`; a dead toggle is
   worse than no toggle.
 - Grouped list = 2dp gaps + per-row corner morphing, no dividers.
+- **Placeholder rows.** Settings that are designed but not yet wired render greyed
+  with a "Soon" tag instead of silently doing nothing. This is deliberately different
+  from platform hiding: an unimplemented setting is a promise, a platform-irrelevant
+  one is noise.
+- **App lock uses the system credential prompt** (`KeyguardManager.createConfirm
+  DeviceCredentialIntent`) rather than androidx.biometric — same PIN/pattern/biometric
+  result, one fewer dependency, which the brief required.
+- **Digests are inexact alarms.** Daily agenda / overdue nudge / inbox reminder are
+  summaries, so they use `setAndAllowWhileIdle` and re-arm themselves; the exact-alarm
+  budget stays reserved for reminders the user actually set on an item.
+- **Launch at login writes a Startup-folder .cmd**, not a registry key: no elevation,
+  and the user can see and delete it in Explorer.
+- **The desktop global capture hotkey is the one unimplemented row.** A hotkey that
+  works while the app is unfocused needs a native key hook (JNativeHook or similar),
+  i.e. a new dependency the brief rules out. It keeps its "Soon" tag.
 - **Soft delete (schema v4).** `deletedAt` column; `delete()` moves an item to Trash
   and a launch-time job purges past the retention window. `get()`/`observe()` exclude
   trashed rows deliberately — otherwise reminders could fire and the Ask page could

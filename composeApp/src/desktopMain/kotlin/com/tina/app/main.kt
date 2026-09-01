@@ -3,6 +3,11 @@ package com.tina.app
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -16,25 +21,48 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberTrayState
 import androidx.compose.ui.window.rememberWindowState
+import com.tina.app.data.Settings
+import com.tina.app.data.SettingsRepository
 import com.tina.app.di.desktopModule
 import com.tina.app.di.initKoin
 import com.tina.app.notifications.DesktopTray
 import com.tina.app.ui.KeyBus
 import com.tina.app.ui.KeyCommand
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.koin.core.context.GlobalContext
 
 fun main() {
     initKoin(desktopModule)
+    val settingsRepository = GlobalContext.get().get<SettingsRepository>()
+    LaunchAtLogin.apply(readLaunchAtLoginSetting(settingsRepository))
+
     application {
+        val settings by settingsRepository.settings.collectAsState(initial = Settings())
         val trayState = rememberTrayState()
+        // "Launch at login" starts hidden; otherwise the window opens normally
+        var windowVisible by remember { mutableStateOf(!LaunchAtLogin.startedHidden) }
+
         LaunchedEffect(Unit) { DesktopTray.state = trayState }
+        LaunchedEffect(settings.launchAtLogin) { LaunchAtLogin.apply(settings.launchAtLogin) }
+
         Tray(
             state = trayState,
             icon = rememberVectorPainter(Icons.Outlined.Edit),
             tooltip = "tina",
+            onAction = { windowVisible = true },
+            menu = {
+                Item("Open tina", onClick = { windowVisible = true })
+                Item("Quit", onClick = ::exitApplication)
+            },
         )
 
         Window(
-            onCloseRequest = ::exitApplication,
+            onCloseRequest = {
+                // "Close to tray" keeps the app running behind the tray icon
+                if (settings.closeToTray) windowVisible = false else exitApplication()
+            },
+            visible = windowVisible,
             title = "tina",
             state = rememberWindowState(size = DpSize(1200.dp, 800.dp)),
             onKeyEvent = { event ->
@@ -57,3 +85,6 @@ fun main() {
         }
     }
 }
+
+private fun readLaunchAtLoginSetting(repository: SettingsRepository): Boolean =
+    runCatching { runBlocking { repository.settings.first().launchAtLogin } }.getOrDefault(false)

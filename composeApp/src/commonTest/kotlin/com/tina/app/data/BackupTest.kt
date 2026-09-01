@@ -24,6 +24,26 @@ class BackupTest {
         assertNull(decodeBackup("""{"some":"other json"}"""))
     }
 
+    @Test fun everySettingSurvivesTheRoundTrip() {
+        // guards against a new preference being added to Settings but forgotten in the backup
+        val settings = Settings(
+            themeMode = ThemeMode.DARK,
+            aiProvider = AiProvider.ANTHROPIC,
+            aiModel = "claude-haiku-4-5-20251001",
+            aiApiKey = "sk-test",
+            appLock = true,
+            undoWindowSeconds = 10,
+            eveningStartMinutes = 19 * 60,
+            trashRetention = TrashRetention.DAYS_7,
+        ).toBackupSettings()
+        val decoded = decodeBackup(encodeBackup(emptyList(), exportedAt = 1, settings = settings))
+        assertEquals(settings, decoded?.settings)
+        assertEquals("DARK", decoded?.settings?.themeMode)
+        assertEquals(true, decoded?.settings?.appLock)
+        assertEquals(10, decoded?.settings?.undoWindowSeconds)
+        assertEquals("DAYS_7", decoded?.settings?.trashRetention)
+    }
+
     @Test fun settingsRoundTrip() {
         val settings = BackupSettings(
             themeMode = "DARK", aiProvider = "ANTHROPIC", aiModel = "claude-haiku-4-5-20251001",

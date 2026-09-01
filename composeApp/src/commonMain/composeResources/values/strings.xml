@@ -215,7 +215,7 @@
     <string name="set_search_completed_sub">Includes anything still in Trash</string>
     <!-- Settings: Privacy -->
     <string name="set_app_lock">App lock</string>
-    <string name="set_app_lock_sub">Fingerprint, after %1$d minute away</string>
+    <string name="set_app_lock_sub">Device unlock, after %1$d minute away</string>
     <string name="set_hide_switcher">Hide in app switcher</string>
     <string name="set_hide_switcher_sub">Blank the recents thumbnail</string>
     <!-- Settings: Data -->

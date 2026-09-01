@@ -893,8 +893,7 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Switch(
                 id = "appLock",
-                enabled = false,
-                title = stringResource(Res.string.set_app_lock),
+                                title = stringResource(Res.string.set_app_lock),
                 supporting = stringResource(Res.string.set_app_lock_sub, settings.appLockGraceSeconds / 60),
                 keywords = listOf("biometric", "fingerprint", "lock", "security"),
                 checked = settings.appLock,
@@ -931,10 +930,10 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "autoBackup",
-                enabled = false,
-                title = stringResource(Res.string.set_auto_backup),
+                                title = stringResource(Res.string.set_auto_backup),
                 supporting = stringResource(Res.string.set_auto_backup_sub),
                 keywords = listOf("backup", "weekly", "automatic"),
+                visible = Platform.isAndroid,
                 checked = settings.autoBackup,
                 onCheckedChange = viewModel::setAutoBackup,
             ),
@@ -970,6 +969,7 @@ private fun rememberSettingsSections(
         visible = Platform.isDesktop,
         rows = listOf(
             SettingsRow.Value(
+                // a true global hotkey needs a native key hook — a new dependency the brief rules out
                 id = "quickShortcut",
                 enabled = false,
                 title = stringResource(Res.string.set_quick_shortcut),
@@ -978,8 +978,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "launchAtLogin",
-                enabled = false,
-                title = stringResource(Res.string.set_launch_login),
+                                title = stringResource(Res.string.set_launch_login),
                 supporting = stringResource(Res.string.set_launch_login_sub),
                 keywords = listOf("startup", "boot", "tray"),
                 checked = settings.launchAtLogin,
@@ -987,8 +986,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "closeToTray",
-                enabled = false,
-                title = stringResource(Res.string.set_close_tray),
+                                title = stringResource(Res.string.set_close_tray),
                 supporting = stringResource(Res.string.set_close_tray_sub),
                 keywords = listOf("tray", "background"),
                 checked = settings.closeToTray,
