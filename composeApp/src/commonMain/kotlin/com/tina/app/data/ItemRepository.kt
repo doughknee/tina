@@ -59,6 +59,10 @@ class ItemRepository(
     suspend fun reschedule(id: Long, day: LocalDate?) =
         dao.reschedule(id, day?.toEpochDays()?.toInt(), nowMillis())
 
+    suspend fun setSortOrder(id: Long, sortOrder: Long) = dao.setSortOrder(id, sortOrder)
+
+    suspend fun rename(id: Long, title: String) = dao.rename(id, title, nowMillis())
+
     /** Parse-result in, saved item out. The 2-second path. */
     suspend fun capture(
         parsed: ParsedCapture,

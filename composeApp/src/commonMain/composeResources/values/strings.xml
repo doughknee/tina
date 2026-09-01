@@ -20,6 +20,44 @@
     <string name="reminder_min_before">%1$d min before</string>
     <string name="reminder_hour_before">1 hour before</string>
 
+    <string name="section_overdue">Overdue</string>
+    <string name="section_morning">Morning</string>
+    <string name="section_afternoon">Afternoon</string>
+    <string name="section_evening">Evening</string>
+    <string name="section_anytime">Anytime</string>
+    <string name="today_empty">All clear for today</string>
+    <string name="date_next_week">Next week</string>
+    <string name="date_none">No date</string>
+
+    <string name="inbox">Inbox</string>
+    <string name="inbox_empty">Inbox zero. Nice.</string>
+    <string name="triage_this_week">This week</string>
+    <string name="triage_someday">Someday</string>
+    <string name="triage_make_event">Event</string>
+    <string name="triage_make_note">Note</string>
+
+    <string name="deleted">Deleted</string>
+    <string name="sorted">Sorted</string>
+    <string name="delete">Delete</string>
+    <string name="mark_done">Mark done</string>
+    <string name="open_details">Open details</string>
+    <string name="details">Details</string>
+    <string name="detail_notes">Notes</string>
+    <string name="detail_tags">Tags</string>
+    <string name="detail_tags_hint">comma, separated</string>
+    <string name="detail_date">Date</string>
+    <string name="detail_time">Time</string>
+    <string name="detail_priority">Priority</string>
+    <string name="pr_none">None</string>
+    <string name="pr_low">Low</string>
+    <string name="pr_medium">Medium</string>
+    <string name="pr_high">High</string>
+    <string name="detail_completed">Completed</string>
+    <string name="detail_reminder">Reminder</string>
+    <string name="reminder_off">Off</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
     <string name="capture_placeholder">What’s on your mind?</string>
     <string name="capture_save">Save</string>
     <string name="capture_voice">Voice capture</string>

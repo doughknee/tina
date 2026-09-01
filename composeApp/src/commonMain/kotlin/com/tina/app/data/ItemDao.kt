@@ -67,4 +67,10 @@ interface ItemDao {
 
     @Query("UPDATE items SET dueDate = :epochDay, updatedAt = :at WHERE id = :id")
     suspend fun reschedule(id: Long, epochDay: Int?, at: Long)
+
+    @Query("UPDATE items SET sortOrder = :sortOrder WHERE id = :id")
+    suspend fun setSortOrder(id: Long, sortOrder: Long)
+
+    @Query("UPDATE items SET title = :title, updatedAt = :at WHERE id = :id")
+    suspend fun rename(id: Long, title: String, at: Long)
 }

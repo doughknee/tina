@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.tina.app.capture.CaptureScreen
 import com.tina.app.resources.Res
+import com.tina.app.today.TodayScreen
 import com.tina.app.resources.tab_calendar
 import com.tina.app.resources.tab_capture
 import com.tina.app.resources.tab_notes
@@ -31,7 +32,11 @@ enum class TinaTab(val icon: ImageVector, val label: StringResource) {
 }
 
 @Composable
-fun Shell(onOpenSettings: () -> Unit) {
+fun Shell(
+    onOpenSettings: () -> Unit,
+    onOpenInbox: () -> Unit,
+    onOpenDetail: (Long) -> Unit,
+) {
     var selectedIndex by rememberSaveable { mutableStateOf(0) }
     val selectedTab = TinaTab.entries[selectedIndex]
 
@@ -49,7 +54,11 @@ fun Shell(onOpenSettings: () -> Unit) {
     ) {
         when (selectedTab) {
             TinaTab.CAPTURE -> CaptureScreen(onOpenSettings = onOpenSettings)
-            TinaTab.TODAY -> PlaceholderTab(Res.string.tab_today, onOpenSettings)
+            TinaTab.TODAY -> TodayScreen(
+                onOpenSettings = onOpenSettings,
+                onOpenInbox = onOpenInbox,
+                onOpenDetail = onOpenDetail,
+            )
             TinaTab.CALENDAR -> PlaceholderTab(Res.string.tab_calendar, onOpenSettings)
             TinaTab.NOTES -> PlaceholderTab(Res.string.tab_notes, onOpenSettings)
         }

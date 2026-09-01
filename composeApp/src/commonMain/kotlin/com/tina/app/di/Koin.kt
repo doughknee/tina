@@ -5,9 +5,13 @@ import com.tina.app.data.AppDatabase
 import com.tina.app.data.ItemRepository
 import com.tina.app.data.SettingsRepository
 import com.tina.app.data.buildDatabase
+import com.tina.app.detail.DetailViewModel
+import com.tina.app.inbox.InboxViewModel
+import com.tina.app.today.TodayViewModel
 import com.tina.app.ui.SettingsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
@@ -19,6 +23,9 @@ val commonModule = module {
     single { SettingsRepository(get()) }
     viewModelOf(::CaptureViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::TodayViewModel)
+    viewModelOf(::InboxViewModel)
+    viewModel { (id: Long) -> DetailViewModel(id, get()) }
 }
 
 fun initKoin(platformModule: Module, config: KoinAppDeclaration? = null) {

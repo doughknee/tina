@@ -30,6 +30,7 @@ kotlin {
             implementation(libs.material3.adaptive)
             implementation(libs.material3.adaptive.navigation.suite)
             implementation(libs.androidx.datastore.preferences)
+            implementation(libs.reorderable)
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.koin.core)
