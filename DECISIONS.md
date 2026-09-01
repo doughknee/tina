@@ -1,5 +1,23 @@
 # Decisions
 
+## Design polish pass (REL-134, Sep 2026)
+
+- Implemented the 12-item external design review (mockups in `design/redesign/`).
+  Deviations, each deliberate:
+  - No `AnimatedContent` slide on calendar month changes: kizitonwose
+    `HorizontalCalendar` is already a pager with its own swipe/scroll animation;
+    wrapping it would recreate the calendar per month and fight the pager.
+  - Settings toggle rows kept as `Row` + `Modifier.toggleable(role = Switch)`
+    rather than converting to `ListItem` — ListItem's built-in 16dp insets would
+    double with the screen's existing padding; the accessibility outcome
+    (full-row target, switch role announced) is identical.
+  - Note-card pin stays interactive (48dp padded touch target around the 16dp
+    glyph) — the review's static 16dp icon would have dropped one-tap pinning.
+  - Selected-day pill only replaces the dots when the day actually has items.
+  - Rows with a date chip lose the chevron (per review); their detail stays
+    reachable via search/calendar and the chip's reschedule menu covers the
+    common action.
+
 Running log of choices made without asking, newest last.
 
 ## Phase 1 — data model

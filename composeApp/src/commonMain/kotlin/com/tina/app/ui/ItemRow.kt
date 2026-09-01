@@ -123,6 +123,8 @@ fun ItemRow(
         modifier = modifier,
         enableDismissFromStartToEnd = onToggleComplete != null,
         backgroundContent = {
+            // rows are transparent now; draw nothing until a swipe is actually underway
+            if (dismissState.dismissDirection == SwipeToDismissBoxValue.Settled) return@SwipeToDismissBox
             val (color, icon, alignment) = when (dismissState.dismissDirection) {
                 SwipeToDismissBoxValue.StartToEnd -> Triple(
                     MaterialTheme.colorScheme.primaryContainer,
