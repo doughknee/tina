@@ -153,7 +153,11 @@ class AiCaptureParser(
                 else -> openAiComplete(settings, prompt)
             }
         } catch (e: Throwable) {
-            return "${e::class.simpleName}: ${e.message}".take(200)
+            val message = e.message
+            return (
+                if (message != null && message.startsWith("HTTP ")) message
+                else "${e::class.simpleName}: $message"
+                ).take(200)
         } ?: return "empty response from server"
         return if (aiJsonToParsedCapture(text, "x") != null) null else "model returned unusable JSON"
     }
@@ -178,10 +182,13 @@ class AiCaptureParser(
         }
         val response = http.post("$baseUrl/chat/completions") {
             contentType(ContentType.Application.Json)
-            if (settings.aiApiKey.isNotBlank()) header("Authorization", "Bearer ${settings.aiApiKey}")
+            val key = settings.aiApiKey.trim()
+            if (key.isNotEmpty()) header("Authorization", "Bearer $key")
             setBody(body.toString())
         }
-        if (!response.status.isSuccess()) return null
+        if (!response.status.isSuccess()) {
+            error("HTTP ${response.status.value}: ${response.bodyAsText().take(200)}")
+        }
         return json.parseToJsonElement(response.bodyAsText())
             .jsonObject["choices"]?.jsonArray?.firstOrNull()
             ?.jsonObject?.get("message")?.jsonObject?.get("content")?.jsonPrimitive?.content
@@ -201,11 +208,13 @@ class AiCaptureParser(
         }
         val response = http.post("$baseUrl/v1/messages") {
             contentType(ContentType.Application.Json)
-            header("x-api-key", settings.aiApiKey)
+            header("x-api-key", settings.aiApiKey.trim())
             header("anthropic-version", "2023-06-01")
             setBody(body.toString())
         }
-        if (!response.status.isSuccess()) return null
+        if (!response.status.isSuccess()) {
+            error("HTTP ${response.status.value}: ${response.bodyAsText().take(200)}")
+        }
         val payload = json.parseToJsonElement(response.bodyAsText()).jsonObject
         if (payload["stop_reason"]?.jsonPrimitive?.content == "refusal") return null
         return payload["content"]?.jsonArray
