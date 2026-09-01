@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Celebration
 import androidx.compose.material3.Badge
@@ -51,6 +52,7 @@ import com.tina.app.resources.section_afternoon
 import com.tina.app.resources.section_anytime
 import com.tina.app.resources.section_evening
 import com.tina.app.resources.section_morning
+import com.tina.app.resources.search
 import com.tina.app.resources.section_overdue
 import com.tina.app.resources.settings
 import com.tina.app.resources.tab_today
@@ -71,6 +73,7 @@ fun TodayScreen(
     onOpenSettings: () -> Unit,
     onOpenInbox: () -> Unit,
     onOpenItem: (com.tina.app.data.Item) -> Unit,
+    onOpenSearch: () -> Unit,
     viewModel: TodayViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -96,6 +99,9 @@ fun TodayScreen(
             TopAppBar(
                 title = { Text(stringResource(Res.string.tab_today)) },
                 actions = {
+                    IconButton(onClick = onOpenSearch) {
+                        Icon(Icons.Filled.Search, stringResource(Res.string.search))
+                    }
                     IconButton(onClick = onOpenInbox) {
                         BadgedBox(
                             badge = {

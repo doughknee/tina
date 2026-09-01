@@ -212,6 +212,7 @@ private fun RowContent(
                 } else {
                     Text(
                         item.title,
+                        modifier = Modifier.sharedItemTitle(item.id),
                         style = MaterialTheme.typography.bodyLarge,
                         textDecoration = if (item.completed) TextDecoration.LineThrough else null,
                         color = if (item.completed) {

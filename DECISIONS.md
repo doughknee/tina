@@ -64,3 +64,12 @@ Running log of choices made without asking, newest last.
 - **Tasks need a due time to ring** — a date-only task has no meaningful alarm moment.
 - **Boot + cold-start both re-arm everything** (alarms don't survive reboot; cold-start covers app updates and force-stops).
 - **Notification "Done" completes tasks without opening the app**; events get only snooze actions because "done" means nothing for an event.
+
+## Phase 8 — polish
+
+- **Import is additive, never destructive**: items come in with fresh ids and exact (title, createdAt) duplicates are skipped. No "replace everything" mode — the no-confirmation-dialogs rule makes silent replacement too dangerous, and additive import is idempotent.
+- **Search is a LIKE query over title+body** (top 100, recency-ordered). FTS would be faster at a scale a single person's data never reaches.
+- **The Today widget refreshes** on its own checkbox actions, on app-close, and on relaunch. It can go stale if data changes only via a reminder action while the app stays closed — acceptable; opening the shade shows the source of truth.
+- **Shared element transitions** ride Navigation 3's `LocalNavAnimatedContentScope`: item titles morph between list rows and detail/editor screens; rows without an active `SharedTransitionScope` render normally (desktop safe).
+- **M3 audit result**: every control is a stock M3 component (chips, segmented buttons, switches, cards, checkboxes, snackbars, pickers); type comes exclusively from `MaterialTheme.typography`, color exclusively from `colorScheme` (the only literal colors are user-chosen item swatches); spacing sits on the 4/8dp grid; the only custom-drawn things are the save burst (theme colors) and calendar day cells (spec'd shapes). Empty states are Material icons + body text, no image assets.
+- **Tap audit (from home screen)**: capture = open + type + send (1 tap past typing; Enter = 0); complete = 1 tap (or 1 swipe); triage = 1 tap; reschedule = 2 taps (chip + choice); capture-from-widget = 1 tap to keyboard-up. Nothing exceeds budget; zero confirmation dialogs anywhere — destructive paths all use undo snackbars.

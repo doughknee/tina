@@ -3,6 +3,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
@@ -31,6 +32,7 @@ kotlin {
             implementation(libs.material3.adaptive.navigation.suite)
             implementation(libs.androidx.datastore.preferences)
             implementation(libs.reorderable)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.koin.core)

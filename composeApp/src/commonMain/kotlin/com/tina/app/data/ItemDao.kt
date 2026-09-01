@@ -76,4 +76,10 @@ interface ItemDao {
 
     @Query("SELECT * FROM items WHERE reminderOffsetMinutes IS NOT NULL AND completed = 0")
     suspend fun getRemindable(): List<Item>
+
+    @Query(
+        """SELECT * FROM items WHERE title LIKE '%' || :query || '%' OR body LIKE '%' || :query || '%'
+           ORDER BY updatedAt DESC LIMIT 100"""
+    )
+    fun search(query: String): Flow<List<Item>>
 }

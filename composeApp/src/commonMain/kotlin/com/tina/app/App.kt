@@ -14,8 +14,12 @@ import com.tina.app.data.ItemType
 import com.tina.app.data.Settings
 import com.tina.app.data.SettingsRepository
 import com.tina.app.detail.DetailScreen
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import com.tina.app.inbox.InboxScreen
 import com.tina.app.notes.NoteEditorScreen
+import com.tina.app.search.SearchScreen
+import com.tina.app.ui.LocalSharedTransitionScope
 import com.tina.app.ui.SettingsScreen
 import com.tina.app.ui.Shell
 import org.koin.compose.koinInject
@@ -32,13 +36,20 @@ data class EventEditRoute(val id: Long)
 
 data class NoteRoute(val id: Long)
 
+data object SearchRoute
+
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun App() {
     val settingsRepository = koinInject<SettingsRepository>()
     val settings by settingsRepository.settings.collectAsState(initial = Settings())
 
     AppTheme(settings) {
-        CompositionLocalProvider(LocalSettings provides settings) {
+        SharedTransitionLayout {
+        CompositionLocalProvider(
+            LocalSettings provides settings,
+            LocalSharedTransitionScope provides this@SharedTransitionLayout,
+        ) {
             val backStack = remember { mutableStateListOf<Any>(ShellRoute) }
             fun openItem(item: Item) {
                 backStack.add(
@@ -59,6 +70,7 @@ fun App() {
                             onOpenInbox = { backStack.add(InboxRoute) },
                             onOpenItem = ::openItem,
                             onOpenNote = { id -> backStack.add(NoteRoute(id)) },
+                            onOpenSearch = { backStack.add(SearchRoute) },
                         )
                     }
                     entry<SettingsRoute> {
@@ -79,8 +91,15 @@ fun App() {
                     entry<NoteRoute> { route ->
                         NoteEditorScreen(noteId = route.id, onBack = { backStack.removeLastOrNull() })
                     }
+                    entry<SearchRoute> {
+                        SearchScreen(
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenItem = ::openItem,
+                        )
+                    }
                 },
             )
+        }
         }
     }
 }

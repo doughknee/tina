@@ -43,6 +43,7 @@ fun Shell(
     onOpenInbox: () -> Unit,
     onOpenItem: (Item) -> Unit,
     onOpenNote: (Long) -> Unit,
+    onOpenSearch: () -> Unit,
 ) {
     var selectedIndex by rememberSaveable { mutableStateOf(0) }
     val selectedTab = TinaTab.entries[selectedIndex]
@@ -66,6 +67,7 @@ fun Shell(
                 onOpenSettings = onOpenSettings,
                 onOpenInbox = onOpenInbox,
                 onOpenItem = onOpenItem,
+                onOpenSearch = onOpenSearch,
             )
             TinaTab.CALENDAR -> CalendarScreen(
                 onOpenSettings = onOpenSettings,

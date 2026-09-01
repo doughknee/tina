@@ -88,6 +88,27 @@ class ItemRepository(
     /** Re-arm every pending reminder (boot, app start). */
     suspend fun rescheduleAllReminders() = scheduler.rescheduleAll(dao.getRemindable())
 
+    suspend fun exportJson(): String = encodeBackup(dao.getAll(), nowMillis())
+
+    /**
+     * Additive import: items get fresh ids; exact (title, createdAt) duplicates
+     * of existing rows are skipped. Returns how many were imported.
+     */
+    suspend fun importJson(text: String): Int {
+        val backup = decodeBackup(text) ?: return 0
+        val existing = dao.getAll().map { it.title to it.createdAt }.toHashSet()
+        var imported = 0
+        backup.items.forEach { item ->
+            if ((item.title to item.createdAt) !in existing) {
+                insert(item.copy(id = 0))
+                imported++
+            }
+        }
+        return imported
+    }
+
+    fun search(query: String): Flow<List<Item>> = dao.search(query)
+
     suspend fun setSortOrder(id: Long, sortOrder: Long) = dao.setSortOrder(id, sortOrder)
 
     suspend fun rename(id: Long, title: String) = dao.rename(id, title, nowMillis())

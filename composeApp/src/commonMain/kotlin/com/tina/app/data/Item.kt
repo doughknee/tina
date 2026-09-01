@@ -19,6 +19,7 @@ enum class Priority { NONE, LOW, MEDIUM, HIGH }
  * dueTime: minute of day 0..1439.
  */
 @Entity(tableName = "items")
+@kotlinx.serialization.Serializable
 data class Item(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String,

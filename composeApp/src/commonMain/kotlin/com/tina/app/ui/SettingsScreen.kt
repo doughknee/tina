@@ -16,7 +16,10 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -27,13 +30,22 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.tina.app.data.ThemeMode
+import com.tina.app.data.rememberBackupHandlers
 import com.tina.app.resources.Res
 import com.tina.app.resources.back
+import com.tina.app.resources.export_data
+import com.tina.app.resources.export_done
+import com.tina.app.resources.import_data
+import com.tina.app.resources.import_done
+import com.tina.app.resources.import_failed
+import com.tina.app.resources.settings_data
 import com.tina.app.resources.reminder_at_time
 import com.tina.app.resources.reminder_hour_before
 import com.tina.app.resources.reminder_min_before
@@ -48,8 +60,10 @@ import com.tina.app.resources.theme_dark
 import com.tina.app.resources.theme_light
 import com.tina.app.resources.theme_system
 import com.tina.app.resources.weekdays_full
+import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.isoDayNumber
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -63,9 +77,24 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
     val settings by viewModel.settings.collectAsState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val weekdayNames = stringArrayResource(Res.array.weekdays_full)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val exportDoneText = stringResource(Res.string.export_done)
+    val importFailedText = stringResource(Res.string.import_failed)
+    val backupHandlers = rememberBackupHandlers(
+        onExported = { scope.launch { snackbarHostState.showSnackbar(exportDoneText) } },
+        onImported = { count ->
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    if (count < 0) importFailedText else getString(Res.string.import_done, count),
+                )
+            }
+        },
+    )
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.settings)) },
@@ -160,6 +189,18 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                                 )
                             },
                         )
+                    }
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(Res.string.settings_data), style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = backupHandlers.export) {
+                        Text(stringResource(Res.string.export_data))
+                    }
+                    OutlinedButton(onClick = backupHandlers.restore) {
+                        Text(stringResource(Res.string.import_data))
                     }
                 }
             }

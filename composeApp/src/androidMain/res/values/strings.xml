@@ -10,4 +10,7 @@
     <string name="action_done">Done</string>
     <string name="action_snooze_10">Snooze 10 min</string>
     <string name="action_snooze_60">Snooze 1 hour</string>
+    <string name="widget_today_title">Today</string>
+    <string name="widget_today_empty">All clear</string>
+    <string name="widget_today_description">Today’s tasks and events at a glance</string>
 </resources>

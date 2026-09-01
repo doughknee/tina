@@ -75,6 +75,7 @@ import com.tina.app.resources.reminder_hour_before
 import com.tina.app.resources.reminder_min_before
 import com.tina.app.resources.reminder_off
 import com.tina.app.ui.dateLabel
+import com.tina.app.ui.sharedItemTitle
 import com.tina.app.ui.timeLabel
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -149,7 +150,7 @@ private fun DetailContent(item: Item, viewModel: DetailViewModel, modifier: Modi
                 titleText = it
                 if (it.isNotBlank()) viewModel.setTitle(it.trim())
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().sharedItemTitle(item.id),
             textStyle = MaterialTheme.typography.titleLarge,
         )
 

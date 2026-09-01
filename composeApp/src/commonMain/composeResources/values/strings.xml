@@ -83,6 +83,16 @@
     <string name="reminders_allow_notifications">Allow notifications</string>
     <string name="reminders_allow_exact">Allow exact alarms</string>
 
+    <string name="search_everything">Search everything</string>
+    <string name="search_no_results">No matches</string>
+
+    <string name="settings_data">Data</string>
+    <string name="export_data">Export backup</string>
+    <string name="import_data">Import backup</string>
+    <string name="export_done">Backup saved</string>
+    <string name="import_done">%1$d items imported</string>
+    <string name="import_failed">Not a tina backup</string>
+
     <string name="notes_empty">Thoughts land here</string>
     <string name="note_new">New note</string>
     <string name="note_untitled">Untitled</string>
