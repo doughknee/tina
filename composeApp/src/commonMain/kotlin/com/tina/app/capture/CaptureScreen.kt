@@ -16,11 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -157,7 +157,7 @@ fun CaptureScreen(
                 title = { Text(stringResource(Res.string.app_title)) },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Filled.Settings, stringResource(Res.string.settings))
+                        Icon(Icons.Outlined.Settings, stringResource(Res.string.settings))
                     }
                 },
             )
@@ -209,11 +209,11 @@ fun CaptureScreen(
                         Row {
                             if (speech.available) {
                                 IconButton(onClick = speech.start) {
-                                    Icon(Icons.Filled.Mic, stringResource(Res.string.capture_voice))
+                                    Icon(Icons.Outlined.Mic, stringResource(Res.string.capture_voice))
                                 }
                             }
                             FilledIconButton(onClick = { saveNow() }) {
-                                Icon(Icons.AutoMirrored.Filled.Send, stringResource(Res.string.capture_save))
+                                Icon(Icons.AutoMirrored.Outlined.Send, stringResource(Res.string.capture_save))
                             }
                         }
                     },
@@ -246,7 +246,7 @@ private fun CaptureChips(viewModel: CaptureViewModel) {
             selected = false,
             onClick = onRemove,
             label = { Text(label) },
-            trailingIcon = { Icon(Icons.Filled.Close, removeText, Modifier.size(16.dp)) },
+            trailingIcon = { Icon(Icons.Outlined.Close, removeText, Modifier.size(16.dp)) },
         )
     }
 
@@ -308,7 +308,7 @@ private fun SaveBurst(trigger: Int, modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                Icons.Filled.Check,
+                Icons.Outlined.Check,
                 contentDescription = null,
                 modifier = Modifier.size(80.dp),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,

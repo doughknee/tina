@@ -9,15 +9,15 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
-import androidx.compose.material.icons.filled.FormatBold
-import androidx.compose.material.icons.filled.FormatItalic
-import androidx.compose.material.icons.filled.FormatListNumbered
-import androidx.compose.material.icons.filled.FormatUnderlined
-import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.filled.Title
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
+import androidx.compose.material.icons.outlined.FormatBold
+import androidx.compose.material.icons.outlined.FormatItalic
+import androidx.compose.material.icons.outlined.FormatListNumbered
+import androidx.compose.material.icons.outlined.FormatUnderlined
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
@@ -117,13 +117,13 @@ fun NoteEditorScreen(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.back))
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(Res.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = viewModel::togglePin) {
                         Icon(
-                            Icons.Filled.PushPin,
+                            Icons.Outlined.PushPin,
                             stringResource(if (item?.pinned == true) Res.string.note_unpin else Res.string.note_pin),
                             tint = if (item?.pinned == true) {
                                 MaterialTheme.colorScheme.primary
@@ -136,7 +136,7 @@ fun NoteEditorScreen(
                         item?.let { notesViewModel.delete(it) }
                         onBack()
                     }) {
-                        Icon(Icons.Filled.Delete, stringResource(Res.string.delete))
+                        Icon(Icons.Outlined.Delete, stringResource(Res.string.delete))
                     }
                 },
             )
@@ -193,31 +193,31 @@ private fun FormatToolbar(state: RichTextState, modifier: Modifier = Modifier) {
                 state.currentSpanStyle.fontSize != HEADING.fontSize &&
                 state.currentSpanStyle.fontSize != SUBHEADING.fontSize,
             onClick = { state.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
-            icon = { Icon(Icons.Filled.FormatBold, stringResource(Res.string.fmt_bold)) },
+            icon = { Icon(Icons.Outlined.FormatBold, stringResource(Res.string.fmt_bold)) },
         )
         FormatButton(
             active = state.currentSpanStyle.fontStyle == androidx.compose.ui.text.font.FontStyle.Italic,
             onClick = {
                 state.toggleSpanStyle(SpanStyle(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic))
             },
-            icon = { Icon(Icons.Filled.FormatItalic, stringResource(Res.string.fmt_italic)) },
+            icon = { Icon(Icons.Outlined.FormatItalic, stringResource(Res.string.fmt_italic)) },
         )
         FormatButton(
             active = state.currentSpanStyle.textDecoration?.contains(TextDecoration.Underline) == true,
             onClick = { state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline)) },
-            icon = { Icon(Icons.Filled.FormatUnderlined, stringResource(Res.string.fmt_underline)) },
+            icon = { Icon(Icons.Outlined.FormatUnderlined, stringResource(Res.string.fmt_underline)) },
         )
         FormatButton(
             active = state.currentSpanStyle.fontSize == HEADING.fontSize,
             onClick = { state.toggleSpanStyle(HEADING) },
-            icon = { Icon(Icons.Filled.Title, stringResource(Res.string.fmt_heading)) },
+            icon = { Icon(Icons.Outlined.Title, stringResource(Res.string.fmt_heading)) },
         )
         FormatButton(
             active = state.currentSpanStyle.fontSize == SUBHEADING.fontSize,
             onClick = { state.toggleSpanStyle(SUBHEADING) },
             icon = {
                 Icon(
-                    Icons.Filled.Title,
+                    Icons.Outlined.Title,
                     stringResource(Res.string.fmt_subheading),
                     modifier = Modifier.padding(2.dp),
                 )
@@ -226,12 +226,12 @@ private fun FormatToolbar(state: RichTextState, modifier: Modifier = Modifier) {
         FormatButton(
             active = state.isUnorderedList,
             onClick = { state.toggleUnorderedList() },
-            icon = { Icon(Icons.AutoMirrored.Filled.FormatListBulleted, stringResource(Res.string.fmt_bullets)) },
+            icon = { Icon(Icons.AutoMirrored.Outlined.FormatListBulleted, stringResource(Res.string.fmt_bullets)) },
         )
         FormatButton(
             active = state.isOrderedList,
             onClick = { state.toggleOrderedList() },
-            icon = { Icon(Icons.Filled.FormatListNumbered, stringResource(Res.string.fmt_numbered)) },
+            icon = { Icon(Icons.Outlined.FormatListNumbered, stringResource(Res.string.fmt_numbered)) },
         )
     }
 }

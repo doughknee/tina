@@ -12,13 +12,13 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ViewAgenda
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -120,18 +120,18 @@ fun NotesScreen(
                         searching = !searching
                     }) {
                         Icon(
-                            if (searching) Icons.Filled.Close else Icons.Filled.Search,
+                            if (searching) Icons.Outlined.Close else Icons.Outlined.Search,
                             stringResource(if (searching) Res.string.search_close else Res.string.search),
                         )
                     }
                     IconButton(onClick = viewModel::toggleGrid) {
                         Icon(
-                            if (gridMode) Icons.Filled.ViewAgenda else Icons.Filled.GridView,
+                            if (gridMode) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
                             stringResource(if (gridMode) Res.string.notes_list else Res.string.notes_grid),
                         )
                     }
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Filled.Settings, stringResource(Res.string.settings))
+                        Icon(Icons.Outlined.Settings, stringResource(Res.string.settings))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -139,7 +139,7 @@ fun NotesScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { viewModel.createNote(onOpenNote) }) {
-                Icon(Icons.Filled.Add, stringResource(Res.string.note_new))
+                Icon(Icons.Outlined.Add, stringResource(Res.string.note_new))
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -204,7 +204,7 @@ private fun NoteCard(note: Item, onClick: () -> Unit, onTogglePin: () -> Unit) {
                 )
                 IconButton(onClick = onTogglePin) {
                     Icon(
-                        Icons.Filled.PushPin,
+                        Icons.Outlined.PushPin,
                         stringResource(if (note.pinned) Res.string.note_unpin else Res.string.note_pin),
                         modifier = Modifier.size(18.dp),
                         tint = if (note.pinned) {

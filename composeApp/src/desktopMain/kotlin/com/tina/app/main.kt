@@ -1,7 +1,7 @@
 package com.tina.app
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
@@ -29,7 +29,7 @@ fun main() {
         LaunchedEffect(Unit) { DesktopTray.state = trayState }
         Tray(
             state = trayState,
-            icon = rememberVectorPainter(Icons.Filled.Edit),
+            icon = rememberVectorPainter(Icons.Outlined.Edit),
             tooltip = "tina",
         )
 

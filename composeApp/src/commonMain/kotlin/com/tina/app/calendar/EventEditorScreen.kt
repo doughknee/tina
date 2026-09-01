@@ -16,14 +16,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DatePicker
@@ -125,12 +125,12 @@ fun EventEditorScreen(
                 title = { Text(item?.title.orEmpty()) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.back))
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(Res.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.delete(onDeleted = onBack) }) {
-                        Icon(Icons.Filled.Delete, stringResource(Res.string.delete))
+                        Icon(Icons.Outlined.Delete, stringResource(Res.string.delete))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -190,13 +190,13 @@ private fun EventEditorContent(item: Item, viewModel: EventEditorViewModel, modi
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AssistChip(
                         onClick = { picker = PickerTarget.START_DATE },
-                        leadingIcon = { Icon(Icons.Filled.Today, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Outlined.Today, contentDescription = null) },
                         label = { Text(dateLabel(start.date, today)) },
                     )
                     if (!item.allDay) {
                         AssistChip(
                             onClick = { picker = PickerTarget.START_TIME },
-                            leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null) },
+                            leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
                             label = { Text(timeLabel(start.time, use24h)) },
                         )
                     }
@@ -210,12 +210,12 @@ private fun EventEditorContent(item: Item, viewModel: EventEditorViewModel, modi
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AssistChip(
                         onClick = { picker = PickerTarget.END_DATE },
-                        leadingIcon = { Icon(Icons.Filled.Today, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Outlined.Today, contentDescription = null) },
                         label = { Text(dateLabel(end.date, today)) },
                     )
                     AssistChip(
                         onClick = { picker = PickerTarget.END_TIME },
-                        leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
                         label = { Text(timeLabel(end.time, use24h)) },
                     )
                 }
@@ -357,7 +357,7 @@ private fun ColorSwatch(color: Long?, selected: Boolean, onClick: () -> Unit) {
     ) {
         if (color == null && !selected) {
             Icon(
-                Icons.Filled.Block,
+                Icons.Outlined.Block,
                 stringResource(Res.string.color_default),
                 tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(16.dp),
@@ -365,7 +365,7 @@ private fun ColorSwatch(color: Long?, selected: Boolean, onClick: () -> Unit) {
         }
         if (selected) {
             Icon(
-                Icons.Filled.Check,
+                Icons.Outlined.Check,
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier.size(18.dp),
@@ -449,11 +449,11 @@ private fun CustomRepeatDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(Res.string.repeat_every_n), Modifier.weight(1f))
                     IconButton(onClick = { if (interval > 1) interval-- }) {
-                        Icon(Icons.Filled.Remove, contentDescription = null)
+                        Icon(Icons.Outlined.Remove, contentDescription = null)
                     }
                     Text(interval.toString(), style = MaterialTheme.typography.titleMedium)
                     IconButton(onClick = { interval++ }) {
-                        Icon(Icons.Filled.Add, contentDescription = null)
+                        Icon(Icons.Outlined.Add, contentDescription = null)
                     }
                 }
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {

@@ -10,11 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Checkbox
@@ -106,12 +106,12 @@ fun DetailScreen(
                 title = { Text(stringResource(Res.string.details)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.back))
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(Res.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.delete(onDeleted = onBack) }) {
-                        Icon(Icons.Filled.Delete, stringResource(Res.string.delete))
+                        Icon(Icons.Outlined.Delete, stringResource(Res.string.delete))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -168,7 +168,7 @@ private fun DetailContent(item: Item, viewModel: DetailViewModel, modifier: Modi
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AssistChip(
                     onClick = { showDatePicker = true },
-                    leadingIcon = { Icon(Icons.Filled.Today, contentDescription = null) },
+                    leadingIcon = { Icon(Icons.Outlined.Today, contentDescription = null) },
                     label = {
                         Text(
                             item.dueLocalDate?.let { dateLabel(it, today) }
@@ -178,14 +178,14 @@ private fun DetailContent(item: Item, viewModel: DetailViewModel, modifier: Modi
                     trailingIcon = if (item.dueDate != null) {
                         {
                             IconButton(onClick = { viewModel.setDate(null) }) {
-                                Icon(Icons.Filled.Close, contentDescription = null)
+                                Icon(Icons.Outlined.Close, contentDescription = null)
                             }
                         }
                     } else null,
                 )
                 AssistChip(
                     onClick = { showTimePicker = true },
-                    leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null) },
+                    leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
                     label = {
                         Text(
                             item.dueLocalTime?.let { timeLabel(it, use24h) }
@@ -195,7 +195,7 @@ private fun DetailContent(item: Item, viewModel: DetailViewModel, modifier: Modi
                     trailingIcon = if (item.dueTime != null) {
                         {
                             IconButton(onClick = { viewModel.setTime(null) }) {
-                                Icon(Icons.Filled.Close, contentDescription = null)
+                                Icon(Icons.Outlined.Close, contentDescription = null)
                             }
                         }
                     } else null,

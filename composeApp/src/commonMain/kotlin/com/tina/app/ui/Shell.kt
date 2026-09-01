@@ -2,9 +2,13 @@ package com.tina.app.ui
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.automirrored.outlined.Notes
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
@@ -32,11 +36,12 @@ import com.tina.app.resources.tab_today
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-enum class TinaTab(val icon: ImageVector, val label: StringResource) {
-    CAPTURE(Icons.Filled.Edit, Res.string.tab_capture),
-    TODAY(Icons.Filled.Today, Res.string.tab_today),
-    CALENDAR(Icons.Filled.CalendarMonth, Res.string.tab_calendar),
-    NOTES(Icons.AutoMirrored.Filled.Notes, Res.string.tab_notes),
+// Selected nav item keeps the Filled variant (M3 active-state convention).
+enum class TinaTab(val icon: ImageVector, val outlinedIcon: ImageVector, val label: StringResource) {
+    CAPTURE(Icons.Filled.Edit, Icons.Outlined.Edit, Res.string.tab_capture),
+    TODAY(Icons.Filled.Today, Icons.Outlined.Today, Res.string.tab_today),
+    CALENDAR(Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, Res.string.tab_calendar),
+    NOTES(Icons.AutoMirrored.Filled.Notes, Icons.AutoMirrored.Outlined.Notes, Res.string.tab_notes),
 }
 
 @Composable
@@ -74,7 +79,12 @@ fun Shell(
                 item(
                     selected = selectedIndex == index,
                     onClick = { selectedIndex = index },
-                    icon = { Icon(tab.icon, contentDescription = null) },
+                    icon = {
+                        Icon(
+                            if (selectedIndex == index) tab.icon else tab.outlinedIcon,
+                            contentDescription = null,
+                        )
+                    },
                     label = { Text(stringResource(tab.label)) },
                 )
             }

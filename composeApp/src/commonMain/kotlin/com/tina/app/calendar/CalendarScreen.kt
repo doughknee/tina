@@ -17,9 +17,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarViewMonth
-import androidx.compose.material.icons.filled.CalendarViewWeek
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.CalendarViewMonth
+import androidx.compose.material.icons.outlined.ViewWeek
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -180,14 +180,14 @@ fun CalendarScreen(
                     }
                     IconButton(onClick = { monthMode = !monthMode }) {
                         Icon(
-                            if (monthMode) Icons.Filled.CalendarViewWeek else Icons.Filled.CalendarViewMonth,
+                            if (monthMode) Icons.Outlined.ViewWeek else Icons.Outlined.CalendarViewMonth,
                             stringResource(
                                 if (monthMode) Res.string.calendar_view_week else Res.string.calendar_view_month,
                             ),
                         )
                     }
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Filled.Settings, stringResource(Res.string.settings))
+                        Icon(Icons.Outlined.Settings, stringResource(Res.string.settings))
                     }
                 },
             )

@@ -11,9 +11,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Inbox
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Celebration
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -125,7 +125,7 @@ fun TodayScreen(
                 title = { Text(stringResource(Res.string.tab_today)) },
                 actions = {
                     IconButton(onClick = onOpenSearch) {
-                        Icon(Icons.Filled.Search, stringResource(Res.string.search))
+                        Icon(Icons.Outlined.Search, stringResource(Res.string.search))
                     }
                     IconButton(onClick = onOpenInbox) {
                         BadgedBox(
@@ -133,11 +133,11 @@ fun TodayScreen(
                                 if (state.inboxCount > 0) Badge { Text(state.inboxCount.toString()) }
                             },
                         ) {
-                            Icon(Icons.Filled.Inbox, stringResource(Res.string.inbox))
+                            Icon(Icons.Outlined.Inbox, stringResource(Res.string.inbox))
                         }
                     }
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Filled.Settings, stringResource(Res.string.settings))
+                        Icon(Icons.Outlined.Settings, stringResource(Res.string.settings))
                     }
                 },
                 scrollBehavior = scrollBehavior,
