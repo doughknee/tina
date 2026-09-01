@@ -3,14 +3,18 @@ package com.tina.app.today
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
@@ -26,6 +30,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -48,6 +53,7 @@ import com.tina.app.data.ItemType
 import com.tina.app.resources.Res
 import com.tina.app.resources.deleted
 import com.tina.app.resources.inbox
+import com.tina.app.resources.inbox_count
 import com.tina.app.resources.section_afternoon
 import com.tina.app.resources.section_anytime
 import com.tina.app.resources.section_evening
@@ -192,6 +198,40 @@ fun TodayScreen(
         }
 
         LazyColumn(Modifier.fillMaxWidth().weight(1f), state = listState) {
+            if (state.inboxCount > 0) {
+                item(key = "inbox-entry") {
+                    Surface(
+                        onClick = onOpenInbox,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .animateItem(),
+                    ) {
+                        Row(
+                            Modifier.defaultMinSize(minHeight = 56.dp).padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                Icons.Outlined.Inbox,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                stringResource(Res.string.inbox_count, state.inboxCount),
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.weight(1f).padding(start = 12.dp),
+                            )
+                            Icon(
+                                Icons.AutoMirrored.Outlined.ArrowForward,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
             state.sections.forEach { (section, entries) ->
                 item(key = "header-$section") {
                     Text(

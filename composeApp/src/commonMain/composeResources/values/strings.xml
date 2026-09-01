@@ -30,6 +30,7 @@
     <string name="date_none">No date</string>
 
     <string name="inbox">Inbox</string>
+    <string name="inbox_count">%1$d in inbox</string>
     <string name="inbox_empty">Inbox zero</string>
     <string name="inbox_empty_sub">Everything is filed</string>
     <string name="inbox_captured">captured %1$s</string>
