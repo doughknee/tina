@@ -18,6 +18,11 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
+    sourceSets.all {
+        languageSettings.optIn("androidx.compose.material3.ExperimentalMaterial3ExpressiveApi")
+        languageSettings.optIn("androidx.compose.material3.ExperimentalMaterial3Api")
+    }
+
     androidTarget()
     jvm("desktop")
 
