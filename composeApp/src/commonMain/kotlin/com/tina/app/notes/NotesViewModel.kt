@@ -15,7 +15,25 @@ import kotlinx.coroutines.launch
 
 private val HTML_TAG = Regex("<[^>]*>")
 
-fun htmlPreview(html: String): String = HTML_TAG.replace(html, " ").replace(Regex("\\s+"), " ").trim()
+private val HTML_ENTITY = Regex("&(#x?[0-9a-fA-F]+|[a-zA-Z]+);")
+
+fun htmlPreview(html: String): String = HTML_TAG.replace(html, " ")
+    .let { text ->
+        HTML_ENTITY.replace(text) { m ->
+            val name = m.groupValues[1]
+            when {
+                name.startsWith("#x") || name.startsWith("#X") ->
+                    name.drop(2).toIntOrNull(16)?.toChar()?.toString() ?: m.value
+                name.startsWith("#") -> name.drop(1).toIntOrNull()?.toChar()?.toString() ?: m.value
+                else -> when (name) {
+                    "amp" -> "&"; "lt" -> "<"; "gt" -> ">"; "quot" -> "\""
+                    "apos" -> "'"; "nbsp" -> " "
+                    else -> m.value
+                }
+            }
+        }
+    }
+    .replace(Regex("\\s+"), " ").trim()
 
 class NotesViewModel(private val repository: ItemRepository) : ViewModel() {
     val query = MutableStateFlow("")
