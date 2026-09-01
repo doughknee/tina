@@ -2,7 +2,6 @@ package com.tina.app.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -225,9 +224,17 @@ private fun DetailContent(item: Item, viewModel: DetailViewModel, modifier: Modi
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(Res.string.detail_reminder), style = MaterialTheme.typography.titleSmall)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    REMINDER_OPTIONS.forEach { minutes ->
+                Text(
+                    stringResource(Res.string.detail_reminder),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                com.tina.app.ui.ChipRail(
+                    selectedIndex = REMINDER_OPTIONS.indexOf(item.reminderOffsetMinutes),
+                    scrollKey = item.id,
+                ) {
+                    items(REMINDER_OPTIONS.size) { index ->
+                        val minutes = REMINDER_OPTIONS[index]
                         FilterChip(
                             selected = item.reminderOffsetMinutes == minutes,
                             onClick = { viewModel.setReminder(minutes) },

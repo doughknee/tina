@@ -192,8 +192,9 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(Res.string.settings_reminder), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    REMINDER_OPTIONS.forEach { minutes ->
+                ChipRail(selectedIndex = REMINDER_OPTIONS.indexOf(settings.defaultReminderMinutes)) {
+                    items(REMINDER_OPTIONS.size) { index ->
+                        val minutes = REMINDER_OPTIONS[index]
                         FilterChip(
                             selected = settings.defaultReminderMinutes == minutes,
                             onClick = { viewModel.setDefaultReminderMinutes(minutes) },

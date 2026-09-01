@@ -229,9 +229,17 @@ private fun EventEditorContent(item: Item, viewModel: EventEditorViewModel, modi
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(Res.string.detail_reminder), style = MaterialTheme.typography.titleSmall)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                REMINDER_OPTIONS.forEach { minutes ->
+            Text(
+                stringResource(Res.string.detail_reminder),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            com.tina.app.ui.ChipRail(
+                selectedIndex = REMINDER_OPTIONS.indexOf(item.reminderOffsetMinutes),
+                scrollKey = item.id,
+            ) {
+                items(REMINDER_OPTIONS.size) { index ->
+                    val minutes = REMINDER_OPTIONS[index]
                     FilterChip(
                         selected = item.reminderOffsetMinutes == minutes,
                         onClick = { viewModel.setReminder(minutes) },
@@ -379,39 +387,63 @@ private fun RepeatSection(rrule: String?, onSelect: (String?) -> Unit, onCustom:
     val parsed = rrule?.let { parseRrule(it) }
     val isSimple = parsed != null && parsed.interval == 1 && parsed.byDay.isEmpty() &&
         parsed.count == null && parsed.until == null
+    val selectedIndex = when {
+        rrule == null -> 0
+        isSimple && parsed.freq == RecurrenceRule.Freq.DAILY -> 1
+        isSimple && parsed.freq == RecurrenceRule.Freq.WEEKLY -> 2
+        isSimple && parsed.freq == RecurrenceRule.Freq.MONTHLY -> 3
+        isSimple && parsed.freq == RecurrenceRule.Freq.YEARLY -> 4
+        else -> 5
+    }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(Res.string.event_repeat), style = MaterialTheme.typography.titleSmall)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = rrule == null,
-                onClick = { onSelect(null) },
-                label = { Text(stringResource(Res.string.repeat_none)) },
-            )
-            FilterChip(
-                selected = isSimple && parsed.freq == RecurrenceRule.Freq.DAILY,
-                onClick = { onSelect("FREQ=DAILY") },
-                label = { Text(stringResource(Res.string.repeat_daily)) },
-            )
-            FilterChip(
-                selected = isSimple && parsed.freq == RecurrenceRule.Freq.WEEKLY,
-                onClick = { onSelect("FREQ=WEEKLY") },
-                label = { Text(stringResource(Res.string.repeat_weekly)) },
-            )
-            FilterChip(
-                selected = isSimple && parsed.freq == RecurrenceRule.Freq.MONTHLY,
-                onClick = { onSelect("FREQ=MONTHLY") },
-                label = { Text(stringResource(Res.string.repeat_monthly)) },
-            )
-            FilterChip(
-                selected = isSimple && parsed.freq == RecurrenceRule.Freq.YEARLY,
-                onClick = { onSelect("FREQ=YEARLY") },
-                label = { Text(stringResource(Res.string.repeat_yearly)) },
-            )
-            FilterChip(
-                selected = rrule != null && !isSimple,
-                onClick = onCustom,
-                label = { Text(stringResource(Res.string.repeat_custom)) },
-            )
+        Text(
+            stringResource(Res.string.event_repeat),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        com.tina.app.ui.ChipRail(selectedIndex = selectedIndex) {
+            item {
+                FilterChip(
+                    selected = rrule == null,
+                    onClick = { onSelect(null) },
+                    label = { Text(stringResource(Res.string.repeat_none)) },
+                )
+            }
+            item {
+                FilterChip(
+                    selected = isSimple && parsed.freq == RecurrenceRule.Freq.DAILY,
+                    onClick = { onSelect("FREQ=DAILY") },
+                    label = { Text(stringResource(Res.string.repeat_daily)) },
+                )
+            }
+            item {
+                FilterChip(
+                    selected = isSimple && parsed.freq == RecurrenceRule.Freq.WEEKLY,
+                    onClick = { onSelect("FREQ=WEEKLY") },
+                    label = { Text(stringResource(Res.string.repeat_weekly)) },
+                )
+            }
+            item {
+                FilterChip(
+                    selected = isSimple && parsed.freq == RecurrenceRule.Freq.MONTHLY,
+                    onClick = { onSelect("FREQ=MONTHLY") },
+                    label = { Text(stringResource(Res.string.repeat_monthly)) },
+                )
+            }
+            item {
+                FilterChip(
+                    selected = isSimple && parsed.freq == RecurrenceRule.Freq.YEARLY,
+                    onClick = { onSelect("FREQ=YEARLY") },
+                    label = { Text(stringResource(Res.string.repeat_yearly)) },
+                )
+            }
+            item {
+                FilterChip(
+                    selected = rrule != null && !isSimple,
+                    onClick = onCustom,
+                    label = { Text(stringResource(Res.string.repeat_custom)) },
+                )
+            }
         }
     }
 }
