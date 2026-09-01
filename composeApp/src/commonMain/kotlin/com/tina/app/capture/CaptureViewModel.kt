@@ -8,14 +8,24 @@ import androidx.lifecycle.viewModelScope
 import com.tina.app.data.ItemRepository
 import com.tina.app.data.ItemType
 import com.tina.app.data.Priority
+import com.tina.app.data.Settings
+import com.tina.app.data.SettingsRepository
 import kotlin.time.Clock
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 enum class ChipKind { DATE, TIME, DURATION, PRIORITY, RECURRENCE }
 
-class CaptureViewModel(private val repository: ItemRepository) : ViewModel() {
+class CaptureViewModel(
+    private val repository: ItemRepository,
+    settingsRepository: SettingsRepository,
+) : ViewModel() {
+    private val settings = settingsRepository.settings
+        .stateIn(viewModelScope, SharingStarted.Eagerly, Settings())
+
     var text by mutableStateOf("")
         private set
     var removedKinds by mutableStateOf(emptySet<ChipKind>())
@@ -33,7 +43,7 @@ class CaptureViewModel(private val repository: ItemRepository) : ViewModel() {
     private val tz get() = TimeZone.currentSystemDefault()
 
     val parsed: ParsedCapture
-        get() = parseCapture(text, Clock.System.now().toLocalDateTime(tz))
+        get() = parseCapture(text, Clock.System.now().toLocalDateTime(tz), settings.value.firstDayOfWeek)
 
     fun effective(): ParsedCapture {
         var p = parsed
@@ -75,7 +85,7 @@ class CaptureViewModel(private val repository: ItemRepository) : ViewModel() {
         if (text.isBlank()) return
         val effective = effective()
         viewModelScope.launch {
-            lastSavedId = repository.capture(effective, tz)
+            lastSavedId = repository.capture(effective, tz, settings.value.defaultReminderMinutes)
             text = ""
             removedKinds = emptySet()
             removedTags = emptySet()

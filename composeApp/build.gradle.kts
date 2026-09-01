@@ -28,6 +28,8 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.navigation3.ui)
             implementation(libs.material3.adaptive)
+            implementation(libs.material3.adaptive.navigation.suite)
+            implementation(libs.androidx.datastore.preferences)
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.koin.core)

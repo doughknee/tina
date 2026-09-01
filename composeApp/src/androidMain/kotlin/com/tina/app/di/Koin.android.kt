@@ -1,9 +1,12 @@
 package com.tina.app.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tina.app.data.AppDatabase
+import com.tina.app.data.createSettingsStore
 import com.tina.app.notifications.Notifier
 import com.tina.app.notifications.PlatformNotifier
 import org.koin.android.ext.koin.androidContext
@@ -16,6 +19,11 @@ val androidModule = module {
             context = context,
             name = context.getDatabasePath("tina.db").absolutePath,
         )
+    }
+    single<DataStore<Preferences>> {
+        createSettingsStore {
+            androidContext().filesDir.resolve("settings.preferences_pb").absolutePath
+        }
     }
     single<Notifier> { PlatformNotifier(androidContext()) }
 }

@@ -6,5 +6,5 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 @Composable
-actual fun appColorScheme(darkTheme: Boolean): ColorScheme =
+actual fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorScheme =
     if (darkTheme) darkColorScheme() else lightColorScheme()

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -35,6 +36,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -54,7 +56,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import com.tina.app.data.ItemType
 import com.tina.app.data.Priority
+import com.tina.app.LocalSettings
 import com.tina.app.resources.Res
+import com.tina.app.resources.app_title
 import com.tina.app.resources.capture_placeholder
 import com.tina.app.resources.capture_save
 import com.tina.app.resources.capture_voice
@@ -63,6 +67,7 @@ import com.tina.app.resources.chip_remove
 import com.tina.app.resources.priority_high
 import com.tina.app.resources.priority_low
 import com.tina.app.resources.priority_medium
+import com.tina.app.resources.settings
 import com.tina.app.resources.type_event
 import com.tina.app.resources.type_inbox
 import com.tina.app.resources.type_note
@@ -89,7 +94,10 @@ fun typeLabel(type: ItemType): String = when (type) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CaptureScreen(viewModel: CaptureViewModel = koinViewModel()) {
+fun CaptureScreen(
+    onOpenSettings: () -> Unit = {},
+    viewModel: CaptureViewModel = koinViewModel(),
+) {
     val focusRequester = remember { FocusRequester() }
     val haptic = LocalHapticFeedback.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -120,6 +128,16 @@ fun CaptureScreen(viewModel: CaptureViewModel = koinViewModel()) {
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(Res.string.app_title)) },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Filled.Settings, stringResource(Res.string.settings))
+                    }
+                },
+            )
+        },
         snackbarHost = {
             SnackbarHost(snackbarHostState, Modifier.imePadding())
         },
@@ -202,8 +220,9 @@ private fun CaptureChips(viewModel: CaptureViewModel) {
             onClick = viewModel::cycleType,
             label = { Text(typeLabel(effective.type)) },
         )
+        val use24h = LocalSettings.current.use24h
         effective.date?.let { removableChip(dateLabel(it, today)) { viewModel.removeChip(ChipKind.DATE) } }
-        effective.time?.let { removableChip(timeLabel(it)) { viewModel.removeChip(ChipKind.TIME) } }
+        effective.time?.let { removableChip(timeLabel(it, use24h)) { viewModel.removeChip(ChipKind.TIME) } }
         effective.durationMinutes?.let { removableChip(durationLabel(it)) { viewModel.removeChip(ChipKind.DURATION) } }
         if (effective.priority != Priority.NONE) {
             val label = when (effective.priority) {

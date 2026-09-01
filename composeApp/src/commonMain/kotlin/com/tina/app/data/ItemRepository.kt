@@ -60,9 +60,13 @@ class ItemRepository(
         dao.reschedule(id, day?.toEpochDays()?.toInt(), nowMillis())
 
     /** Parse-result in, saved item out. The 2-second path. */
-    suspend fun capture(parsed: ParsedCapture, tz: TimeZone): Long {
+    suspend fun capture(
+        parsed: ParsedCapture,
+        tz: TimeZone,
+        defaultReminderMinutes: Int = DEFAULT_REMINDER_MINUTES,
+    ): Long {
         val now = clock.now().toLocalDateTime(tz)
-        return dao.insert(itemFromCapture(parsed, now, tz))
+        return dao.insert(itemFromCapture(parsed, now, tz, defaultReminderMinutes))
     }
 
     /** Expand an event's occurrences (recurring or not) within a range. */
