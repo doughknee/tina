@@ -137,6 +137,7 @@
     <string name="capture_try_2">#home !! fix the gate</string>
     <string name="capture_try_3">water plants every friday</string>
     <string name="ai_improve">AI improve</string>
+    <string name="ai_suggestion_pending">AI suggestion available</string>
     <string name="improve_title">AI suggestions</string>
     <string name="improve_loading">Thinking…</string>
     <string name="improve_error">Couldn’t get suggestions</string>

@@ -23,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.PriorityHigh
@@ -39,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +67,7 @@ import com.tina.app.resources.date_none
 import com.tina.app.resources.date_today
 import com.tina.app.resources.date_tomorrow
 import com.tina.app.resources.delete
+import com.tina.app.resources.ai_suggestion_pending
 import com.tina.app.resources.mark_done
 import com.tina.app.resources.open_details
 import com.tina.app.resources.priority_high
@@ -259,17 +262,28 @@ private fun RowContent(
                         }),
                     )
                 } else {
-                    Text(
-                        item.title,
-                        modifier = Modifier.sharedItemTitle(item.id),
-                        style = MaterialTheme.typography.bodyLarge,
-                        textDecoration = if (item.completed) TextDecoration.LineThrough else null,
-                        color = if (item.completed) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                    )
+                    val suggestions by com.tina.app.ai.SuggestionCache.patches.collectAsState()
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            item.title,
+                            modifier = Modifier.sharedItemTitle(item.id),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textDecoration = if (item.completed) TextDecoration.LineThrough else null,
+                            color = if (item.completed) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                        )
+                        if (item.id in suggestions) {
+                            Icon(
+                                Icons.Outlined.AutoAwesome,
+                                stringResource(Res.string.ai_suggestion_pending),
+                                Modifier.padding(start = 6.dp).size(14.dp),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
                 }
                 val priorityLabel = when (item.priority) {
                     Priority.HIGH -> stringResource(Res.string.priority_high)

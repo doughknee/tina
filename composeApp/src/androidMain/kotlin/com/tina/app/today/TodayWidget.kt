@@ -2,6 +2,7 @@ package com.tina.app.today
 
 import android.content.Context
 import android.text.format.DateFormat
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -23,16 +24,19 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import com.tina.app.MainActivity
 import com.tina.app.R
 import com.tina.app.data.ItemRepository
@@ -56,6 +60,7 @@ private data class WidgetEntry(
     val timeMillis: Long?,
     val isTask: Boolean,
     val completed: Boolean,
+    val color: Long? = null,
 )
 
 private val ItemIdKey = ActionParameters.Key<Long>("itemId")
@@ -86,6 +91,7 @@ class TodayWidget : GlanceAppWidget() {
                     timeMillis = if (event.allDay) null else occurrence,
                     isTask = false,
                     completed = false,
+                    color = event.color,
                 )
             }
         }
@@ -107,17 +113,32 @@ private fun WidgetBody(context: Context, entries: List<WidgetEntry>) {
             .fillMaxSize()
             .background(GlanceTheme.colors.widgetBackground)
             .cornerRadius(24.dp)
-            .padding(12.dp),
+            .padding(16.dp),
     ) {
-        Text(
-            context.getString(R.string.widget_today_title),
-            style = TextStyle(
-                color = GlanceTheme.colors.primary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-            ),
-            modifier = GlanceModifier.padding(bottom = 4.dp).clickable(actionStartActivity<MainActivity>()),
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = GlanceModifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+                .clickable(actionStartActivity<MainActivity>()),
+        ) {
+            Text(
+                context.getString(R.string.widget_today_title),
+                style = TextStyle(
+                    color = GlanceTheme.colors.onSurface,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                ),
+                modifier = GlanceModifier.defaultWeight(),
+            )
+            val open = entries.count { !it.completed }
+            if (open > 0) {
+                Text(
+                    open.toString(),
+                    style = TextStyle(color = GlanceTheme.colors.primary, fontSize = 14.sp),
+                )
+            }
+        }
         if (entries.isEmpty()) {
             Text(
                 context.getString(R.string.widget_today_empty),
@@ -138,9 +159,17 @@ private fun WidgetBody(context: Context, entries: List<WidgetEntry>) {
                                 ),
                             )
                         } else {
-                            Spacer(GlanceModifier.width(8.dp))
-                            Text("•", style = TextStyle(color = GlanceTheme.colors.primary, fontSize = 16.sp))
-                            Spacer(GlanceModifier.width(8.dp))
+                            Spacer(GlanceModifier.width(11.dp))
+                            Box(
+                                modifier = GlanceModifier
+                                    .size(10.dp)
+                                    .background(
+                                        entry.color?.let { ColorProvider(Color(it)) }
+                                            ?: GlanceTheme.colors.primary,
+                                    )
+                                    .cornerRadius(5.dp),
+                            ) {}
+                            Spacer(GlanceModifier.width(11.dp))
                         }
                         Column(modifier = GlanceModifier.defaultWeight().clickable(actionStartActivity<MainActivity>())) {
                             Text(

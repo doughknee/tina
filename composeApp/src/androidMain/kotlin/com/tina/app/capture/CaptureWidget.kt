@@ -3,6 +3,7 @@ package com.tina.app.capture
 import android.content.Context
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -16,6 +17,7 @@ import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.background
 import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
@@ -43,19 +45,35 @@ class CaptureWidget : GlanceAppWidget() {
                     .background(GlanceTheme.colors.widgetBackground)
                     .cornerRadius(28.dp)
                     .clickable(actionStartActivity<MainActivity>())
-                    .padding(horizontal = 20.dp),
+                    .padding(start = 20.dp, end = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
                     provider = ImageProvider(R.drawable.ic_capture),
                     contentDescription = null,
-                    modifier = GlanceModifier.size(24.dp),
+                    modifier = GlanceModifier.size(22.dp),
+                    colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
                 )
                 Spacer(GlanceModifier.width(12.dp))
                 Text(
                     text = androidx.glance.LocalContext.current.getString(R.string.widget_hint),
                     style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = 16.sp),
+                    modifier = GlanceModifier.defaultWeight(),
                 )
+                Box(
+                    modifier = GlanceModifier
+                        .size(36.dp)
+                        .background(GlanceTheme.colors.primary)
+                        .cornerRadius(18.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        provider = ImageProvider(R.drawable.ic_capture),
+                        contentDescription = null,
+                        modifier = GlanceModifier.size(18.dp),
+                        colorFilter = ColorFilter.tint(GlanceTheme.colors.onPrimary),
+                    )
+                }
             }
         }
     }
