@@ -128,6 +128,15 @@
     <string name="capture_placeholder">What’s on your mind?</string>
     <string name="capture_save">Save</string>
     <string name="capture_voice">Voice capture</string>
+    <string name="capture_try">Try</string>
+    <string name="capture_recent">Recent</string>
+    <string name="capture_try_1">lunch with sam tomorrow at noon</string>
+    <string name="capture_try_2">#home !! fix the gate</string>
+    <string name="capture_try_3">water plants every friday</string>
+    <string name="time_just_now">just now</string>
+    <string name="time_min_ago">%1$s m ago</string>
+    <string name="time_hr_ago">%1$s h ago</string>
+    <string name="time_day_ago">%1$s d ago</string>
     <string name="captured">Captured</string>
     <string name="undo">Undo</string>
     <string name="chip_remove">Remove</string>

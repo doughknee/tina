@@ -32,6 +32,9 @@ interface ItemDao {
     @Query("SELECT COUNT(*) FROM items WHERE type = 'INBOX'")
     fun observeInboxCount(): Flow<Int>
 
+    @Query("SELECT * FROM items ORDER BY createdAt DESC LIMIT 3")
+    fun observeRecent(): Flow<List<Item>>
+
     /** Open tasks due on or before the given day (overdue rolls forward), plus tasks completed today. */
     @Query(
         """SELECT * FROM items WHERE type = 'TASK' AND (

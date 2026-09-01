@@ -31,6 +31,7 @@ class ItemRepository(
 
     fun observeInbox(): Flow<List<Item>> = dao.observeInbox()
     fun observeInboxCount(): Flow<Int> = dao.observeInboxCount()
+    fun observeRecent(): Flow<List<Item>> = dao.observeRecent()
     fun observeNotes(): Flow<List<Item>> = dao.observeNotes()
 
     fun observeTasksForDay(day: LocalDate, tz: TimeZone): Flow<List<Item>> {

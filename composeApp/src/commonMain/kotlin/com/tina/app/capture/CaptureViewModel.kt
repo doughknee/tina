@@ -30,6 +30,10 @@ class CaptureViewModel(
     /** Emits the pre-refinement item whenever the AI upgraded a capture (for the undo snackbar). */
     val refinedEvents = kotlinx.coroutines.flow.MutableSharedFlow<com.tina.app.data.Item>(extraBufferCapacity = 4)
 
+    /** Last three captures, newest first — shown while the field is empty. */
+    val recent = repository.observeRecent()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     var text by mutableStateOf("")
         private set
     var removedKinds by mutableStateOf(emptySet<ChipKind>())

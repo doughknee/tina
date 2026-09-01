@@ -1,9 +1,12 @@
 package com.tina.app.capture
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,12 +18,20 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Event
+import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -33,12 +44,15 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameNanos
@@ -68,9 +82,18 @@ import com.tina.app.resources.Res
 import com.tina.app.resources.ai_refined
 import com.tina.app.resources.app_title
 import com.tina.app.resources.capture_placeholder
+import com.tina.app.resources.capture_recent
 import com.tina.app.resources.capture_save
+import com.tina.app.resources.capture_try
+import com.tina.app.resources.capture_try_1
+import com.tina.app.resources.capture_try_2
+import com.tina.app.resources.capture_try_3
 import com.tina.app.resources.capture_voice
 import com.tina.app.resources.captured
+import com.tina.app.resources.time_day_ago
+import com.tina.app.resources.time_hr_ago
+import com.tina.app.resources.time_just_now
+import com.tina.app.resources.time_min_ago
 import com.tina.app.resources.chip_remove
 import com.tina.app.resources.priority_high
 import com.tina.app.resources.priority_low
@@ -220,6 +243,15 @@ fun CaptureScreen(
                 )
 
                 CaptureChips(viewModel)
+
+                // suggestions + recents only while idle; gone the instant typing starts
+                AnimatedVisibility(
+                    visible = viewModel.text.isBlank(),
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    CaptureEmptyState(viewModel)
+                }
             }
 
             SaveBurst(
@@ -227,6 +259,108 @@ fun CaptureScreen(
                 modifier = Modifier.align(Alignment.Center),
             )
         }
+    }
+}
+
+@Composable
+private fun CaptureEmptyState(viewModel: CaptureViewModel) {
+    val recent by viewModel.recent.collectAsState()
+    val use24h = LocalSettings.current.use24h
+    val now = remember(recent) { Clock.System.now() }
+    val today = remember(recent) { now.toLocalDateTime(TimeZone.currentSystemDefault()).date }
+    val suggestions = listOf(
+        stringResource(Res.string.capture_try_1),
+        stringResource(Res.string.capture_try_2),
+        stringResource(Res.string.capture_try_3),
+    )
+
+    Column(Modifier.fillMaxWidth().padding(top = 24.dp)) {
+        Text(
+            stringResource(Res.string.capture_try).uppercase(),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            suggestions.forEach { suggestion ->
+                SuggestionChip(
+                    onClick = { viewModel.prefill(suggestion) },
+                    label = { Text(suggestion) },
+                    icon = {
+                        Icon(
+                            Icons.Outlined.AutoAwesome,
+                            contentDescription = null,
+                            Modifier.size(18.dp),
+                        )
+                    },
+                )
+            }
+        }
+        if (recent.isNotEmpty()) {
+            Spacer(Modifier.height(24.dp))
+            Text(
+                stringResource(Res.string.capture_recent).uppercase(),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            recent.forEach { item ->
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        when (item.type) {
+                            ItemType.TASK -> Icons.Outlined.TaskAlt
+                            ItemType.EVENT -> Icons.Outlined.Event
+                            ItemType.NOTE -> Icons.Outlined.Description
+                            ItemType.INBOX -> Icons.Outlined.Inbox
+                        },
+                        contentDescription = null,
+                        Modifier.size(22.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Column(Modifier.padding(start = 16.dp)) {
+                        Text(
+                            item.title,
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        )
+                        val schedule = when {
+                            item.type == ItemType.EVENT && item.startAt != null -> {
+                                val start = kotlin.time.Instant.fromEpochMilliseconds(item.startAt!!)
+                                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                                listOfNotNull(
+                                    dateLabel(start.date, today),
+                                    if (item.allDay) null else timeLabel(start.time, use24h),
+                                ).joinToString(" ")
+                            }
+                            item.dueLocalDate != null -> dateLabel(item.dueLocalDate!!, today)
+                            else -> null
+                        }
+                        Text(
+                            listOfNotNull(
+                                typeLabel(item.type),
+                                schedule,
+                                relativeAge(now.toEpochMilliseconds() - item.createdAt),
+                            ).joinToString(" · "),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun relativeAge(ageMillis: Long): String {
+    val minutes = ageMillis / 60_000
+    return when {
+        minutes < 1 -> stringResource(Res.string.time_just_now)
+        minutes < 60 -> stringResource(Res.string.time_min_ago, minutes.toString())
+        minutes < 60 * 24 -> stringResource(Res.string.time_hr_ago, (minutes / 60).toString())
+        else -> stringResource(Res.string.time_day_ago, (minutes / (60 * 24)).toString())
     }
 }
 
