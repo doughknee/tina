@@ -93,7 +93,7 @@ private val REMINDER_OPTIONS = listOf(null, 0, 5, 10, 15, 30, 60)
 fun DetailScreen(
     itemId: Long,
     onBack: () -> Unit,
-    viewModel: DetailViewModel = koinViewModel { parametersOf(itemId) },
+    viewModel: DetailViewModel = koinViewModel(key = "detail-$itemId") { parametersOf(itemId) },
 ) {
     val item by viewModel.item.collectAsState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()

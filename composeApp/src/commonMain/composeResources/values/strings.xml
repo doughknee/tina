@@ -78,6 +78,23 @@
     <string name="event_color">Color</string>
     <string name="color_default">Default</string>
 
+    <string name="notes_empty">Thoughts land here</string>
+    <string name="note_new">New note</string>
+    <string name="note_untitled">Untitled</string>
+    <string name="search">Search</string>
+    <string name="search_close">Close search</string>
+    <string name="notes_grid">Grid</string>
+    <string name="notes_list">List</string>
+    <string name="note_pin">Pin</string>
+    <string name="note_unpin">Unpin</string>
+    <string name="fmt_bold">Bold</string>
+    <string name="fmt_italic">Italic</string>
+    <string name="fmt_underline">Underline</string>
+    <string name="fmt_heading">Heading</string>
+    <string name="fmt_subheading">Subheading</string>
+    <string name="fmt_bullets">Bulleted list</string>
+    <string name="fmt_numbered">Numbered list</string>
+
     <string name="capture_placeholder">What’s on your mind?</string>
     <string name="capture_save">Save</string>
     <string name="capture_voice">Voice capture</string>

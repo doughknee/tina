@@ -9,6 +9,8 @@ import com.tina.app.data.SettingsRepository
 import com.tina.app.data.buildDatabase
 import com.tina.app.detail.DetailViewModel
 import com.tina.app.inbox.InboxViewModel
+import com.tina.app.notes.NoteEditorViewModel
+import com.tina.app.notes.NotesViewModel
 import com.tina.app.today.TodayViewModel
 import com.tina.app.ui.SettingsViewModel
 import org.koin.core.context.startKoin
@@ -30,6 +32,8 @@ val commonModule = module {
     viewModelOf(::CalendarViewModel)
     viewModel { (id: Long) -> DetailViewModel(id, get()) }
     viewModel { (id: Long) -> EventEditorViewModel(id, get()) }
+    viewModelOf(::NotesViewModel)
+    viewModel { (id: Long) -> NoteEditorViewModel(id, get()) }
 }
 
 fun initKoin(platformModule: Module, config: KoinAppDeclaration? = null) {

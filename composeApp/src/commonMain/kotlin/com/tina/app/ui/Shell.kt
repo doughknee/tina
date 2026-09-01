@@ -18,6 +18,7 @@ import com.tina.app.calendar.CalendarScreen
 import com.tina.app.capture.CaptureScreen
 import com.tina.app.capture.CaptureViewModel
 import com.tina.app.data.Item
+import com.tina.app.notes.NotesScreen
 import com.tina.app.resources.Res
 import com.tina.app.today.TodayScreen
 import kotlinx.datetime.number
@@ -41,6 +42,7 @@ fun Shell(
     onOpenSettings: () -> Unit,
     onOpenInbox: () -> Unit,
     onOpenItem: (Item) -> Unit,
+    onOpenNote: (Long) -> Unit,
 ) {
     var selectedIndex by rememberSaveable { mutableStateOf(0) }
     val selectedTab = TinaTab.entries[selectedIndex]
@@ -74,7 +76,7 @@ fun Shell(
                     selectedIndex = 0
                 },
             )
-            TinaTab.NOTES -> PlaceholderTab(Res.string.tab_notes, onOpenSettings)
+            TinaTab.NOTES -> NotesScreen(onOpenSettings = onOpenSettings, onOpenNote = onOpenNote)
         }
     }
 }

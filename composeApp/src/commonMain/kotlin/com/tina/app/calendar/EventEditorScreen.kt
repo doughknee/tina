@@ -113,7 +113,7 @@ private enum class PickerTarget { START_DATE, START_TIME, END_DATE, END_TIME }
 fun EventEditorScreen(
     itemId: Long,
     onBack: () -> Unit,
-    viewModel: EventEditorViewModel = koinViewModel { parametersOf(itemId) },
+    viewModel: EventEditorViewModel = koinViewModel(key = "event-$itemId") { parametersOf(itemId) },
 ) {
     val item by viewModel.item.collectAsState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()

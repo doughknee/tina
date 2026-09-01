@@ -15,6 +15,7 @@ import com.tina.app.data.Settings
 import com.tina.app.data.SettingsRepository
 import com.tina.app.detail.DetailScreen
 import com.tina.app.inbox.InboxScreen
+import com.tina.app.notes.NoteEditorScreen
 import com.tina.app.ui.SettingsScreen
 import com.tina.app.ui.Shell
 import org.koin.compose.koinInject
@@ -29,6 +30,8 @@ data class DetailRoute(val id: Long)
 
 data class EventEditRoute(val id: Long)
 
+data class NoteRoute(val id: Long)
+
 @Composable
 fun App() {
     val settingsRepository = koinInject<SettingsRepository>()
@@ -39,7 +42,11 @@ fun App() {
             val backStack = remember { mutableStateListOf<Any>(ShellRoute) }
             fun openItem(item: Item) {
                 backStack.add(
-                    if (item.type == ItemType.EVENT) EventEditRoute(item.id) else DetailRoute(item.id),
+                    when (item.type) {
+                        ItemType.EVENT -> EventEditRoute(item.id)
+                        ItemType.NOTE -> NoteRoute(item.id)
+                        else -> DetailRoute(item.id)
+                    },
                 )
             }
             NavDisplay(
@@ -51,6 +58,7 @@ fun App() {
                             onOpenSettings = { backStack.add(SettingsRoute) },
                             onOpenInbox = { backStack.add(InboxRoute) },
                             onOpenItem = ::openItem,
+                            onOpenNote = { id -> backStack.add(NoteRoute(id)) },
                         )
                     }
                     entry<SettingsRoute> {
@@ -67,6 +75,9 @@ fun App() {
                     }
                     entry<EventEditRoute> { route ->
                         EventEditorScreen(itemId = route.id, onBack = { backStack.removeLastOrNull() })
+                    }
+                    entry<NoteRoute> { route ->
+                        NoteEditorScreen(noteId = route.id, onBack = { backStack.removeLastOrNull() })
                     }
                 },
             )
