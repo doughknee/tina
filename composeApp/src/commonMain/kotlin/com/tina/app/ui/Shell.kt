@@ -91,7 +91,11 @@ fun Shell(
         },
     ) {
         when (selectedTab) {
-            TinaTab.CAPTURE -> CaptureScreen(onOpenSettings = onOpenSettings, viewModel = captureViewModel)
+            TinaTab.CAPTURE -> CaptureScreen(
+                onOpenSettings = onOpenSettings,
+                onOpenItem = onOpenItem,
+                viewModel = captureViewModel,
+            )
             TinaTab.TODAY -> TodayScreen(
                 onOpenSettings = onOpenSettings,
                 onOpenInbox = onOpenInbox,

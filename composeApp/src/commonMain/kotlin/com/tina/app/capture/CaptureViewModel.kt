@@ -121,4 +121,8 @@ class CaptureViewModel(
     fun undoRefinement(original: com.tina.app.data.Item) {
         viewModelScope.launch { repository.update(original) }
     }
+
+    fun applyImprovement(updated: com.tina.app.data.Item) {
+        viewModelScope.launch { repository.update(updated) }
+    }
 }

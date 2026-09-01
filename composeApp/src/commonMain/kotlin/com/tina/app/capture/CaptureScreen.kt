@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -55,7 +56,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,8 +85,10 @@ import com.tina.app.data.ItemType
 import com.tina.app.data.Priority
 import com.tina.app.LocalSettings
 import com.tina.app.resources.Res
+import com.tina.app.resources.ai_improve
 import com.tina.app.resources.ai_refined
 import com.tina.app.resources.app_title
+import com.tina.app.resources.improve_applied
 import com.tina.app.resources.capture_placeholder
 import com.tina.app.resources.capture_recent
 import com.tina.app.resources.capture_save
@@ -128,6 +133,7 @@ fun typeLabel(type: ItemType): String = when (type) {
 @Composable
 fun CaptureScreen(
     onOpenSettings: () -> Unit = {},
+    onOpenItem: (com.tina.app.data.Item) -> Unit = {},
     viewModel: CaptureViewModel = koinViewModel(),
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -136,6 +142,8 @@ fun CaptureScreen(
     val scope = rememberCoroutineScope()
     val capturedText = stringResource(Res.string.captured)
     val undoText = stringResource(Res.string.undo)
+    val improvedText = stringResource(Res.string.improve_applied)
+    var improveTarget by remember { mutableStateOf<com.tina.app.data.Item?>(null) }
 
     LaunchedEffect(Unit) {
         // let the field attach before requesting focus (desktop logs a warning otherwise)
@@ -257,8 +265,26 @@ fun CaptureScreen(
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
-                    CaptureEmptyState(viewModel)
+                    CaptureEmptyState(viewModel, onOpenItem, onImprove = { improveTarget = it })
                 }
+            }
+
+            improveTarget?.let { target ->
+                com.tina.app.ui.ImproveSheet(
+                    item = target,
+                    onApply = { updated, original ->
+                        viewModel.applyImprovement(updated)
+                        scope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                improvedText, undoText, duration = SnackbarDuration.Short,
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                viewModel.applyImprovement(original)
+                            }
+                        }
+                    },
+                    onDismiss = { improveTarget = null },
+                )
             }
 
             SaveBurst(
@@ -270,9 +296,14 @@ fun CaptureScreen(
 }
 
 @Composable
-private fun CaptureEmptyState(viewModel: CaptureViewModel) {
+private fun CaptureEmptyState(
+    viewModel: CaptureViewModel,
+    onOpenItem: (com.tina.app.data.Item) -> Unit,
+    onImprove: (com.tina.app.data.Item) -> Unit,
+) {
     val recent by viewModel.recent.collectAsState()
     val use24h = LocalSettings.current.use24h
+    val aiEnabled = LocalSettings.current.aiProvider != com.tina.app.data.AiProvider.OFF
     val now = remember(recent) { Clock.System.now() }
     val today = remember(recent) { now.toLocalDateTime(TimeZone.currentSystemDefault()).date }
     val suggestions = listOf(
@@ -311,7 +342,10 @@ private fun CaptureEmptyState(viewModel: CaptureViewModel) {
             )
             recent.forEach { item ->
                 Row(
-                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { onOpenItem(item) }
+                        .padding(vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
@@ -325,7 +359,7 @@ private fun CaptureEmptyState(viewModel: CaptureViewModel) {
                         Modifier.size(22.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Column(Modifier.padding(start = 16.dp)) {
+                    Column(Modifier.weight(1f).padding(start = 16.dp)) {
                         Text(
                             item.title,
                             style = MaterialTheme.typography.bodyLarge,
@@ -353,6 +387,16 @@ private fun CaptureEmptyState(viewModel: CaptureViewModel) {
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    }
+                    if (aiEnabled) {
+                        IconButton(onClick = { onImprove(item) }) {
+                            Icon(
+                                Icons.Outlined.AutoAwesome,
+                                stringResource(Res.string.ai_improve),
+                                Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
                     }
                 }
             }
