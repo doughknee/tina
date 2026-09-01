@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.PriorityHigh
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -59,6 +60,8 @@ import com.tina.app.resources.date_tomorrow
 import com.tina.app.resources.delete
 import com.tina.app.resources.mark_done
 import com.tina.app.resources.open_details
+import com.tina.app.resources.priority_high
+import com.tina.app.resources.priority_medium
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -249,19 +252,40 @@ private fun RowContent(
                         },
                     )
                 }
-                if (timeText != null || item.priority != Priority.NONE) {
-                    Text(
-                        listOfNotNull(
-                            timeText,
-                            when (item.priority) {
-                                Priority.HIGH -> "!!"
-                                Priority.MEDIUM -> "!"
-                                else -> null
-                            },
-                        ).joinToString(" · "),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                val priorityLabel = when (item.priority) {
+                    Priority.HIGH -> stringResource(Res.string.priority_high)
+                    Priority.MEDIUM -> stringResource(Res.string.priority_medium)
+                    else -> null
+                }
+                if (timeText != null || priorityLabel != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (timeText != null) {
+                            Text(
+                                timeText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        if (priorityLabel != null) {
+                            Icon(
+                                Icons.Outlined.PriorityHigh,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(start = if (timeText != null) 8.dp else 0.dp)
+                                    .size(16.dp),
+                                tint = if (item.priority == Priority.HIGH) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.tertiary
+                                },
+                            )
+                            Text(
+                                priorityLabel,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                 }
             }
 
