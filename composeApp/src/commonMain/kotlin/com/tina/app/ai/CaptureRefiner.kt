@@ -23,6 +23,7 @@ class CaptureRefiner(
     private val repository: ItemRepository,
     private val settingsRepository: SettingsRepository,
     private val aiParser: AiCaptureParser,
+    private val improver: AiImprover,
 ) {
     // own scope: refinement must survive the ViewModel/Activity that started it
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -35,6 +36,17 @@ class CaptureRefiner(
         scope.launch {
             val original = repository.get(itemId) ?: return@launch
             val settings = settingsRepository.settings.first()
+            when (settings.aiRefineMode) {
+                com.tina.app.data.AiRefineMode.MANUAL -> return@launch
+                com.tina.app.data.AiRefineMode.SUGGEST -> {
+                    // compute but never apply; the improve sheet opens pre-loaded
+                    improver.suggest(original)
+                        ?.takeUnless { it.isEmpty && it.questions.isEmpty() }
+                        ?.let { SuggestionCache.put(itemId, it) }
+                    return@launch
+                }
+                com.tina.app.data.AiRefineMode.AUTO -> Unit
+            }
             val tz = TimeZone.currentSystemDefault()
             // anchor "now" at capture time so defaults (next round hour) stay stable
             val capturedAt = Instant.fromEpochMilliseconds(original.createdAt).toLocalDateTime(tz)

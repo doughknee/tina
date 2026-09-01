@@ -17,6 +17,9 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 enum class AiProvider { OFF, OLLAMA, ANTHROPIC, OPENAI, CUSTOM }
 
+/** AUTO applies refinements silently, SUGGEST computes but waits for the user, MANUAL only runs on demand. */
+enum class AiRefineMode { AUTO, SUGGEST, MANUAL }
+
 data class Settings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
@@ -28,6 +31,8 @@ data class Settings(
     val aiModel: String = "",
     val aiApiKey: String = "",
     val aiWorkspaceId: String = "",
+    val aiRefineMode: AiRefineMode = AiRefineMode.AUTO,
+    val aiInstructions: String = "",
 )
 
 fun createSettingsStore(producePath: () -> String): DataStore<Preferences> =
@@ -43,6 +48,8 @@ private val KEY_AI_BASE_URL = stringPreferencesKey("aiBaseUrl")
 private val KEY_AI_MODEL = stringPreferencesKey("aiModel")
 private val KEY_AI_API_KEY = stringPreferencesKey("aiApiKey")
 private val KEY_AI_WORKSPACE_ID = stringPreferencesKey("aiWorkspaceId")
+private val KEY_AI_REFINE_MODE = stringPreferencesKey("aiRefineMode")
+private val KEY_AI_INSTRUCTIONS = stringPreferencesKey("aiInstructions")
 
 class SettingsRepository(private val store: DataStore<Preferences>) {
     val settings: Flow<Settings> = store.data.map { p ->
@@ -60,6 +67,10 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
             aiModel = p[KEY_AI_MODEL] ?: "",
             aiApiKey = p[KEY_AI_API_KEY] ?: "",
             aiWorkspaceId = p[KEY_AI_WORKSPACE_ID] ?: "",
+            aiRefineMode = p[KEY_AI_REFINE_MODE]?.let { value ->
+                AiRefineMode.entries.firstOrNull { it.name == value }
+            } ?: AiRefineMode.AUTO,
+            aiInstructions = p[KEY_AI_INSTRUCTIONS] ?: "",
         )
     }
 
@@ -82,4 +93,6 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     suspend fun setAiModel(model: String) = store.edit { it[KEY_AI_MODEL] = model.trim() }
     suspend fun setAiApiKey(key: String) = store.edit { it[KEY_AI_API_KEY] = key.trim() }
     suspend fun setAiWorkspaceId(id: String) = store.edit { it[KEY_AI_WORKSPACE_ID] = id.trim() }
+    suspend fun setAiRefineMode(mode: AiRefineMode) = store.edit { it[KEY_AI_REFINE_MODE] = mode.name }
+    suspend fun setAiInstructions(text: String) = store.edit { it[KEY_AI_INSTRUCTIONS] = text }
 }

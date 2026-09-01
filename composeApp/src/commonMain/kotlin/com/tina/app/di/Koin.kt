@@ -29,7 +29,8 @@ val commonModule = module {
     single { ItemRepository(get(), get()) }
     single { SettingsRepository(get()) }
     single { AiCaptureParser(get(), get()) }
-    single { CaptureRefiner(get(), get(), get()) }
+    single { com.tina.app.ai.AiImprover(get(), get()) }
+    single { CaptureRefiner(get(), get(), get(), get()) }
     viewModelOf(::CaptureViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::TodayViewModel)

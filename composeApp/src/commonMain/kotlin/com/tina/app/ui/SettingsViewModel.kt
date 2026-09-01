@@ -78,6 +78,14 @@ class SettingsViewModel(
         viewModelScope.launch { repository.setAiWorkspaceId(id) }
     }
 
+    fun setAiRefineMode(mode: com.tina.app.data.AiRefineMode) {
+        viewModelScope.launch { repository.setAiRefineMode(mode) }
+    }
+
+    fun setAiInstructions(text: String) {
+        viewModelScope.launch { repository.setAiInstructions(text) }
+    }
+
     /** Callback receives null on success, otherwise a human-readable failure reason. */
     fun testAi(onResult: (String?) -> Unit) {
         viewModelScope.launch {

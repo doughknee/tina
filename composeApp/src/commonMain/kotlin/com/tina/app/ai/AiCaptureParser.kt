@@ -138,17 +138,21 @@ class AiCaptureParser(
     private val http: HttpClient,
     private val settingsRepository: SettingsRepository,
 ) {
-    /** Null on any failure — AI refinement is always best-effort. */
-    suspend fun refine(raw: String, now: LocalDateTime, firstDayOfWeek: DayOfWeek): ParsedCapture? {
+    /** One best-effort completion against whichever provider is configured. Null on any failure. */
+    suspend fun complete(prompt: String): String? {
         val settings = settingsRepository.settings.first()
         if (settings.aiProvider == AiProvider.OFF || settings.aiModel.isBlank()) return null
-        val prompt = buildParsePrompt(raw, now, firstDayOfWeek)
-        val text = runCatching {
+        return runCatching {
             when (settings.aiProvider) {
                 AiProvider.ANTHROPIC -> anthropicComplete(settings, prompt)
                 else -> openAiComplete(settings, prompt)
             }
-        }.getOrNull() ?: return null
+        }.getOrNull()
+    }
+
+    /** Null on any failure — AI refinement is always best-effort. */
+    suspend fun refine(raw: String, now: LocalDateTime, firstDayOfWeek: DayOfWeek): ParsedCapture? {
+        val text = complete(buildParsePrompt(raw, now, firstDayOfWeek)) ?: return null
         return aiJsonToParsedCapture(text, raw)
     }
 

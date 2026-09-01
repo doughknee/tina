@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Schedule
@@ -29,6 +30,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -41,6 +46,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,9 +58,12 @@ import com.tina.app.data.Item
 import com.tina.app.data.ItemType
 import com.tina.app.data.Priority
 import com.tina.app.resources.Res
+import com.tina.app.resources.ai_improve
 import com.tina.app.resources.back
 import com.tina.app.resources.cancel
 import com.tina.app.resources.delete
+import com.tina.app.resources.improve_applied
+import com.tina.app.resources.undo
 import com.tina.app.resources.detail_completed
 import com.tina.app.resources.detail_date
 import com.tina.app.resources.detail_notes
@@ -78,6 +87,7 @@ import com.tina.app.ui.sharedItemTitle
 import com.tina.app.ui.timeLabel
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -97,9 +107,16 @@ fun DetailScreen(
 ) {
     val item by viewModel.item.collectAsState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var showImprove by remember { mutableStateOf(false) }
+    val improvedText = stringResource(Res.string.improve_applied)
+    val undoText = stringResource(Res.string.undo)
+    val aiEnabled = LocalSettings.current.aiProvider != com.tina.app.data.AiProvider.OFF
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.details)) },
@@ -109,6 +126,11 @@ fun DetailScreen(
                     }
                 },
                 actions = {
+                    if (aiEnabled) {
+                        IconButton(onClick = { showImprove = true }) {
+                            Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_improve))
+                        }
+                    }
                     IconButton(onClick = { viewModel.delete(onDeleted = onBack) }) {
                         Icon(Icons.Outlined.Delete, stringResource(Res.string.delete))
                     }
@@ -118,6 +140,23 @@ fun DetailScreen(
         },
     ) { padding ->
         val current = item ?: return@Scaffold
+        if (showImprove) {
+            com.tina.app.ui.ImproveSheet(
+                item = current,
+                onApply = { updated, original ->
+                    viewModel.applyImprovement(updated)
+                    scope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            improvedText, undoText, duration = SnackbarDuration.Short,
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.applyImprovement(original)
+                        }
+                    }
+                },
+                onDismiss = { showImprove = false },
+            )
+        }
         DetailContent(
             item = current,
             viewModel = viewModel,

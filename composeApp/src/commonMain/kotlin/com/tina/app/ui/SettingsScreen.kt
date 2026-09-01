@@ -47,6 +47,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.tina.app.data.AiProvider
+import com.tina.app.data.AiRefineMode
+import com.tina.app.resources.ai_instructions_hint
+import com.tina.app.resources.refine_auto
+import com.tina.app.resources.refine_manual
+import com.tina.app.resources.refine_suggest
+import com.tina.app.resources.settings_ai_instructions
+import com.tina.app.resources.settings_refine_mode
 import com.tina.app.data.ThemeMode
 import com.tina.app.data.rememberBackupHandlers
 import com.tina.app.resources.Res
@@ -261,7 +268,43 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                 }
                 if (settings.aiProvider != AiProvider.OFF) {
                     com.tina.app.ai.RequestAiNetworkPermissions(enabled = true)
+                    Text(
+                        stringResource(Res.string.settings_refine_mode),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        AiRefineMode.entries.forEach { mode ->
+                            FilterChip(
+                                selected = settings.aiRefineMode == mode,
+                                onClick = { viewModel.setAiRefineMode(mode) },
+                                label = {
+                                    Text(
+                                        when (mode) {
+                                            AiRefineMode.AUTO -> stringResource(Res.string.refine_auto)
+                                            AiRefineMode.SUGGEST -> stringResource(Res.string.refine_suggest)
+                                            AiRefineMode.MANUAL -> stringResource(Res.string.refine_manual)
+                                        },
+                                    )
+                                },
+                            )
+                        }
+                    }
                     AiConfigFields(settings, viewModel, snackbarHostState)
+                    var instructions by remember(settings.aiProvider) {
+                        mutableStateOf(settings.aiInstructions)
+                    }
+                    OutlinedTextField(
+                        value = instructions,
+                        onValueChange = {
+                            instructions = it
+                            viewModel.setAiInstructions(it)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(Res.string.settings_ai_instructions)) },
+                        supportingText = { Text(stringResource(Res.string.ai_instructions_hint)) },
+                        minLines = 2,
+                    )
                 }
             }
 

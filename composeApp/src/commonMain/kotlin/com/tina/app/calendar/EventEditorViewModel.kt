@@ -38,6 +38,9 @@ class EventEditorViewModel(
     fun setTitle(title: String) = edit { it.copy(title = title) }
     fun setBody(body: String) = edit { it.copy(body = body.ifBlank { null }) }
     fun setColor(color: Long?) = edit { it.copy(color = color) }
+    fun applyImprovement(updated: Item) {
+        viewModelScope.launch { repository.update(updated) }
+    }
     fun setReminder(minutes: Int?) = edit { it.copy(reminderOffsetMinutes = minutes) }
     fun setRrule(rrule: String?) = edit { it.copy(recurrence = rrule) }
 

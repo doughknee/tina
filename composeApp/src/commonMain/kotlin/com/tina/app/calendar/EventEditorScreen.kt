@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.AlertDialog
@@ -38,6 +39,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -50,6 +55,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.selection.toggleable
@@ -84,7 +90,10 @@ import com.tina.app.resources.reminder_at_time
 import com.tina.app.resources.reminder_hour_before
 import com.tina.app.resources.reminder_min_before
 import com.tina.app.resources.reminder_off
+import com.tina.app.resources.ai_improve
+import com.tina.app.resources.improve_applied
 import com.tina.app.resources.repeat_custom
+import com.tina.app.resources.undo
 import com.tina.app.resources.repeat_daily
 import com.tina.app.resources.repeat_every_n
 import com.tina.app.resources.repeat_monthly
@@ -96,6 +105,7 @@ import com.tina.app.ui.dateLabel
 import com.tina.app.ui.timeLabel
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -122,9 +132,16 @@ fun EventEditorScreen(
 ) {
     val item by viewModel.item.collectAsState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var showImprove by remember { mutableStateOf(false) }
+    val improvedText = stringResource(Res.string.improve_applied)
+    val undoText = stringResource(Res.string.undo)
+    val aiEnabled = LocalSettings.current.aiProvider != com.tina.app.data.AiProvider.OFF
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(item?.title.orEmpty()) },
@@ -134,6 +151,11 @@ fun EventEditorScreen(
                     }
                 },
                 actions = {
+                    if (aiEnabled) {
+                        IconButton(onClick = { showImprove = true }) {
+                            Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_improve))
+                        }
+                    }
                     IconButton(onClick = { viewModel.delete(onDeleted = onBack) }) {
                         Icon(Icons.Outlined.Delete, stringResource(Res.string.delete))
                     }
@@ -143,6 +165,23 @@ fun EventEditorScreen(
         },
     ) { padding ->
         val current = item ?: return@Scaffold
+        if (showImprove) {
+            com.tina.app.ui.ImproveSheet(
+                item = current,
+                onApply = { updated, original ->
+                    viewModel.applyImprovement(updated)
+                    scope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            improvedText, undoText, duration = SnackbarDuration.Short,
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.applyImprovement(original)
+                        }
+                    }
+                },
+                onDismiss = { showImprove = false },
+            )
+        }
         EventEditorContent(
             item = current,
             viewModel = viewModel,

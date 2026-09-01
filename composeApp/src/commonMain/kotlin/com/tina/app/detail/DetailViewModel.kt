@@ -44,6 +44,10 @@ class DetailViewModel(
         }
     }
 
+    fun applyImprovement(updated: Item) {
+        viewModelScope.launch { repository.update(updated) }
+    }
+
     fun delete(onDeleted: () -> Unit) {
         viewModelScope.launch {
             repository.delete(itemId)
