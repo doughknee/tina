@@ -1,5 +1,25 @@
 # Decisions
 
+## AI improve (REL-136, Sep 2026)
+
+- Refinement modes: AUTO (apply silently, undo snackbar — original behavior),
+  SUGGEST (compute in background, hold until the user opens the improve sheet),
+  MANUAL (no background calls at all). Provider OFF still disables everything.
+- Per-item "AI improve" sheet on the task detail and event editors: toggleable
+  diff chips, at most 2 model-asked multiple-choice questions with a custom
+  answer field, a second model round folds answers in, Apply with undo. No
+  confirmation dialogs; the sheet itself is the decision surface.
+- "Skill" = a free-text improvement-instructions setting injected into the
+  improve prompt. Named presets can come later if it earns it.
+- SUGGEST-mode results live in an in-memory cache (survive until process
+  death); no per-row badge yet — the sheet just opens instantly when a cached
+  suggestion exists. ponytail: badge needs per-row cache observation across
+  five screens.
+- Known quirk: text fields on detail/editor screens remember their local state
+  per item id, so an improve applied while the screen is open shows stale
+  title/tags text until reopened (chips and rows update live). Keying on
+  updatedAt would reset the cursor mid-typing; not worth it.
+
 ## Design polish pass (REL-134, Sep 2026)
 
 - Implemented the 12-item external design review (mockups in `design/redesign/`).
