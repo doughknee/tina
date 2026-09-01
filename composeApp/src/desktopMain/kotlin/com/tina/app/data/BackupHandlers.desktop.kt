@@ -8,6 +8,7 @@ import java.awt.Frame
 import java.io.File
 import kotlin.time.Clock
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.TimeZone
@@ -20,6 +21,7 @@ actual fun rememberBackupHandlers(
     onImported: (Int) -> Unit,
 ): BackupHandlers {
     val repository = koinInject<ItemRepository>()
+    val settingsRepository = koinInject<SettingsRepository>()
     val scope = rememberCoroutineScope()
 
     return remember {
@@ -35,7 +37,8 @@ actual fun rememberBackupHandlers(
                 if (directory != null && fileName != null) {
                     scope.launch {
                         withContext(Dispatchers.IO) {
-                            File(directory, fileName).writeText(repository.exportJson())
+                            val settings = settingsRepository.settings.first().toBackupSettings()
+                            File(directory, fileName).writeText(repository.exportJson(settings))
                         }
                         onExported()
                     }
@@ -49,7 +52,11 @@ actual fun rememberBackupHandlers(
                     scope.launch {
                         val count = withContext(Dispatchers.IO) {
                             val text = File(directory, fileName).readText()
-                            if (decodeBackup(text) == null) -1 else repository.importJson(text)
+                            val backup = decodeBackup(text)
+                            if (backup == null) -1 else {
+                                backup.settings?.let { settingsRepository.applyBackup(it) }
+                                repository.importJson(text)
+                            }
                         }
                         onImported(count)
                     }

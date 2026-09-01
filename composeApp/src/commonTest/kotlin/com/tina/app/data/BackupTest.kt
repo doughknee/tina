@@ -23,4 +23,19 @@ class BackupTest {
         assertNull(decodeBackup("not json"))
         assertNull(decodeBackup("""{"some":"other json"}"""))
     }
+
+    @Test fun settingsRoundTrip() {
+        val settings = BackupSettings(
+            themeMode = "DARK", aiProvider = "ANTHROPIC", aiModel = "claude-haiku-4-5-20251001",
+            aiApiKey = "sk-test", aiInstructions = "lunch is always noon",
+        )
+        val decoded = decodeBackup(encodeBackup(emptyList(), exportedAt = 1, settings = settings))
+        assertEquals(settings, decoded?.settings)
+    }
+
+    @Test fun legacyBackupWithoutSettingsStillDecodes() {
+        val decoded = decodeBackup("""{"version":1,"exportedAt":5,"items":[]}""")
+        assertEquals(5, decoded?.exportedAt)
+        assertNull(decoded?.settings)
+    }
 }

@@ -95,4 +95,20 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     suspend fun setAiWorkspaceId(id: String) = store.edit { it[KEY_AI_WORKSPACE_ID] = id.trim() }
     suspend fun setAiRefineMode(mode: AiRefineMode) = store.edit { it[KEY_AI_REFINE_MODE] = mode.name }
     suspend fun setAiInstructions(text: String) = store.edit { it[KEY_AI_INSTRUCTIONS] = text }
+
+    /** One atomic write restoring a backed-up settings block. */
+    suspend fun applyBackup(s: BackupSettings) = store.edit { p ->
+        p[KEY_THEME] = s.themeMode
+        p[KEY_DYNAMIC] = s.dynamicColor
+        p[KEY_FIRST_DAY] = s.firstDayOfWeekIso
+        p[KEY_24H] = s.use24h
+        p[KEY_REMINDER] = s.defaultReminderMinutes
+        p[KEY_AI_PROVIDER] = s.aiProvider
+        p[KEY_AI_BASE_URL] = s.aiBaseUrl
+        p[KEY_AI_MODEL] = s.aiModel
+        p[KEY_AI_API_KEY] = s.aiApiKey
+        p[KEY_AI_WORKSPACE_ID] = s.aiWorkspaceId
+        p[KEY_AI_REFINE_MODE] = s.aiRefineMode
+        p[KEY_AI_INSTRUCTIONS] = s.aiInstructions
+    }
 }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import kotlin.time.Clock
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.TimeZone
@@ -21,6 +22,7 @@ actual fun rememberBackupHandlers(
 ): BackupHandlers {
     val context = LocalContext.current
     val repository = koinInject<ItemRepository>()
+    val settingsRepository = koinInject<SettingsRepository>()
     val scope = rememberCoroutineScope()
 
     val exportLauncher = rememberLauncherForActivityResult(
@@ -29,8 +31,9 @@ actual fun rememberBackupHandlers(
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch {
             withContext(Dispatchers.IO) {
+                val settings = settingsRepository.settings.first().toBackupSettings()
                 context.contentResolver.openOutputStream(uri)?.use { stream ->
-                    stream.write(repository.exportJson().encodeToByteArray())
+                    stream.write(repository.exportJson(settings).encodeToByteArray())
                 }
             }
             onExported()
@@ -46,8 +49,10 @@ actual fun rememberBackupHandlers(
                 val text = context.contentResolver.openInputStream(uri)?.use { stream ->
                     stream.readBytes().decodeToString()
                 }
-                if (text == null) -1 else {
-                    if (decodeBackup(text) == null) -1 else repository.importJson(text)
+                val backup = text?.let(::decodeBackup)
+                if (backup == null) -1 else {
+                    backup.settings?.let { settingsRepository.applyBackup(it) }
+                    repository.importJson(text)
                 }
             }
             onImported(count)

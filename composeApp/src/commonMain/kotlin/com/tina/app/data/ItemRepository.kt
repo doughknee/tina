@@ -89,7 +89,8 @@ class ItemRepository(
     /** Re-arm every pending reminder (boot, app start). */
     suspend fun rescheduleAllReminders() = scheduler.rescheduleAll(dao.getRemindable())
 
-    suspend fun exportJson(): String = encodeBackup(dao.getAll(), nowMillis())
+    suspend fun exportJson(settings: BackupSettings? = null): String =
+        encodeBackup(dao.getAll(), nowMillis(), settings)
 
     /**
      * Additive import: items get fresh ids; exact (title, createdAt) duplicates
