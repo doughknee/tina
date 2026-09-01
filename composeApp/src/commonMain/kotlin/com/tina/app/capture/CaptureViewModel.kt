@@ -64,6 +64,11 @@ class CaptureViewModel(
         text = value
     }
 
+    /** Seed the field (e.g. from a calendar long-press) without disturbing other state. */
+    fun prefill(value: String) {
+        text = value
+    }
+
     fun removeChip(kind: ChipKind) {
         removedKinds = removedKinds + kind
     }

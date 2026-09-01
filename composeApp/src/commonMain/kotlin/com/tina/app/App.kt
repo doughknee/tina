@@ -8,6 +8,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.tina.app.calendar.EventEditorScreen
+import com.tina.app.data.Item
+import com.tina.app.data.ItemType
 import com.tina.app.data.Settings
 import com.tina.app.data.SettingsRepository
 import com.tina.app.detail.DetailScreen
@@ -24,6 +27,8 @@ data object InboxRoute
 
 data class DetailRoute(val id: Long)
 
+data class EventEditRoute(val id: Long)
+
 @Composable
 fun App() {
     val settingsRepository = koinInject<SettingsRepository>()
@@ -32,6 +37,11 @@ fun App() {
     AppTheme(settings) {
         CompositionLocalProvider(LocalSettings provides settings) {
             val backStack = remember { mutableStateListOf<Any>(ShellRoute) }
+            fun openItem(item: Item) {
+                backStack.add(
+                    if (item.type == ItemType.EVENT) EventEditRoute(item.id) else DetailRoute(item.id),
+                )
+            }
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
@@ -40,7 +50,7 @@ fun App() {
                         Shell(
                             onOpenSettings = { backStack.add(SettingsRoute) },
                             onOpenInbox = { backStack.add(InboxRoute) },
-                            onOpenDetail = { id -> backStack.add(DetailRoute(id)) },
+                            onOpenItem = ::openItem,
                         )
                     }
                     entry<SettingsRoute> {
@@ -49,11 +59,14 @@ fun App() {
                     entry<InboxRoute> {
                         InboxScreen(
                             onBack = { backStack.removeLastOrNull() },
-                            onOpenDetail = { id -> backStack.add(DetailRoute(id)) },
+                            onOpenItem = ::openItem,
                         )
                     }
                     entry<DetailRoute> { route ->
                         DetailScreen(itemId = route.id, onBack = { backStack.removeLastOrNull() })
+                    }
+                    entry<EventEditRoute> { route ->
+                        EventEditorScreen(itemId = route.id, onBack = { backStack.removeLastOrNull() })
                     }
                 },
             )

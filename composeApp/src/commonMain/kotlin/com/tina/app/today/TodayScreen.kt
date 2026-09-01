@@ -70,7 +70,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 fun TodayScreen(
     onOpenSettings: () -> Unit,
     onOpenInbox: () -> Unit,
-    onOpenDetail: (Long) -> Unit,
+    onOpenItem: (com.tina.app.data.Item) -> Unit,
     viewModel: TodayViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -195,7 +195,7 @@ fun TodayScreen(
                                 },
                                 onRename = { viewModel.rename(entry.item, it) },
                                 onReschedule = { viewModel.reschedule(entry.item, it) },
-                                onOpen = { onOpenDetail(entry.item.id) },
+                                onOpen = { onOpenItem(entry.item) },
                                 modifier = Modifier.longPressDraggableHandle(
                                     onDragStarted = {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -226,7 +226,7 @@ fun TodayScreen(
                             onReschedule = if (entry.item.type == ItemType.TASK) {
                                 { viewModel.reschedule(entry.item, it) }
                             } else null,
-                            onOpen = { onOpenDetail(entry.item.id) },
+                            onOpen = { onOpenItem(entry.item) },
                         )
                     }
                 }

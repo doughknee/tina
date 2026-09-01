@@ -1,5 +1,7 @@
 package com.tina.app.di
 
+import com.tina.app.calendar.CalendarViewModel
+import com.tina.app.calendar.EventEditorViewModel
 import com.tina.app.capture.CaptureViewModel
 import com.tina.app.data.AppDatabase
 import com.tina.app.data.ItemRepository
@@ -25,7 +27,9 @@ val commonModule = module {
     viewModelOf(::SettingsViewModel)
     viewModelOf(::TodayViewModel)
     viewModelOf(::InboxViewModel)
+    viewModelOf(::CalendarViewModel)
     viewModel { (id: Long) -> DetailViewModel(id, get()) }
+    viewModel { (id: Long) -> EventEditorViewModel(id, get()) }
 }
 
 fun initKoin(platformModule: Module, config: KoinAppDeclaration? = null) {

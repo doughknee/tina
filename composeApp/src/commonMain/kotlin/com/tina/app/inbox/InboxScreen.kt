@@ -59,7 +59,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun InboxScreen(
     onBack: () -> Unit,
-    onOpenDetail: (Long) -> Unit,
+    onOpenItem: (com.tina.app.data.Item) -> Unit,
     viewModel: InboxViewModel = koinViewModel(),
 ) {
     val items by viewModel.items.collectAsState()
@@ -125,7 +125,7 @@ fun InboxScreen(
                         withUndo(deletedText, { viewModel.deleteWithSnapshot(item) }, viewModel::undoDelete)
                     },
                     onRename = { viewModel.rename(item, it) },
-                    onOpen = { onOpenDetail(item.id) },
+                    onOpen = { onOpenItem(item) },
                     extraContent = {
                         FlowRow(
                             Modifier.padding(start = 48.dp, bottom = 4.dp),

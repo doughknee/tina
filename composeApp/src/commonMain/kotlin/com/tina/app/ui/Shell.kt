@@ -14,9 +14,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.tina.app.calendar.CalendarScreen
 import com.tina.app.capture.CaptureScreen
+import com.tina.app.capture.CaptureViewModel
+import com.tina.app.data.Item
 import com.tina.app.resources.Res
 import com.tina.app.today.TodayScreen
+import kotlinx.datetime.number
+import org.koin.compose.viewmodel.koinViewModel
 import com.tina.app.resources.tab_calendar
 import com.tina.app.resources.tab_capture
 import com.tina.app.resources.tab_notes
@@ -35,10 +40,11 @@ enum class TinaTab(val icon: ImageVector, val label: StringResource) {
 fun Shell(
     onOpenSettings: () -> Unit,
     onOpenInbox: () -> Unit,
-    onOpenDetail: (Long) -> Unit,
+    onOpenItem: (Item) -> Unit,
 ) {
     var selectedIndex by rememberSaveable { mutableStateOf(0) }
     val selectedTab = TinaTab.entries[selectedIndex]
+    val captureViewModel: CaptureViewModel = koinViewModel()
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -53,13 +59,21 @@ fun Shell(
         },
     ) {
         when (selectedTab) {
-            TinaTab.CAPTURE -> CaptureScreen(onOpenSettings = onOpenSettings)
+            TinaTab.CAPTURE -> CaptureScreen(onOpenSettings = onOpenSettings, viewModel = captureViewModel)
             TinaTab.TODAY -> TodayScreen(
                 onOpenSettings = onOpenSettings,
                 onOpenInbox = onOpenInbox,
-                onOpenDetail = onOpenDetail,
+                onOpenItem = onOpenItem,
             )
-            TinaTab.CALENDAR -> PlaceholderTab(Res.string.tab_calendar, onOpenSettings)
+            TinaTab.CALENDAR -> CalendarScreen(
+                onOpenSettings = onOpenSettings,
+                onOpenItem = onOpenItem,
+                onCaptureForDate = { date ->
+                    // Prefill with a parser-friendly date token so capture stays one flow.
+                    captureViewModel.prefill("${date.month.number}/${date.day} ")
+                    selectedIndex = 0
+                },
+            )
             TinaTab.NOTES -> PlaceholderTab(Res.string.tab_notes, onOpenSettings)
         }
     }
