@@ -138,6 +138,13 @@
     <string name="capture_try_3">water plants every friday</string>
     <string name="state_on">On</string>
     <string name="state_off">Off</string>
+    <string name="capture_type_state">Type: %1$s, tap to change</string>
+    <string name="color_red">Red</string>
+    <string name="color_orange">Orange</string>
+    <string name="color_yellow">Yellow</string>
+    <string name="color_green">Green</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_purple">Purple</string>
     <string name="time_just_now">just now</string>
     <string name="time_min_ago">%1$s m ago</string>
     <string name="time_hr_ago">%1$s h ago</string>

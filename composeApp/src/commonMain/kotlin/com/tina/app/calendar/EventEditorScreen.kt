@@ -52,8 +52,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
@@ -175,13 +180,22 @@ private fun EventEditorContent(item: Item, viewModel: EventEditorViewModel, modi
             textStyle = MaterialTheme.typography.titleLarge,
         )
 
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .toggleable(
+                    value = item.allDay,
+                    role = Role.Switch,
+                    onValueChange = viewModel::setAllDay,
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
                 stringResource(Res.string.event_all_day),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
-            Switch(checked = item.allDay, onCheckedChange = viewModel::setAllDay)
+            Switch(checked = item.allDay, onCheckedChange = null)
         }
 
         if (start != null) {
@@ -353,6 +367,7 @@ private fun EventEditorContent(item: Item, viewModel: EventEditorViewModel, modi
 
 @Composable
 private fun ColorSwatch(color: Long?, selected: Boolean, onClick: () -> Unit) {
+    val name = com.tina.app.ui.colorName(color)
     Box(
         Modifier
             .size(36.dp)
@@ -360,7 +375,11 @@ private fun ColorSwatch(color: Long?, selected: Boolean, onClick: () -> Unit) {
             .let {
                 if (selected) it.border(3.dp, MaterialTheme.colorScheme.outline, CircleShape) else it
             }
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .semantics {
+                contentDescription = name
+                this.selected = selected
+            },
         contentAlignment = Alignment.Center,
     ) {
         if (color == null && !selected) {

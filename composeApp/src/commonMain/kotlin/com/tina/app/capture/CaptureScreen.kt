@@ -71,6 +71,8 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.foundation.text.KeyboardActions
@@ -85,6 +87,7 @@ import com.tina.app.resources.app_title
 import com.tina.app.resources.capture_placeholder
 import com.tina.app.resources.capture_recent
 import com.tina.app.resources.capture_save
+import com.tina.app.resources.capture_type_state
 import com.tina.app.resources.capture_try
 import com.tina.app.resources.capture_try_1
 import com.tina.app.resources.capture_try_2
@@ -381,9 +384,24 @@ private fun CaptureChips(viewModel: CaptureViewModel) {
         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
     ) {
+        val typeText = typeLabel(effective.type)
+        val typeState = stringResource(Res.string.capture_type_state, typeText)
         AssistChip(
             onClick = viewModel::cycleType,
-            label = { Text(typeLabel(effective.type)) },
+            label = { Text(typeText) },
+            leadingIcon = {
+                Icon(
+                    when (effective.type) {
+                        ItemType.TASK -> Icons.Outlined.TaskAlt
+                        ItemType.EVENT -> Icons.Outlined.Event
+                        ItemType.NOTE -> Icons.Outlined.Description
+                        ItemType.INBOX -> Icons.Outlined.Inbox
+                    },
+                    contentDescription = null,
+                    Modifier.size(18.dp),
+                )
+            },
+            modifier = Modifier.semantics { stateDescription = typeState },
         )
         val use24h = LocalSettings.current.use24h
         effective.date?.let { removableChip(dateLabel(it, today)) { viewModel.removeChip(ChipKind.DATE) } }

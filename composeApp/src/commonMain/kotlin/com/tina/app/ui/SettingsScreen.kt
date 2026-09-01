@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -39,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.tina.app.data.AiProvider
 import com.tina.app.data.ThemeMode
@@ -154,7 +156,16 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                 }
             }
 
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .toggleable(
+                        value = settings.dynamicColor,
+                        role = Role.Switch,
+                        onValueChange = viewModel::setDynamicColor,
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(Res.string.settings_dynamic_color), style = MaterialTheme.typography.titleMedium)
                     Text(
@@ -163,7 +174,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(checked = settings.dynamicColor, onCheckedChange = viewModel::setDynamicColor)
+                Switch(checked = settings.dynamicColor, onCheckedChange = null)
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -181,13 +192,22 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                 }
             }
 
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .toggleable(
+                        value = settings.use24h,
+                        role = Role.Switch,
+                        onValueChange = viewModel::setUse24h,
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     stringResource(Res.string.settings_24h),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f),
                 )
-                Switch(checked = settings.use24h, onCheckedChange = viewModel::setUse24h)
+                Switch(checked = settings.use24h, onCheckedChange = null)
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

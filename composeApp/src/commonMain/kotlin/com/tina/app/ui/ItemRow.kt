@@ -50,6 +50,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
@@ -67,6 +69,7 @@ import com.tina.app.resources.mark_done
 import com.tina.app.resources.open_details
 import com.tina.app.resources.priority_high
 import com.tina.app.resources.priority_medium
+import com.tina.app.resources.type_event
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -187,6 +190,7 @@ private fun RowContent(
                 editText = item.title
                 editing = true
             }
+            .semantics(mergeDescendants = true) {}
             .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
         Row(
@@ -204,7 +208,15 @@ private fun RowContent(
                     },
                 )
             } else {
-                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                val eventText = stringResource(Res.string.type_event)
+                Box(
+                    Modifier
+                        .size(40.dp)
+                        .semantics {
+                            if (item.type == ItemType.EVENT) contentDescription = eventText
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
                     // 2dp halo ring so low-chroma dots stay visible on any surface
                     Box(
                         Modifier
