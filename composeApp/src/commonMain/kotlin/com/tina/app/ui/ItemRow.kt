@@ -6,8 +6,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -106,6 +108,10 @@ fun ItemRow(
     /** Small outlined label after the title, e.g. "×2" for merged duplicates. */
     badge: String? = null,
     badgeDescription: String? = null,
+    /** Long-press on the row body (series rows open their skip / end menu here). */
+    onLongClick: (() -> Unit)? = null,
+    /** Replaces the chevron / date chip on the trailing edge. */
+    trailing: (@Composable () -> Unit)? = null,
     extraContent: (@Composable () -> Unit)? = null,
 )
 {
@@ -170,11 +176,14 @@ fun ItemRow(
             leadingIcon = leadingIcon,
             badge = badge,
             badgeDescription = badgeDescription,
+            onLongClick = onLongClick,
+            trailing = trailing,
             extraContent = extraContent,
         )
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun RowContent(
     item: Item,
@@ -190,6 +199,8 @@ private fun RowContent(
     leadingIcon: ImageVector?,
     badge: String?,
     badgeDescription: String?,
+    onLongClick: (() -> Unit)?,
+    trailing: (@Composable () -> Unit)?,
     extraContent: (@Composable () -> Unit)?,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -205,10 +216,13 @@ private fun RowContent(
                 if (selected) MaterialTheme.colorScheme.surfaceContainerHighest
                 else Color.Transparent,
             )
-            .clickable {
-                editText = item.title
-                editing = true
-            }
+            .combinedClickable(
+                onClick = {
+                    editText = item.title
+                    editing = true
+                },
+                onLongClick = onLongClick,
+            )
             .semantics(mergeDescendants = true) {}
             .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
@@ -356,7 +370,9 @@ private fun RowContent(
                 }
             }
 
-            if (dateText != null && onReschedule != null) {
+            if (trailing != null) {
+                trailing()
+            } else if (dateText != null && onReschedule != null) {
                 Box(Modifier.padding(start = 4.dp)) {
                     RescheduleChip(dateText, today, onReschedule)
                 }

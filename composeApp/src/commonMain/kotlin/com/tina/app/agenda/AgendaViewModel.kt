@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tina.app.data.Item
 import com.tina.app.data.ItemRepository
+import com.tina.app.data.OccurrenceRepository
 import com.tina.app.data.SettingsRepository
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -14,18 +15,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 
 data class AgendaUiState(
     val today: LocalDate,
     val selected: LocalDate,
+    val range: AgendaRange,
     val groups: List<AgendaGroup>,
     val inboxCount: Int,
 )
@@ -33,7 +37,8 @@ data class AgendaUiState(
 /** Today and Calendar were rendering the same rows for the same date; this is the one list. */
 class AgendaViewModel(
     private val repository: ItemRepository,
-    settingsRepository: SettingsRepository,
+    private val occurrences: OccurrenceRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
     private val tz = TimeZone.currentSystemDefault()
     private var lastDeleted: Item? = null
@@ -41,6 +46,15 @@ class AgendaViewModel(
     private fun today(): LocalDate = Clock.System.now().toLocalDateTime(tz).date
 
     val selectedDate = MutableStateFlow(today())
+
+    /** Persisted so the zoom level survives launches. */
+    val granularity: StateFlow<Granularity> = settingsRepository.settings
+        .map { s -> Granularity.entries.firstOrNull { it.name == s.agendaRange } ?: Granularity.DAY }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, Granularity.DAY)
+
+    /** Per-group "+N more" and per-series inline expansion. Both reset on range change. */
+    val expandedGroups = MutableStateFlow<Set<GroupKey>>(emptySet())
+    val expandedSeries = MutableStateFlow<Set<Long>>(emptySet())
 
     /** Padded to what the month grid can show, so its dots come from one query. */
     private val visibleRange = MutableStateFlow(today().plus(-45, DateTimeUnit.DAY) to today().plus(45, DateTimeUnit.DAY))
@@ -52,27 +66,41 @@ class AgendaViewModel(
         }
     }.distinctUntilChanged()
 
+    private fun rangeFor(granularity: Granularity, date: LocalDate) = when (granularity) {
+        Granularity.DAY -> AgendaRange.day(date)
+        Granularity.WEEK -> AgendaRange.week(date)
+        Granularity.MONTH -> AgendaRange.month(date)
+        Granularity.ALL -> AgendaRange.All
+    }
+
+    private val anchor = combine(ticker, selectedDate, granularity) { today, selected, g -> Triple(today, selected, g) }
+    private val marks = combine(occurrences.observeDone(), occurrences.observeSkipped()) { done, skipped -> done to skipped }
+
     // ponytail: the whole table in memory, then buildAgenda; fine at one person's scale
     val state: StateFlow<AgendaUiState?> = combine(
-        ticker,
-        selectedDate,
+        anchor,
         repository.observeAll(),
         repository.observeInboxCount(),
         settingsRepository.settings,
-    ) { today, selected, items, inbox, settings ->
+        marks,
+    ) { (today, selected, granularity), items, inbox, settings, (done, skipped) ->
+        val range = rangeFor(granularity, selected)
         AgendaUiState(
             today = today,
             selected = selected,
+            range = range,
             groups = buildAgenda(
-                items,
-                AgendaRange.day(selected),
-                today,
-                tz,
-                AgendaSettings(
+                items = items,
+                range = range,
+                today = today,
+                tz = tz,
+                settings = AgendaSettings(
                     afternoonStartMinutes = settings.afternoonStartMinutes,
                     eveningStartMinutes = settings.eveningStartMinutes,
                     showCompleted = settings.showCompletedInToday,
                 ),
+                completedOccurrences = done,
+                skippedOccurrences = skipped,
             ),
             inboxCount = inbox,
         )
@@ -100,14 +128,71 @@ class AgendaViewModel(
         selectedDate.value = date
     }
 
+    fun setGranularity(value: Granularity) {
+        expandedGroups.value = emptySet()
+        expandedSeries.value = emptySet()
+        viewModelScope.launch { settingsRepository.setAgendaRange(value.name) }
+    }
+
+    /** Horizontal swipe: the next range of the same size. ALL does not paginate. */
+    fun shiftRange(steps: Int) {
+        val current = selectedDate.value
+        selectedDate.value = when (granularity.value) {
+            Granularity.DAY -> current.plus(steps, DateTimeUnit.DAY)
+            Granularity.WEEK -> current.plus(steps * 7, DateTimeUnit.DAY)
+            Granularity.MONTH -> LocalDate(current.year, current.month, 1).plus(steps, DateTimeUnit.MONTH)
+            Granularity.ALL -> return
+        }
+        expandedGroups.value = emptySet()
+    }
+
     fun setVisibleRange(start: LocalDate, end: LocalDate) {
         visibleRange.value = start to end
+    }
+
+    fun toggleGroup(key: GroupKey) {
+        expandedGroups.value = expandedGroups.value.let { if (key in it) it - key else it + key }
+    }
+
+    fun toggleSeries(itemId: Long) {
+        expandedSeries.value = expandedSeries.value.let { if (itemId in it) it - itemId else it + itemId }
     }
 
     fun toggleComplete(item: Item) {
         viewModelScope.launch {
             if (item.completed) repository.uncomplete(item.id) else repository.complete(item.id)
         }
+    }
+
+    /** Rule 6: completing a rolled-up series row completes the next occurrence only. */
+    fun completeOccurrence(itemId: Long, date: LocalDate) {
+        viewModelScope.launch { occurrences.complete(itemId, date) }
+    }
+
+    fun skipOccurrence(itemId: Long, date: LocalDate) {
+        viewModelScope.launch { occurrences.skip(itemId, date) }
+    }
+
+    fun clearOccurrence(itemId: Long, date: LocalDate) {
+        viewModelScope.launch { occurrences.clear(itemId, date) }
+    }
+
+    /** Strips the rule; the item stays as a one-off. Undo restores the rule. */
+    fun endSeries(item: Item) {
+        viewModelScope.launch { repository.update(item.copy(recurrence = null)) }
+    }
+
+    fun restoreItem(item: Item) {
+        viewModelScope.launch { repository.update(item) }
+    }
+
+    /** Duplicate merge: the extra records go to Trash, which is what makes it undoable. */
+    fun mergeDuplicates(others: List<Item>) {
+        viewModelScope.launch { others.forEach { repository.delete(it.id) } }
+    }
+
+    fun restoreAll(items: List<Item>) {
+        viewModelScope.launch { items.forEach { repository.restore(it) } }
     }
 
     fun delete(item: Item) {

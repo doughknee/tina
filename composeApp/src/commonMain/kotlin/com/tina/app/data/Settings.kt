@@ -47,6 +47,8 @@ data class Settings(
     val aiWifiOnly: Boolean = false,
     // General
     val openAppTo: OpenAppTo = OpenAppTo.CAPTURE,
+    /** Agenda zoom level (a [com.tina.app.agenda.Granularity] name); view state, so not in backups. */
+    val agendaRange: String = "DAY",
     val haptics: Boolean = true,
     val reduceMotion: ReduceMotionMode = ReduceMotionMode.SYSTEM,
     // Appearance
@@ -105,6 +107,7 @@ private val KEY_AI_ASK_ENABLED = booleanPreferencesKey("aiAskEnabled")
 private val KEY_AI_ASK_WRITE = booleanPreferencesKey("aiAskWriteEnabled")
 private val KEY_AI_WIFI_ONLY = booleanPreferencesKey("aiWifiOnly")
 private val KEY_OPEN_APP_TO = stringPreferencesKey("openAppTo")
+private val KEY_AGENDA_RANGE = stringPreferencesKey("agendaRange")
 private val KEY_HAPTICS = booleanPreferencesKey("haptics")
 private val KEY_REDUCE_MOTION = stringPreferencesKey("reduceMotion")
 private val KEY_CONTRAST = stringPreferencesKey("contrast")
@@ -156,6 +159,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
             aiAskEnabled = p[KEY_AI_ASK_ENABLED] ?: false,
             aiAskWriteEnabled = p[KEY_AI_ASK_WRITE] ?: false,
             aiWifiOnly = p[KEY_AI_WIFI_ONLY] ?: false,
+            agendaRange = p[KEY_AGENDA_RANGE] ?: "DAY",
             openAppTo = p[KEY_OPEN_APP_TO]?.let { v -> OpenAppTo.entries.firstOrNull { it.name == v } }
                 ?: OpenAppTo.CAPTURE,
             haptics = p[KEY_HAPTICS] ?: true,
@@ -216,6 +220,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     suspend fun setAiAskWriteEnabled(enabled: Boolean) = store.edit { it[KEY_AI_ASK_WRITE] = enabled }
     suspend fun setAiWifiOnly(enabled: Boolean) = store.edit { it[KEY_AI_WIFI_ONLY] = enabled }
     suspend fun setOpenAppTo(value: OpenAppTo) = store.edit { it[KEY_OPEN_APP_TO] = value.name }
+    suspend fun setAgendaRange(value: String) = store.edit { it[KEY_AGENDA_RANGE] = value }
     suspend fun setHaptics(enabled: Boolean) = store.edit { it[KEY_HAPTICS] = enabled }
     suspend fun setReduceMotion(mode: ReduceMotionMode) = store.edit { it[KEY_REDUCE_MOTION] = mode.name }
     suspend fun setContrast(mode: ContrastMode) = store.edit { it[KEY_CONTRAST] = mode.name }

@@ -8,7 +8,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,18 +35,29 @@ import androidx.compose.material.icons.outlined.Celebration
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,7 +73,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kizitonwose.calendar.compose.HorizontalCalendar
@@ -75,24 +95,51 @@ import com.tina.app.LocalSettings
 import com.tina.app.data.Item
 import com.tina.app.data.ItemType
 import com.tina.app.resources.Res
+import com.tina.app.resources.agenda_everything
 import com.tina.app.resources.calendar_jump_today
 import com.tina.app.resources.calendar_nothing
 import com.tina.app.resources.calendar_view_month
 import com.tina.app.resources.calendar_view_week
+import com.tina.app.resources.date_today
 import com.tina.app.resources.deleted
+import com.tina.app.resources.dup_keep
+import com.tina.app.resources.dup_merge
+import com.tina.app.resources.dup_merged
+import com.tina.app.resources.dup_title
 import com.tina.app.resources.duplicate_copies
+import com.tina.app.resources.horizon_later
+import com.tina.app.resources.inbox_captured
 import com.tina.app.resources.inbox_waiting
 import com.tina.app.resources.months_full
+import com.tina.app.resources.fewer_rows
+import com.tina.app.resources.more_rows
+import com.tina.app.resources.occurrence_skipped
+import com.tina.app.resources.range_all
+import com.tina.app.resources.range_day
+import com.tina.app.resources.range_month
+import com.tina.app.resources.range_week
 import com.tina.app.resources.search
 import com.tina.app.resources.section_afternoon
 import com.tina.app.resources.section_anytime
 import com.tina.app.resources.section_evening
 import com.tina.app.resources.section_morning
 import com.tina.app.resources.section_overdue
+import com.tina.app.resources.section_repeating_week
 import com.tina.app.resources.section_series
+import com.tina.app.resources.series_complete_day
+import com.tina.app.resources.series_count_month
+import com.tina.app.resources.series_count_week
+import com.tina.app.resources.series_done_of
+import com.tina.app.resources.series_end
+import com.tina.app.resources.series_ended
+import com.tina.app.resources.series_hidden
+import com.tina.app.resources.series_next
+import com.tina.app.resources.series_skip
 import com.tina.app.resources.settings
 import com.tina.app.resources.span_day_of
 import com.tina.app.resources.today_empty
+import com.tina.app.resources.triage_someday
+import com.tina.app.resources.triage_this_week
 import com.tina.app.resources.undo
 import com.tina.app.resources.weekdays_full
 import com.tina.app.ui.ItemRow
@@ -100,10 +147,15 @@ import com.tina.app.ui.KeyBus
 import com.tina.app.ui.KeyCommand
 import com.tina.app.ui.SectionCardItem
 import com.tina.app.ui.dateLabel
+import com.tina.app.ui.expandEnter
+import com.tina.app.ui.expandExit
 import com.tina.app.ui.recurrenceLabel
+import com.tina.app.ui.relativeAge
 import com.tina.app.ui.rememberUndoWindow
 import com.tina.app.ui.showUndo
 import com.tina.app.ui.timeLabel
+import kotlin.math.abs
+import kotlin.time.Clock
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -120,8 +172,9 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 private val LocalDate.ym: YearMonth get() = YearMonth(year, month)
 
 /**
- * Agenda = Today + Calendar. One list for the selected date under a date header that
- * is a week strip or a month grid; the title toggles between them.
+ * Agenda = Today + Calendar with four zoom levels. One list under a date header whose shape
+ * follows the range: week strip for Day, the whole week pilled for Week, the month grid for
+ * Month, nothing for All. Every range renders the same row types from [buildAgenda].
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,15 +190,20 @@ fun AgendaScreen(
     val state by viewModel.state.collectAsState()
     val dots by viewModel.dots.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
+    val granularity by viewModel.granularity.collectAsState()
+    val expandedGroups by viewModel.expandedGroups.collectAsState()
+    val expandedSeries by viewModel.expandedSeries.collectAsState()
     var monthMode by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
+    val density = LocalDensity.current
     val deletedText = stringResource(Res.string.deleted)
     val undoText = stringResource(Res.string.undo)
     val monthNames = stringArrayResource(Res.array.months_full)
     val today = state?.today ?: selectedDate
+    var duplicateSheet by remember { mutableStateOf<AgendaRow.Duplicate?>(null) }
 
     val startMonth = remember { today.ym.minusMonths(60) }
     val endMonth = remember { today.ym.plusMonths(60) }
@@ -161,10 +219,11 @@ fun AgendaScreen(
         firstVisibleWeekDate = selectedDate,
         firstDayOfWeek = settings.firstDayOfWeek,
     )
+    val gridShown = granularity == Granularity.MONTH || (granularity == Granularity.DAY && monthMode)
 
     // keep the dot query in step with whichever header is on screen
-    LaunchedEffect(monthState, weekState, monthMode) {
-        if (monthMode) {
+    LaunchedEffect(monthState, weekState, gridShown) {
+        if (gridShown) {
             snapshotFlow { monthState.firstVisibleMonth }.collect { month ->
                 viewModel.setVisibleRange(
                     month.yearMonth.firstDay.plus(-7, DateTimeUnit.DAY),
@@ -180,11 +239,15 @@ fun AgendaScreen(
             }
         }
     }
+    // the month grid follows a swiped-to month
+    LaunchedEffect(selectedDate, granularity) {
+        if (granularity == Granularity.MONTH) monthState.animateScrollToMonth(selectedDate.ym)
+    }
 
     fun jumpTo(date: LocalDate) {
         viewModel.select(date)
         scope.launch {
-            if (monthMode) monthState.animateScrollToMonth(date.ym) else weekState.animateScrollToWeek(date)
+            if (gridShown) monthState.animateScrollToMonth(date.ym) else weekState.animateScrollToWeek(date)
         }
     }
 
@@ -201,37 +264,46 @@ fun AgendaScreen(
         }
     }
 
-    fun deleteWithUndo(item: Item) {
-        viewModel.delete(item)
+    fun withUndo(message: String, action: () -> Unit, undo: () -> Unit) {
+        action()
         scope.launch {
-            if (snackbarHostState.showUndo(deletedText, undoText, undoWindow)) viewModel.undoDelete()
+            if (snackbarHostState.showUndo(message, undoText, undoWindow)) undo()
         }
     }
+
+    fun deleteWithUndo(item: Item) = withUndo(deletedText, { viewModel.delete(item) }, viewModel::undoDelete)
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    val visibleMonth = if (monthMode) {
-                        monthState.firstVisibleMonth.yearMonth
-                    } else {
-                        weekState.firstVisibleWeek.days[3].date.ym
+                    val title = when (granularity) {
+                        Granularity.ALL -> stringResource(Res.string.agenda_everything)
+                        Granularity.WEEK -> weekTitle(selectedDate, monthNames)
+                        else -> {
+                            val visibleMonth = if (gridShown) monthState.firstVisibleMonth.yearMonth.month
+                            else weekState.firstVisibleWeek.days[3].date.month
+                            monthNames[visibleMonth.number - 1]
+                        }
                     }
+                    val toggleable = granularity == Granularity.DAY
                     Row(
-                        Modifier.combinedClickable(onClick = { monthMode = !monthMode }),
+                        Modifier.combinedClickable(enabled = toggleable, onClick = { monthMode = !monthMode }),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(monthNames[visibleMonth.month.number - 1], style = MaterialTheme.typography.titleLarge)
-                        Icon(
-                            if (monthMode) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                            stringResource(if (monthMode) Res.string.calendar_view_week else Res.string.calendar_view_month),
-                            Modifier.padding(start = 4.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        Text(title, style = MaterialTheme.typography.titleLarge)
+                        if (toggleable) {
+                            Icon(
+                                if (monthMode) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                                stringResource(if (monthMode) Res.string.calendar_view_week else Res.string.calendar_view_month),
+                                Modifier.padding(start = 4.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 },
                 actions = {
-                    AnimatedVisibility(visible = selectedDate != today) {
+                    AnimatedVisibility(visible = selectedDate != today && granularity != Granularity.ALL) {
                         AssistChip(
                             onClick = { jumpTo(today) },
                             label = { Text(stringResource(Res.string.calendar_jump_today)) },
@@ -250,41 +322,61 @@ fun AgendaScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            WeekdayHeader(firstDayOfWeekIso = settings.firstDayOfWeek.isoDayNumber)
+            RangeSwitcher(granularity, viewModel::setGranularity)
+
             AnimatedContent(
-                targetState = monthMode,
+                targetState = when {
+                    granularity == Granularity.ALL -> HeaderKind.NONE
+                    gridShown -> HeaderKind.GRID
+                    granularity == Granularity.WEEK -> HeaderKind.PILLED_WEEK
+                    else -> HeaderKind.STRIP
+                },
                 transitionSpec = { (fadeIn() togetherWith fadeOut()).using(SizeTransform(clip = false)) },
                 label = "date-header",
-            ) { grid ->
-                if (grid) {
-                    HorizontalCalendar(
-                        state = monthState,
-                        dayContent = { day: CalendarDay ->
-                            DayCell(
-                                date = day.date,
-                                inMonth = day.position == DayPosition.MonthDate,
-                                isSelected = day.date == selectedDate,
-                                isToday = day.date == today,
-                                hasContent = dots[day.date].orEmpty().isNotEmpty(),
-                                onClick = { viewModel.select(day.date) },
-                                onLongClick = { onCaptureForDate(day.date) },
-                            )
-                        },
-                    )
-                } else {
-                    WeekCalendar(
-                        state = weekState,
-                        dayContent = { day: WeekDay ->
-                            DayCell(
-                                date = day.date,
-                                inMonth = true,
-                                isSelected = day.date == selectedDate,
-                                isToday = day.date == today,
-                                hasContent = dots[day.date].orEmpty().isNotEmpty(),
-                                onClick = { viewModel.select(day.date) },
-                                onLongClick = { onCaptureForDate(day.date) },
-                            )
-                        },
+            ) { kind ->
+                when (kind) {
+                    HeaderKind.NONE -> Unit
+                    HeaderKind.GRID -> Column {
+                        WeekdayHeader(settings.firstDayOfWeek.isoDayNumber)
+                        HorizontalCalendar(
+                            state = monthState,
+                            dayContent = { day: CalendarDay ->
+                                DayCell(
+                                    date = day.date,
+                                    inMonth = day.position == DayPosition.MonthDate,
+                                    isSelected = day.date == selectedDate,
+                                    isToday = day.date == today,
+                                    hasContent = dots[day.date].orEmpty().isNotEmpty(),
+                                    onClick = { viewModel.select(day.date) },
+                                    onLongClick = { onCaptureForDate(day.date) },
+                                )
+                            },
+                        )
+                    }
+                    HeaderKind.STRIP -> Column {
+                        WeekdayHeader(settings.firstDayOfWeek.isoDayNumber)
+                        WeekCalendar(
+                            state = weekState,
+                            dayContent = { day: WeekDay ->
+                                DayCell(
+                                    date = day.date,
+                                    inMonth = true,
+                                    isSelected = day.date == selectedDate,
+                                    isToday = day.date == today,
+                                    hasContent = dots[day.date].orEmpty().isNotEmpty(),
+                                    onClick = { viewModel.select(day.date) },
+                                    onLongClick = { onCaptureForDate(day.date) },
+                                )
+                            },
+                        )
+                    }
+                    // the seven days from the selected date, pilled as one unit
+                    HeaderKind.PILLED_WEEK -> PilledWeek(
+                        start = selectedDate,
+                        today = today,
+                        hasContent = { dots[it].orEmpty().isNotEmpty() },
+                        onSelect = viewModel::select,
+                        onLongClick = onCaptureForDate,
                     )
                 }
             }
@@ -294,8 +386,18 @@ fun AgendaScreen(
                 Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
 
+            // a horizontal swipe on the list moves to the next range of the same size
+            val swipeThreshold = with(density) { 96.dp.toPx() }
+            val swipeModifier = Modifier.pointerInput(granularity) {
+                var total = 0f
+                detectHorizontalDragGestures(
+                    onDragStart = { total = 0f },
+                    onDragEnd = { if (abs(total) > swipeThreshold) viewModel.shiftRange(if (total < 0) 1 else -1) },
+                ) { _, dragAmount -> total += dragAmount }
+            }
+
             if (ui.groups.isEmpty() && ui.inboxCount == 0) {
-                EmptyDay(selectedDate, today)
+                Box(Modifier.fillMaxSize().then(swipeModifier)) { EmptyRange(ui.range, selectedDate, today) }
                 return@Column
             }
 
@@ -314,26 +416,31 @@ fun AgendaScreen(
                 }
             }
 
-            LazyColumn(Modifier.fillMaxWidth().weight(1f), state = listState) {
+            LazyColumn(Modifier.fillMaxWidth().weight(1f).then(swipeModifier), state = listState) {
                 if (ui.inboxCount > 0) {
                     item(key = "inbox-entry") {
                         InboxEntryRow(ui.inboxCount, onOpenInbox, Modifier.animateItem())
                     }
                 }
                 ui.groups.forEach { group ->
+                    val expanded = group.key in expandedGroups
+                    val visibleRows = if (expanded) group.rows else group.rows.dropLast(group.hiddenCount)
                     item(key = "header-${group.key}") {
-                        GroupHeader(group.key, ui.today)
+                        GroupHeader(group, ui.range.granularity, ui.today, Modifier.animateItem())
                     }
-                    if (group.key == GroupKey.Anytime) {
+                    if (group.key == GroupKey.Anytime && ui.range.granularity == Granularity.DAY) {
                         itemsIndexed(localAnytime, key = { _, row -> anytimeKey(row) }) { index, row ->
                             ReorderableItem(reorderableState, key = anytimeKey(row)) { _ ->
                                 SectionCardItem(index, localAnytime.size) {
                                     AgendaRowContent(
                                         row = row,
-                                        today = ui.today,
+                                        state = ui,
                                         viewModel = viewModel,
                                         onOpenItem = onOpenItem,
+                                        onOpenDuplicate = { duplicateSheet = it },
                                         onDelete = ::deleteWithUndo,
+                                        withUndo = ::withUndo,
+                                        seriesExpanded = row.item.id in expandedSeries,
                                         showTime = false,
                                         modifier = Modifier.longPressDraggableHandle(
                                             onDragStarted = {
@@ -348,17 +455,33 @@ fun AgendaScreen(
                             }
                         }
                     } else {
-                        itemsIndexed(group.rows, key = { _, row -> "${group.key}-${row.item.id}" }) { index, row ->
-                            SectionCardItem(index, group.rows.size, Modifier.animateItem()) {
+                        val count = visibleRows.size + if (group.hiddenCount > 0) 1 else 0
+                        itemsIndexed(visibleRows, key = { _, row -> "${group.key}-${row.item.id}" }) { index, row ->
+                            SectionCardItem(index, count, Modifier.animateItem()) {
                                 AgendaRowContent(
                                     row = row,
-                                    today = ui.today,
+                                    state = ui,
                                     viewModel = viewModel,
                                     onOpenItem = onOpenItem,
+                                    onOpenDuplicate = { duplicateSheet = it },
                                     onDelete = ::deleteWithUndo,
-                                    showTime = true,
+                                    withUndo = ::withUndo,
+                                    seriesExpanded = row.item.id in expandedSeries,
+                                    showTime = group.key != GroupKey.Anytime,
                                     overdue = group.key == GroupKey.Overdue,
                                 )
+                            }
+                        }
+                        // Rule 5: nothing is hidden without a visible count
+                        if (group.hiddenCount > 0) {
+                            item(key = "more-${group.key}") {
+                                SectionCardItem(count - 1, count, Modifier.animateItem()) {
+                                    MoreRow(
+                                        hidden = group.hiddenCount,
+                                        expanded = expanded,
+                                        onClick = { viewModel.toggleGroup(group.key) },
+                                    )
+                                }
                             }
                         }
                     }
@@ -366,30 +489,91 @@ fun AgendaScreen(
             }
         }
     }
+
+    duplicateSheet?.let { dup ->
+        val mergedText = stringResource(Res.string.dup_merged)
+        DuplicateSheet(
+            duplicate = dup,
+            today = today,
+            onDismiss = { duplicateSheet = null },
+            onMerge = {
+                duplicateSheet = null
+                withUndo(mergedText, { viewModel.mergeDuplicates(dup.others) }, { viewModel.restoreAll(dup.others) })
+            },
+        )
+    }
 }
 
+private enum class HeaderKind { NONE, STRIP, PILLED_WEEK, GRID }
+
 private fun anytimeKey(row: AgendaRow): String = "any-${row.item.id}"
+
+// TODO(expressive): ButtonGroup + ToggleButton once material3 ships them; segmented buttons until then
+@Composable
+private fun RangeSwitcher(selected: Granularity, onSelect: (Granularity) -> Unit) {
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Granularity.entries.forEachIndexed { index, option ->
+            SegmentedButton(
+                selected = option == selected,
+                onClick = { onSelect(option) },
+                shape = SegmentedButtonDefaults.itemShape(index, Granularity.entries.size),
+                label = {
+                    Text(
+                        stringResource(
+                            when (option) {
+                                Granularity.DAY -> Res.string.range_day
+                                Granularity.WEEK -> Res.string.range_week
+                                Granularity.MONTH -> Res.string.range_month
+                                Granularity.ALL -> Res.string.range_all
+                            },
+                        ),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun weekTitle(start: LocalDate, monthNames: List<String>): String {
+    val end = start.plus(6, DateTimeUnit.DAY)
+    val startMonth = monthNames[start.month.number - 1].take(3)
+    val endMonth = monthNames[end.month.number - 1].take(3)
+    return if (start.month == end.month) "$startMonth ${start.day}–${end.day}"
+    else "$startMonth ${start.day} – $endMonth ${end.day}"
+}
 
 /** One renderer for every row shape the range builder emits. */
 @Composable
 private fun AgendaRowContent(
     row: AgendaRow,
-    today: LocalDate,
+    state: AgendaUiState,
     viewModel: AgendaViewModel,
     onOpenItem: (Item) -> Unit,
+    onOpenDuplicate: (AgendaRow.Duplicate) -> Unit,
     onDelete: (Item) -> Unit,
+    withUndo: (String, () -> Unit, () -> Unit) -> Unit,
+    seriesExpanded: Boolean,
     showTime: Boolean,
     modifier: Modifier = Modifier,
     overdue: Boolean = false,
 ) {
     val use24h = LocalSettings.current.use24h
+    val today = state.today
     val item = row.item
+
+    if (row is AgendaRow.Series) {
+        SeriesRow(row, state, viewModel, onOpenItem, onDelete, withUndo, seriesExpanded, modifier)
+        return
+    }
+
     val timeText = when (row) {
         is AgendaRow.Single -> if (showTime) row.time?.let { timeLabel(it, use24h) } else null
-        is AgendaRow.Series -> item.recurrence?.let { recurrenceLabel(it) }
         is AgendaRow.Span -> row.dayIndex?.let { stringResource(Res.string.span_day_of, it, row.dayCount) }
             ?: "${dateLabel(row.first, today)} – ${dateLabel(row.last, today)}"
         is AgendaRow.Duplicate -> if (showTime) item.dueLocalTime?.let { timeLabel(it, use24h) } else null
+        is AgendaRow.Series -> null
     }
     ItemRow(
         item = item,
@@ -406,16 +590,228 @@ private fun AgendaRowContent(
         onReschedule = if (item.type == ItemType.TASK) {
             { viewModel.reschedule(item, it) }
         } else null,
-        onOpen = { onOpenItem(item) },
+        onOpen = if (row is AgendaRow.Duplicate) {
+            { onOpenDuplicate(row) }
+        } else {
+            { onOpenItem(item) }
+        },
         modifier = modifier,
     )
 }
 
+/**
+ * A rolled-up repeat. Week shows the dot strip and completes per day; Month and All show
+ * the rule with a count and expand the occurrences inline. Long-press offers skip / end.
+ */
 @Composable
-private fun GroupHeader(key: GroupKey, today: LocalDate) {
+private fun SeriesRow(
+    row: AgendaRow.Series,
+    state: AgendaUiState,
+    viewModel: AgendaViewModel,
+    onOpenItem: (Item) -> Unit,
+    onDelete: (Item) -> Unit,
+    withUndo: (String, () -> Unit, () -> Unit) -> Unit,
+    expanded: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val item = row.item
+    val today = state.today
+    val week = state.range.granularity == Granularity.WEEK
+    val rule = item.recurrence?.let { recurrenceLabel(it) }.orEmpty()
+    val doneCount = row.doneMask?.count { it } ?: 0
+    val supporting = when (state.range.granularity) {
+        Granularity.WEEK -> "$rule · ${stringResource(Res.string.series_done_of, doneCount, row.occurrencesInRange)}"
+        Granularity.MONTH -> "$rule · ${stringResource(Res.string.series_count_month, row.occurrencesInRange)}"
+        else -> "$rule · ${stringResource(Res.string.series_next, dateLabel(row.nextDue, today))}"
+    }
+    var menuOpen by remember { mutableStateOf(false) }
+    val skippedText = stringResource(Res.string.occurrence_skipped)
+    val endedText = stringResource(Res.string.series_ended)
+    val completeDayText = stringResource(Res.string.series_complete_day)
+    val description = "${item.title}, $supporting"
+
+    Column(modifier.semantics(mergeDescendants = true) { contentDescription = description }) {
+        Box {
+            ItemRow(
+                item = item,
+                today = today,
+                timeText = supporting,
+                leadingIcon = if (week) null else Icons.Outlined.Repeat,
+                // Rule 6: the checkbox completes the next occurrence only
+                onToggleComplete = { viewModel.completeOccurrence(item.id, row.nextDue) },
+                onDelete = { onDelete(item) },
+                onRename = { viewModel.rename(item, it) },
+                onLongClick = { menuOpen = true },
+                onOpen = { onOpenItem(item) },
+                trailing = if (week) {
+                    {
+                        DotStrip(
+                            start = state.range.start ?: today,
+                            mask = row.doneMask.orEmpty(),
+                            dates = row.dates,
+                            dayLabel = completeDayText,
+                            onToggle = { date, done ->
+                                if (done) viewModel.clearOccurrence(item.id, date) else viewModel.completeOccurrence(item.id, date)
+                            },
+                        )
+                    }
+                } else {
+                    {
+                        IconButton(onClick = { viewModel.toggleSeries(item.id) }) {
+                            Icon(
+                                if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                },
+            )
+            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.series_skip)) },
+                    onClick = {
+                        menuOpen = false
+                        withUndo(skippedText, { viewModel.skipOccurrence(item.id, row.nextDue) }) {
+                            viewModel.clearOccurrence(item.id, row.nextDue)
+                        }
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.series_end)) },
+                    onClick = {
+                        menuOpen = false
+                        withUndo(endedText, { viewModel.endSeries(item) }) { viewModel.restoreItem(item) }
+                    },
+                )
+            }
+        }
+        if (!week) {
+            AnimatedVisibility(visible = expanded, enter = expandEnter(), exit = expandExit()) {
+                Column(Modifier.padding(start = 56.dp, end = 16.dp, bottom = 8.dp)) {
+                    row.dates.forEach { date ->
+                        val done = date in row.doneDates
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = done,
+                                onCheckedChange = {
+                                    if (done) viewModel.clearOccurrence(item.id, date) else viewModel.completeOccurrence(item.id, date)
+                                },
+                            )
+                            Text(dateLabel(date, today), style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Seven dots, one per day of the week; tapping a dot completes that day. 48dp tall for touch. */
+@Composable
+private fun DotStrip(
+    start: LocalDate,
+    mask: List<Boolean>,
+    dates: List<LocalDate>,
+    dayLabel: String,
+    onToggle: (LocalDate, Boolean) -> Unit,
+) {
+    val actions = (0..6).mapNotNull { offset ->
+        val date = start.plus(offset, DateTimeUnit.DAY)
+        if (date in dates) CustomAccessibilityAction("$dayLabel ${date.dayOfWeek.name.lowercase()}") {
+            onToggle(date, mask.getOrNull(offset) == true); true
+        } else null
+    }
+    Row(
+        Modifier.height(48.dp).semantics { customActions = actions },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        repeat(7) { offset ->
+            val date = start.plus(offset, DateTimeUnit.DAY)
+            val active = date in dates
+            val done = mask.getOrNull(offset) == true
+            Box(
+                Modifier
+                    .size(width = 16.dp, height = 48.dp)
+                    .clickable(enabled = active) { onToggle(date, done) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    Modifier
+                        .size(9.dp)
+                        .let { m ->
+                            when {
+                                done -> m.background(MaterialTheme.colorScheme.primary, CircleShape)
+                                active -> m.border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                                else -> m
+                            }
+                        },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MoreRow(hidden: Int, expanded: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().height(48.dp).clickable(onClick = onClick).padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            if (expanded) stringResource(Res.string.fewer_rows) else stringResource(Res.string.more_rows, hidden),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+@Composable
+private fun DuplicateSheet(
+    duplicate: AgendaRow.Duplicate,
+    today: LocalDate,
+    onDismiss: () -> Unit,
+    onMerge: () -> Unit,
+) {
+    val all = listOf(duplicate.primary) + duplicate.others
+    val nowMillis = remember { Clock.System.now().toEpochMilliseconds() }
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)) {
+            Text(
+                stringResource(Res.string.dup_title, all.size),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            all.forEach { copy ->
+                Column(Modifier.padding(vertical = 6.dp)) {
+                    Text(copy.title, style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        stringResource(Res.string.inbox_captured, relativeAge(nowMillis - copy.createdAt)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Row(
+                Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+            ) {
+                // ponytail: "keep both" just closes the sheet; the pair keeps merging in the list
+                OutlinedButton(onClick = onDismiss) { Text(stringResource(Res.string.dup_keep)) }
+                FilledTonalButton(onClick = onMerge) { Text(stringResource(Res.string.dup_merge)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GroupHeader(group: AgendaGroup, granularity: Granularity, today: LocalDate, modifier: Modifier = Modifier) {
+    val key = group.key
     val label = when (key) {
         GroupKey.Overdue -> stringResource(Res.string.section_overdue)
-        GroupKey.Series -> stringResource(Res.string.section_series)
+        GroupKey.Series -> stringResource(
+            if (granularity == Granularity.WEEK) Res.string.section_repeating_week else Res.string.section_series,
+        )
         GroupKey.Anytime -> stringResource(Res.string.section_anytime)
         is GroupKey.TimeOfDay -> stringResource(
             when (key.section) {
@@ -425,14 +821,43 @@ private fun GroupHeader(key: GroupKey, today: LocalDate) {
             },
         )
         is GroupKey.Day -> dateLabel(key.date, today)
-        is GroupKey.Horizon -> key.bucket.name.lowercase().replaceFirstChar { it.uppercase() }
+        is GroupKey.Horizon -> stringResource(
+            when (key.bucket) {
+                HorizonBucket.TODAY -> Res.string.date_today
+                HorizonBucket.THIS_WEEK -> Res.string.triage_this_week
+                HorizonBucket.LATER -> Res.string.horizon_later
+                HorizonBucket.SOMEDAY -> Res.string.triage_someday
+            },
+        )
     }
-    Text(
-        label,
-        style = MaterialTheme.typography.titleSmall,
-        color = if (key == GroupKey.Overdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 20.dp, bottom = 8.dp),
-    )
+    // counts on the wide ranges; the day range reads fine without them
+    val counted = if (granularity == Granularity.DAY || key == GroupKey.Series) label else "$label · ${group.rows.size}"
+    val hiddenOccurrences = if (key == GroupKey.Series) {
+        group.rows.filterIsInstance<AgendaRow.Series>().sumOf { it.occurrencesInRange - 1 }
+    } else 0
+    val isToday = key is GroupKey.Day && key.date == today
+    Row(
+        modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            if (isToday) "${stringResource(Res.string.date_today)} · $label" else counted,
+            style = MaterialTheme.typography.titleSmall,
+            color = when {
+                key == GroupKey.Overdue -> MaterialTheme.colorScheme.error
+                isToday -> MaterialTheme.colorScheme.onSurface
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            modifier = Modifier.weight(1f),
+        )
+        if (hiddenOccurrences > 0) {
+            Text(
+                stringResource(Res.string.series_hidden, hiddenOccurrences),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 @Composable
@@ -463,7 +888,7 @@ private fun InboxEntryRow(count: Int, onClick: () -> Unit, modifier: Modifier = 
 }
 
 @Composable
-private fun EmptyDay(selected: LocalDate, today: LocalDate) {
+private fun EmptyRange(range: AgendaRange, selected: LocalDate, today: LocalDate) {
     Column(
         Modifier.fillMaxWidth().padding(top = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -475,7 +900,7 @@ private fun EmptyDay(selected: LocalDate, today: LocalDate) {
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            if (selected == today) {
+            if (range.granularity == Granularity.DAY && selected == today || range.granularity == Granularity.ALL) {
                 stringResource(Res.string.today_empty)
             } else {
                 stringResource(Res.string.calendar_nothing, dateLabel(selected, today))
@@ -500,6 +925,54 @@ private fun WeekdayHeader(firstDayOfWeekIso: Int) {
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+}
+
+/** Week range header: the seven days from [start], drawn as one pill. */
+@Composable
+private fun PilledWeek(
+    start: LocalDate,
+    today: LocalDate,
+    hasContent: (LocalDate) -> Boolean,
+    onSelect: (LocalDate) -> Unit,
+    onLongClick: (LocalDate) -> Unit,
+) {
+    val names = stringArrayResource(Res.array.weekdays_full)
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+    ) {
+        Column(Modifier.padding(vertical = 4.dp)) {
+            Row(Modifier.fillMaxWidth()) {
+                repeat(7) { offset ->
+                    val date = start.plus(offset, DateTimeUnit.DAY)
+                    Text(
+                        names[date.dayOfWeek.isoDayNumber - 1].take(1),
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (date == today) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Row(Modifier.fillMaxWidth()) {
+                repeat(7) { offset ->
+                    val date = start.plus(offset, DateTimeUnit.DAY)
+                    Box(Modifier.weight(1f)) {
+                        DayCell(
+                            date = date,
+                            inMonth = true,
+                            isSelected = date == today,
+                            isToday = date == today,
+                            hasContent = hasContent(date),
+                            onClick = { onSelect(date) },
+                            onLongClick = { onLongClick(date) },
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -536,10 +1009,7 @@ private fun DayCell(
         Box(
             Modifier
                 .size(40.dp)
-                .background(
-                    if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                    CircleShape,
-                ),
+                .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -556,9 +1026,7 @@ private fun DayCell(
         Box(Modifier.height(6.dp), contentAlignment = Alignment.Center) {
             when {
                 isSelected -> Box(
-                    Modifier
-                        .width(14.dp)
-                        .height(4.dp)
+                    Modifier.width(14.dp).height(4.dp)
                         .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)),
                 )
                 hasContent -> Box(

@@ -80,6 +80,10 @@ sealed interface AgendaRow {
         val occurrencesInRange: Int,
         val nextDue: LocalDate,
         val doneMask: List<Boolean>?,
+        /** Every occurrence date in range, for inline expansion. */
+        val dates: List<LocalDate> = emptyList(),
+        /** The subset of [dates] already completed. */
+        val doneDates: Set<LocalDate> = emptySet(),
     ) : AgendaRow
 
     /** Same title, type and date captured more than once. Both records survive. */
@@ -145,6 +149,7 @@ fun buildAgenda(
     tz: TimeZone,
     settings: AgendaSettings = AgendaSettings(),
     completedOccurrences: Set<OccurrenceKey> = emptySet(),
+    skippedOccurrences: Set<OccurrenceKey> = emptySet(),
     ruleLabel: (String) -> String = ::defaultRuleLabel,
 ): List<AgendaGroup> {
     val rangeStart = range.start ?: today
@@ -184,7 +189,13 @@ fun buildAgenda(
                     item = item,
                     ruleLabel = item.recurrence?.let(ruleLabel).orEmpty(),
                     occurrencesInRange = dates.size,
-                    nextDue = dates.firstOrNull { it >= today } ?: dates.first(),
+                    // "next" skips over days already done or skipped
+                    nextDue = dates.firstOrNull { date ->
+                        val key = OccurrenceKey(item.id, date.toEpochDays().toInt())
+                        date >= today && key !in completedOccurrences && key !in skippedOccurrences
+                    } ?: dates.last(),
+                    dates = dates,
+                    doneDates = dates.filter { OccurrenceKey(item.id, it.toEpochDays().toInt()) in completedOccurrences }.toSet(),
                     doneMask = if (range.granularity == Granularity.WEEK) {
                         weekMask(item, dates, rangeStart, completedOccurrences)
                     } else {

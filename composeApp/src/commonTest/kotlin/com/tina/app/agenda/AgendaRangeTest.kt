@@ -270,6 +270,28 @@ class AgendaRangeTest {
         )
         assertEquals(1, rows(shown).size)
     }
+
+    // ---- next occurrence skips done and skipped days
+
+    @Test
+    fun nextDueSkipsCompletedAndSkippedOccurrences() {
+        val items = listOf(event(1, "Morning pages", rrule = "FREQ=DAILY"))
+        val done = setOf(OccurrenceKey(1, TODAY.toEpochDays().toInt()))
+        val skipped = setOf(OccurrenceKey(1, TODAY.plus(1, DateTimeUnit.DAY).toEpochDays().toInt()))
+        val series = rows(buildAgenda(items, AgendaRange.week(TODAY), TODAY, TZ, completedOccurrences = done, skippedOccurrences = skipped))
+            .single() as AgendaRow.Series
+        assertEquals(TODAY.plus(2, DateTimeUnit.DAY), series.nextDue)
+        assertEquals(7, series.dates.size)
+    }
+
+    @Test
+    fun nextDueFallsBackToTheLastOccurrenceWhenAllAreDone() {
+        val items = listOf(event(1, "Morning pages", rrule = "FREQ=DAILY"))
+        val done = (0..6).map { OccurrenceKey(1, TODAY.plus(it, DateTimeUnit.DAY).toEpochDays().toInt()) }.toSet()
+        val series = rows(buildAgenda(items, AgendaRange.week(TODAY), TODAY, TZ, completedOccurrences = done))
+            .single() as AgendaRow.Series
+        assertEquals(TODAY.plus(6, DateTimeUnit.DAY), series.nextDue)
+    }
 }
 
 private fun LocalDate.minus(): LocalDate = LocalDate.fromEpochDays(this.toEpochDays() - 2)

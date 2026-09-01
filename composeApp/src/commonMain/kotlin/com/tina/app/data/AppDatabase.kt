@@ -12,12 +12,16 @@ import androidx.sqlite.execSQL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
-@Database(entities = [Item::class, ChatEntity::class, ChatMessageEntity::class], version = 4)
+@Database(
+    entities = [Item::class, ChatEntity::class, ChatMessageEntity::class, OccurrenceCompletion::class],
+    version = 5,
+)
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun itemDao(): ItemDao
     abstract fun chatDao(): ChatDao
+    abstract fun occurrenceDao(): OccurrenceDao
 }
 
 /** Additive: ask-chat tables only. Items are untouched — this must never be destructive. */
@@ -54,11 +58,23 @@ private val MIGRATION_3_4 = object : Migration(3, 4) {
     }
 }
 
+/** Additive: per-occurrence completion for repeating items. Items are untouched. */
+private val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `occurrence_completions` (" +
+                "`itemId` INTEGER NOT NULL, `epochDay` INTEGER NOT NULL, " +
+                "`skipped` INTEGER NOT NULL, `completedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`itemId`, `epochDay`))",
+        )
+    }
+}
+
 fun buildDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase =
     builder
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
-        .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+        .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
         // v1 was the pre-feature scaffold with an empty placeholder table; nothing worth migrating
         .fallbackToDestructiveMigration(dropAllTables = true)
         .build()

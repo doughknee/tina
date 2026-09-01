@@ -247,3 +247,14 @@ Running log of choices made without asking, newest last.
 - **Agenda in Part A is the DAY range** of the B2 builder: the four-range switcher and the other range layouts are Part B. The builder is already wired, so Part B is UI over data that exists.
 - **Deleted routes can't be deep-linked wrongly** — they were Kotlin objects, so their removal is compile-checked. The widget and QS tile use the `CaptureFocus` signal, which now also drops ask mode; "Open app to Capture" maps to Agenda with the field focused.
 - **Desktop row selection (arrow-select, Enter, Delete) was dropped** with TodayScreen; arrows still move the date. Bring it back if desktop use asks for it.
+
+## Day / Week / Month / All (REL-149, Part B)
+
+- **Schema v5: `occurrence_completions`.** Repeating items are stored once with a rule, so "3 of 7 done" needs a table keyed on (item, day). Rows carry a `skipped` flag: skipped occurrences advance "next" without counting as done. Additive migration; items untouched.
+- **Occurrence completion ignores type.** A single event row still isn't completable, but a rolled-up series row is — the checkbox completes the next occurrence, the week dot strip completes a specific day. The parser still routes anything recurring to EVENT; recurring *tasks* only arise via type changes, which is fine because completion is per occurrence, not per item.
+- **Week is the seven days from the selected date** (matches `range-1-week.png`'s "Sep 1–7"), drawn as its own pilled row rather than the calendar library's Monday-start week. Tapping a day re-anchors the window on it. Swiping the list moves a full week.
+- **`SingleChoiceSegmentedButtonRow` stands in for `ButtonGroup`** (`// TODO(expressive)`), same fallback as Settings.
+- **"Keep both" on a duplicate just closes the sheet.** Persisting a "these are not duplicates" mark needs another table for a case that hasn't happened yet; Merge is the real action (extras go to Trash, so undo is restore).
+- **Series expansion in Month / All is a checkbox list of dates**, not a second row renderer. Done state comes from the builder (`doneDates`), so the list and the dot strip can never disagree.
+- **Swipe-to-change-range is on the list, not the rows.** Rows consume horizontal drags for complete/delete, so the gesture works on headers and empty space. Good enough; the switcher is always there.
+- **Digests, widgets and Ask still read the repository directly**, not `buildAgenda`. The spec wants them on the same function; that's a follow-up once the agenda itself has settled.
