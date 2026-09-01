@@ -146,8 +146,10 @@ fun Shell(
     var discardPrompt by remember { mutableStateOf(false) }
 
     // dismissing with a draft asks first; with nothing typed it just folds
+    // reads the view model at call time: this reference gets memoised across recompositions,
+    // so a captured `hasDraft` went stale and drags kept seeing an empty field
     fun dismissCaptureSheet() {
-        if (hasDraft) discardPrompt = true else focusManager.clearFocus()
+        if (captureViewModel.text.isNotBlank()) discardPrompt = true else focusManager.clearFocus()
     }
 
     fun showTab(tab: TinaTab) {
