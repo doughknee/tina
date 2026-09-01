@@ -33,6 +33,17 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 
 const val ANTHROPIC_DEFAULT_MODEL = "claude-opus-5"
+const val ANTHROPIC_DEFAULT_BASE_URL = "https://api.anthropic.com"
+
+data class AnthropicModel(val id: String, val label: String)
+
+/** Current-generation Claude models, best-first; ids are Anthropic API model strings. */
+val ANTHROPIC_MODELS = listOf(
+    AnthropicModel("claude-opus-5", "Claude Opus 5"),
+    AnthropicModel("claude-fable-5", "Claude Fable 5"),
+    AnthropicModel("claude-sonnet-5", "Claude Sonnet 5"),
+    AnthropicModel("claude-haiku-4-5-20251001", "Claude Haiku 4.5"),
+)
 const val OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434/v1"
 const val OPENAI_DEFAULT_BASE_URL = "https://api.openai.com/v1"
 
@@ -195,7 +206,7 @@ class AiCaptureParser(
     }
 
     private suspend fun anthropicComplete(settings: Settings, prompt: String): String? {
-        val baseUrl = settings.aiBaseUrl.ifBlank { "https://api.anthropic.com" }.trimEnd('/')
+        val baseUrl = settings.aiBaseUrl.ifBlank { ANTHROPIC_DEFAULT_BASE_URL }.trimEnd('/')
         val body = buildJsonObject {
             put("model", settings.aiModel)
             put("max_tokens", 1024)

@@ -12,7 +12,11 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -276,6 +280,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AiConfigFields(
     settings: com.tina.app.data.Settings,
@@ -291,9 +296,11 @@ private fun AiConfigFields(
     var workspaceId by remember(settings.aiProvider) { mutableStateOf(settings.aiWorkspaceId) }
     var testing by remember { mutableStateOf(false) }
 
+    val isAnthropic = settings.aiProvider == AiProvider.ANTHROPIC
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedTextField(
-            value = baseUrl,
+            // Claude always talks to the official endpoint; show it greyed out
+            value = if (isAnthropic) com.tina.app.ai.ANTHROPIC_DEFAULT_BASE_URL else baseUrl,
             onValueChange = {
                 baseUrl = it
                 viewModel.setAiBaseUrl(it)
@@ -301,17 +308,54 @@ private fun AiConfigFields(
             modifier = Modifier.fillMaxWidth(),
             label = { Text(stringResource(Res.string.ai_base_url)) },
             singleLine = true,
+            enabled = !isAnthropic,
         )
-        OutlinedTextField(
-            value = model,
-            onValueChange = {
-                model = it
-                viewModel.setAiModel(it)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(Res.string.ai_model)) },
-            singleLine = true,
-        )
+        if (isAnthropic) {
+            var modelMenuOpen by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = modelMenuOpen,
+                onExpandedChange = { modelMenuOpen = it },
+            ) {
+                OutlinedTextField(
+                    value = com.tina.app.ai.ANTHROPIC_MODELS
+                        .firstOrNull { it.id == model }?.label ?: model,
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                    label = { Text(stringResource(Res.string.ai_model)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(modelMenuOpen) },
+                    singleLine = true,
+                )
+                ExposedDropdownMenu(
+                    expanded = modelMenuOpen,
+                    onDismissRequest = { modelMenuOpen = false },
+                ) {
+                    com.tina.app.ai.ANTHROPIC_MODELS.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option.label) },
+                            onClick = {
+                                model = option.id
+                                viewModel.setAiModel(option.id)
+                                modelMenuOpen = false
+                            },
+                        )
+                    }
+                }
+            }
+        } else {
+            OutlinedTextField(
+                value = model,
+                onValueChange = {
+                    model = it
+                    viewModel.setAiModel(it)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(Res.string.ai_model)) },
+                singleLine = true,
+            )
+        }
         OutlinedTextField(
             value = apiKey,
             onValueChange = {
