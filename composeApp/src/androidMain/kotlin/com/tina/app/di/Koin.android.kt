@@ -13,6 +13,7 @@ import com.tina.app.notifications.PlatformNotifier
 import com.tina.app.notifications.ReminderScheduler
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpTimeout
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -31,5 +32,14 @@ val androidModule = module {
     }
     single<Notifier> { PlatformNotifier(androidContext()) }
     single<ReminderScheduler> { AndroidReminderScheduler(androidContext()) }
-    single { HttpClient(OkHttp) }
+    single {
+        HttpClient(OkHttp) {
+            install(HttpTimeout) {
+                // local models can take a minute to cold-load before answering
+                connectTimeoutMillis = 10_000
+                requestTimeoutMillis = 180_000
+                socketTimeoutMillis = 180_000
+            }
+        }
+    }
 }
