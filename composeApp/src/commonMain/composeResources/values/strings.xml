@@ -173,6 +173,8 @@
     <!-- Settings: Capture -->
     <string name="set_qs_tile">Quick Settings tile</string>
     <string name="set_qs_tile_sub">Capture from the shade</string>
+    <string name="set_auto_focus">Keyboard on open</string>
+    <string name="set_auto_focus_sub">Focus the capture field when tina opens</string>
     <string name="set_keep_keyboard">Keep keyboard up</string>
     <string name="set_keep_keyboard_sub">Stay in capture after saving</string>
     <string name="set_voice_capture">Voice capture</string>

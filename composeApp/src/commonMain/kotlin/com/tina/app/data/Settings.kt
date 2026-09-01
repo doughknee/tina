@@ -54,6 +54,9 @@ data class Settings(
     val pureBlack: Boolean = false,
     // Capture
     val quickSettingsTile: Boolean = true,
+    // off by default: opening the app shouldn't cover half the screen with a keyboard.
+    // The capture widget and tile still focus the field, since that's their whole job.
+    val autoFocusCapture: Boolean = false,
     val keepKeyboardUp: Boolean = true,
     val voiceCapture: Boolean = true,
     val undoWindowSeconds: Int = 5,
@@ -107,6 +110,7 @@ private val KEY_REDUCE_MOTION = stringPreferencesKey("reduceMotion")
 private val KEY_CONTRAST = stringPreferencesKey("contrast")
 private val KEY_PURE_BLACK = booleanPreferencesKey("pureBlack")
 private val KEY_QS_TILE = booleanPreferencesKey("quickSettingsTile")
+private val KEY_AUTO_FOCUS_CAPTURE = booleanPreferencesKey("autoFocusCapture")
 private val KEY_KEEP_KEYBOARD = booleanPreferencesKey("keepKeyboardUp")
 private val KEY_VOICE_CAPTURE = booleanPreferencesKey("voiceCapture")
 private val KEY_UNDO_SECONDS = intPreferencesKey("undoWindowSeconds")
@@ -161,6 +165,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
                 ?: ContrastMode.STANDARD,
             pureBlack = p[KEY_PURE_BLACK] ?: false,
             quickSettingsTile = p[KEY_QS_TILE] ?: true,
+            autoFocusCapture = p[KEY_AUTO_FOCUS_CAPTURE] ?: false,
             keepKeyboardUp = p[KEY_KEEP_KEYBOARD] ?: true,
             voiceCapture = p[KEY_VOICE_CAPTURE] ?: true,
             undoWindowSeconds = p[KEY_UNDO_SECONDS] ?: 5,
@@ -216,6 +221,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     suspend fun setContrast(mode: ContrastMode) = store.edit { it[KEY_CONTRAST] = mode.name }
     suspend fun setPureBlack(enabled: Boolean) = store.edit { it[KEY_PURE_BLACK] = enabled }
     suspend fun setQuickSettingsTile(enabled: Boolean) = store.edit { it[KEY_QS_TILE] = enabled }
+    suspend fun setAutoFocusCapture(enabled: Boolean) = store.edit { it[KEY_AUTO_FOCUS_CAPTURE] = enabled }
     suspend fun setKeepKeyboardUp(enabled: Boolean) = store.edit { it[KEY_KEEP_KEYBOARD] = enabled }
     suspend fun setVoiceCapture(enabled: Boolean) = store.edit { it[KEY_VOICE_CAPTURE] = enabled }
     suspend fun setUndoWindowSeconds(seconds: Int) = store.edit { it[KEY_UNDO_SECONDS] = seconds }
@@ -261,6 +267,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
         p[KEY_CONTRAST] = s.contrast
         p[KEY_PURE_BLACK] = s.pureBlack
         p[KEY_QS_TILE] = s.quickSettingsTile
+        p[KEY_AUTO_FOCUS_CAPTURE] = s.autoFocusCapture
         p[KEY_KEEP_KEYBOARD] = s.keepKeyboardUp
         p[KEY_VOICE_CAPTURE] = s.voiceCapture
         p[KEY_UNDO_SECONDS] = s.undoWindowSeconds

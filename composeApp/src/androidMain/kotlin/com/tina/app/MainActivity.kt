@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        handleFocusCapture(intent)
 
         // "Hide in app switcher" — FLAG_SECURE also blanks the recents thumbnail
         lifecycleScope.launch {
@@ -66,6 +67,22 @@ class MainActivity : ComponentActivity() {
             } else {
                 App()
             }
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleFocusCapture(intent)
+    }
+
+    /**
+     * The quick-capture widget and Quick Settings tile exist to get you typing, so they
+     * focus the field even when "Keyboard on open" is off.
+     */
+    private fun handleFocusCapture(intent: android.content.Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_FOCUS_CAPTURE, false) == true) {
+            com.tina.app.ui.CaptureFocus.request()
         }
     }
 
@@ -100,5 +117,9 @@ class MainActivity : ComponentActivity() {
         ) ?: return
         locked = true
         unlockLauncher.launch(intent)
+    }
+
+    companion object {
+        const val EXTRA_FOCUS_CAPTURE = "com.tina.app.FOCUS_CAPTURE"
     }
 }

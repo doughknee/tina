@@ -99,6 +99,7 @@ class SettingsViewModel(
     fun setContrast(v: com.tina.app.data.ContrastMode) = launchEdit { repository.setContrast(v) }
     fun setPureBlack(v: Boolean) = launchEdit { repository.setPureBlack(v) }
     fun setQuickSettingsTile(v: Boolean) = launchEdit { repository.setQuickSettingsTile(v) }
+    fun setAutoFocusCapture(v: Boolean) = launchEdit { repository.setAutoFocusCapture(v) }
     fun setKeepKeyboardUp(v: Boolean) = launchEdit { repository.setKeepKeyboardUp(v) }
     fun setVoiceCapture(v: Boolean) = launchEdit { repository.setVoiceCapture(v) }
     fun setUndoWindowSeconds(v: Int) = launchEdit { repository.setUndoWindowSeconds(v) }

@@ -178,6 +178,8 @@ import com.tina.app.resources.set_hide_switcher_sub
 import com.tina.app.resources.set_import_sub
 import com.tina.app.resources.set_inbox_reminder
 import com.tina.app.resources.set_inbox_reminder_sub
+import com.tina.app.resources.set_auto_focus
+import com.tina.app.resources.set_auto_focus_sub
 import com.tina.app.resources.set_keep_keyboard
 import com.tina.app.resources.set_keep_keyboard_sub
 import com.tina.app.resources.set_language
@@ -664,6 +666,14 @@ private fun rememberSettingsSections(
                 visible = Platform.isAndroid,
                 checked = settings.quickSettingsTile,
                 onCheckedChange = viewModel::setQuickSettingsTile,
+            ),
+            SettingsRow.Switch(
+                id = "autoFocusCapture",
+                title = stringResource(Res.string.set_auto_focus),
+                supporting = stringResource(Res.string.set_auto_focus_sub),
+                keywords = listOf("keyboard", "ime", "focus", "open"),
+                checked = settings.autoFocusCapture,
+                onCheckedChange = viewModel::setAutoFocusCapture,
             ),
             SettingsRow.Switch(
                 id = "keepKeyboard",

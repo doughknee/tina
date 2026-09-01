@@ -13,7 +13,8 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
-import androidx.glance.action.actionStartActivity
+// the Intent-taking overload lives in the appwidget artifact, not glance.action
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -44,7 +45,12 @@ class CaptureWidget : GlanceAppWidget() {
                     .height(56.dp)
                     .background(GlanceTheme.colors.widgetBackground)
                     .cornerRadius(28.dp)
-                    .clickable(actionStartActivity<MainActivity>())
+                    .clickable(
+                        actionStartActivity(
+                            android.content.Intent(context, MainActivity::class.java)
+                                .putExtra(MainActivity.EXTRA_FOCUS_CAPTURE, true),
+                        ),
+                    )
                     .padding(start = 20.dp, end = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

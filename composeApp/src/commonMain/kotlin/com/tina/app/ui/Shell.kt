@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -76,10 +77,19 @@ fun Shell(
     val captureViewModel: CaptureViewModel = koinViewModel()
     val notesViewModel: NotesViewModel = koinViewModel()
 
+    // a widget/tile launch has to land on Capture even when the app opens elsewhere
+    val focusRequested by CaptureFocus.pending.collectAsState()
+    LaunchedEffect(focusRequested) {
+        if (focusRequested) selectedName = TinaTab.CAPTURE.name
+    }
+
     LaunchedEffect(Unit) {
         KeyBus.events.collect { command ->
             when (command) {
-                KeyCommand.FOCUS_CAPTURE -> selectedName = TinaTab.CAPTURE.name
+                KeyCommand.FOCUS_CAPTURE -> {
+                    selectedName = TinaTab.CAPTURE.name
+                    CaptureFocus.request()
+                }
                 KeyCommand.SEARCH -> onOpenSearch()
                 KeyCommand.NEW_ITEM ->
                     if (selectedName == TinaTab.NOTES.name) {

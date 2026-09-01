@@ -228,3 +228,11 @@ Running log of choices made without asking, newest last.
 - **Predictive back honours the swipe edge** — nav3 passes it to `predictivePopTransitionSpec`, and a right-edge swipe mirrors the pop so the page follows the thumb.
 - **The expressive spring constants are copied, not imported.** `MotionScheme` is public in material3's JVM jar but `internal` in the KMP metadata at 1.9.0, so `MaterialTheme.motionScheme` and `MaterialExpressiveTheme` don't compile from commonMain. The two token pairs (spatial 0.8/380, effects 1.0/1600) are lifted from `ExpressiveMotionTokens` into `ui/Motion.kt`. Delete them and use the real API once material3 exposes it.
 - **Reduce motion collapses every transition to a cross-fade** on the same springs, not to a hard cut — the setting removes movement, not feedback.
+
+## Capture layout and focus
+
+- **The composer sits at the bottom**, above the nav bar, with the suggestions and recents filling the page above it. Shell's `imePadding` already lifts the whole shell, so the field, the nav bar and the chips ride the keyboard together with no extra inset work. It gained a filled 28dp pill (matching the Ask composer) because a bare transparent field at the bottom of an open page reads as loose text rather than an input.
+- **The chips moved with the field**, not with the content — they describe what's currently being typed, so they stay directly above the composer.
+- **The keyboard no longer opens with the app.** `autoFocusCapture` defaults off: opening tina to type nothing and having half the screen covered was the single most common annoyance. The toggle ("Keyboard on open") is in the Capture section for anyone who wants the old behaviour.
+- **Quick-capture entry points override the setting.** The widget and Quick Settings tile exist purely to get you typing, so they pass `EXTRA_FOCUS_CAPTURE` and focus the field regardless. That signal is `CaptureFocus`, a `StateFlow` rather than an event on `KeyBus` — a cold start would race a `SharedFlow` emission against composition and silently drop it. Shell watches it to switch to the Capture tab (the app may be set to open elsewhere), CaptureScreen focuses and clears it.
+- **The desktop focus shortcut routes through the same signal**, so Ctrl+N still lands in the field now that composition no longer auto-focuses.

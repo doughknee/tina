@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -148,10 +149,21 @@ fun CaptureScreen(
     val improvedText = stringResource(Res.string.improve_applied)
     var improveTarget by remember { mutableStateOf<com.tina.app.data.Item?>(null) }
 
+    val autoFocus = LocalSettings.current.autoFocusCapture
     LaunchedEffect(Unit) {
+        if (!autoFocus) return@LaunchedEffect
         // let the field attach before requesting focus (desktop logs a warning otherwise)
         withFrameNanos { }
         focusRequester.requestFocus()
+    }
+
+    // the widget, the tile and the desktop shortcut all focus regardless of the setting
+    val focusRequested by com.tina.app.ui.CaptureFocus.pending.collectAsState()
+    LaunchedEffect(focusRequested) {
+        if (!focusRequested) return@LaunchedEffect
+        withFrameNanos { }
+        focusRequester.requestFocus()
+        com.tina.app.ui.CaptureFocus.clear()
     }
 
     val refinedText = stringResource(Res.string.ai_refined)
@@ -196,12 +208,20 @@ fun CaptureScreen(
                 },
             )
         },
-        snackbarHost = {
-            SnackbarHost(snackbarHostState, Modifier.imePadding())
-        },
-    ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
-            Column(Modifier.fillMaxWidth().padding(16.dp)) {
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        // the composer lives at the bottom, in thumb reach and just above the nav bar;
+        // Shell's imePadding lifts the whole thing when the keyboard opens
+        bottomBar = {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                // chips describe what's being typed, so they stay attached to the field
+                AnimatedVisibility(
+                    visible = viewModel.text.isNotBlank(),
+                    enter = fadeIn(tween(150)) + scaleIn(initialScale = 0.8f, animationSpec = tween(150)),
+                    exit = fadeOut(tween(150)),
+                ) {
+                    CaptureChips(viewModel)
+                }
+
                 TextField(
                     value = viewModel.text,
                     onValueChange = viewModel::onTextChange,
@@ -220,16 +240,17 @@ fun CaptureScreen(
                                 false
                             }
                         },
-                    textStyle = MaterialTheme.typography.headlineSmall,
+                    textStyle = MaterialTheme.typography.titleLarge,
                     placeholder = {
                         Text(
                             stringResource(Res.string.capture_placeholder),
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.titleLarge,
                         )
                     },
+                    // a filled pill, same composer shape as Ask: at the bottom of an open
+                    // page the field needs its own container or it reads as loose text
+                    shape = RoundedCornerShape(28.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                     ),
@@ -252,23 +273,17 @@ fun CaptureScreen(
                         }
                     },
                 )
-
-                AnimatedVisibility(
-                    visible = viewModel.text.isNotBlank(),
-                    enter = fadeIn(tween(150)) + scaleIn(initialScale = 0.8f, animationSpec = tween(150)),
-                    exit = fadeOut(tween(150)),
-                ) {
-                    CaptureChips(viewModel)
-                }
-
-                // suggestions + recents only while idle; gone the instant typing starts
-                AnimatedVisibility(
-                    visible = viewModel.text.isBlank(),
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    CaptureEmptyState(viewModel, onOpenItem, onImprove = { improveTarget = it })
-                }
+            }
+        },
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding)) {
+            // suggestions + recents only while idle; gone the instant typing starts
+            AnimatedVisibility(
+                visible = viewModel.text.isBlank(),
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                CaptureEmptyState(viewModel, onOpenItem, onImprove = { improveTarget = it })
             }
 
             improveTarget?.let { target ->
@@ -311,7 +326,7 @@ private fun CaptureEmptyState(
         stringResource(Res.string.capture_try_3),
     )
 
-    Column(Modifier.fillMaxWidth().padding(top = 24.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
         Text(
             stringResource(Res.string.capture_try).uppercase(),
             style = MaterialTheme.typography.labelMedium,
@@ -424,7 +439,7 @@ private fun CaptureChips(viewModel: CaptureViewModel) {
     }
 
     FlowRow(
-        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
     ) {
         val typeText = typeLabel(effective.type)
