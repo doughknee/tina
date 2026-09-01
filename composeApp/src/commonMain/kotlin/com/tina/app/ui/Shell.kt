@@ -1,157 +1,267 @@
 package com.tina.app.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.automirrored.filled.Notes
-import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.automirrored.outlined.Notes
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Today
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Today
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.tina.app.calendar.CalendarScreen
-import com.tina.app.capture.CaptureScreen
+import androidx.compose.ui.unit.dp
+import com.tina.app.LocalSettings
+import com.tina.app.agenda.AgendaScreen
+import com.tina.app.ask.AskSheet
+import com.tina.app.ask.AskViewModel
 import com.tina.app.capture.CaptureViewModel
+import com.tina.app.data.AiProvider
 import com.tina.app.data.Item
-import com.tina.app.notes.NotesScreen
+import com.tina.app.library.LibraryFilter
+import com.tina.app.library.LibraryScreen
+import com.tina.app.library.LibraryViewModel
 import com.tina.app.notes.NotesViewModel
 import com.tina.app.resources.Res
-import com.tina.app.today.TodayScreen
-import kotlinx.datetime.number
-import org.koin.compose.viewmodel.koinViewModel
+import com.tina.app.resources.tab_agenda
 import com.tina.app.resources.tab_ask
-import com.tina.app.resources.tab_calendar
-import com.tina.app.resources.tab_capture
-import com.tina.app.resources.tab_notes
-import com.tina.app.resources.tab_today
+import com.tina.app.resources.tab_library
+import com.tina.app.ui.capture.CaptureBar
+import com.tina.app.ui.capture.SaveBurst
+import kotlinx.datetime.number
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 // Selected nav item keeps the Filled variant (M3 active-state convention).
 enum class TinaTab(val icon: ImageVector, val outlinedIcon: ImageVector, val label: StringResource) {
-    CAPTURE(Icons.Filled.Edit, Icons.Outlined.Edit, Res.string.tab_capture),
-    TODAY(Icons.Filled.Today, Icons.Outlined.Today, Res.string.tab_today),
-    CALENDAR(Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, Res.string.tab_calendar),
-    NOTES(Icons.AutoMirrored.Filled.Notes, Icons.AutoMirrored.Outlined.Notes, Res.string.tab_notes),
-    ASK(Icons.AutoMirrored.Filled.Chat, Icons.AutoMirrored.Outlined.Chat, Res.string.tab_ask),
+    AGENDA(Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, Res.string.tab_agenda),
+    LIBRARY(Icons.Filled.Inventory2, Icons.Outlined.Inventory2, Res.string.tab_library),
+    ASK(Icons.Filled.AutoAwesome, Icons.Outlined.AutoAwesome, Res.string.tab_ask),
 }
 
+/**
+ * Three destinations: Agenda and Library are pages, Ask is a sheet over whichever is showing.
+ * The capture bar sits above the nav bar on all of them, so capture is zero taps from anywhere.
+ */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Shell(
     onOpenSettings: () -> Unit,
-    onOpenInbox: () -> Unit,
     onOpenItem: (Item) -> Unit,
     onOpenNote: (Long) -> Unit,
-    onOpenSearch: () -> Unit,
 ) {
-    val settings = com.tina.app.LocalSettings.current
-    val askEnabled = settings.aiAskEnabled &&
-        settings.aiProvider != com.tina.app.data.AiProvider.OFF
-    val tabs = if (askEnabled) TinaTab.entries.toList() else TinaTab.entries.filter { it != TinaTab.ASK }
-    // saved by name, not index, so toggling the Ask tab never shifts the selection.
-    // LAST relies on rememberSaveable surviving process death; the others pin a start tab.
-    val startTab = when (settings.openAppTo) {
-        com.tina.app.data.OpenAppTo.CAPTURE -> TinaTab.CAPTURE.name
-        com.tina.app.data.OpenAppTo.TODAY -> TinaTab.TODAY.name
-        com.tina.app.data.OpenAppTo.LAST -> TinaTab.CAPTURE.name
-    }
-    var selectedName by rememberSaveable(settings.openAppTo) { mutableStateOf(startTab) }
-    val selectedTab = tabs.firstOrNull { it.name == selectedName } ?: TinaTab.CAPTURE
-    val captureViewModel: CaptureViewModel = koinViewModel()
-    val notesViewModel: NotesViewModel = koinViewModel()
+    val settings = LocalSettings.current
+    val askEnabled = settings.aiAskEnabled && settings.aiProvider != AiProvider.OFF
+    val tabs = if (askEnabled) TinaTab.entries.toList() else listOf(TinaTab.AGENDA, TinaTab.LIBRARY)
 
-    // a widget/tile launch has to land on Capture even when the app opens elsewhere
+    // saved by name so toggling the Ask tab never shifts the selection; LAST relies on
+    // rememberSaveable surviving process death, the others pin a start page
+    var selectedName by rememberSaveable(settings.openAppTo) { mutableStateOf(TinaTab.AGENDA.name) }
+    val selectedTab = tabs.firstOrNull { it.name == selectedName && it != TinaTab.ASK } ?: TinaTab.AGENDA
+    // deliberately not saveable: the bar always comes back in capture mode
+    var askOpen by remember { mutableStateOf(false) }
+    var searchFocusNonce by remember { mutableIntStateOf(0) }
+
+    val captureViewModel: CaptureViewModel = koinViewModel()
+    val askViewModel: AskViewModel = koinViewModel()
+    val libraryViewModel: LibraryViewModel = koinViewModel()
+    val notesViewModel: NotesViewModel = koinViewModel()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val captureFocus = remember { FocusRequester() }
+
+    fun showTab(tab: TinaTab) {
+        selectedName = tab.name
+        askOpen = false
+    }
+
+    fun openLibrary(filter: LibraryFilter? = null, focusSearch: Boolean = false) {
+        filter?.let(libraryViewModel::setFilter)
+        showTab(TinaTab.LIBRARY)
+        if (focusSearch) searchFocusNonce++
+    }
+
     val focusRequested by CaptureFocus.pending.collectAsState()
     LaunchedEffect(focusRequested) {
-        if (focusRequested) selectedName = TinaTab.CAPTURE.name
+        if (!focusRequested) return@LaunchedEffect
+        askOpen = false
+        captureFocus.requestFocus()
+        CaptureFocus.clear()
     }
 
     LaunchedEffect(Unit) {
         KeyBus.events.collect { command ->
             when (command) {
-                KeyCommand.FOCUS_CAPTURE -> {
-                    selectedName = TinaTab.CAPTURE.name
-                    CaptureFocus.request()
-                }
-                KeyCommand.SEARCH -> onOpenSearch()
+                KeyCommand.FOCUS_CAPTURE -> CaptureFocus.request()
+                KeyCommand.SEARCH -> openLibrary(focusSearch = true)
                 KeyCommand.NEW_ITEM ->
-                    if (selectedName == TinaTab.NOTES.name) {
+                    if (selectedName == TinaTab.LIBRARY.name && libraryViewModel.filter.value == LibraryFilter.NOTES) {
                         notesViewModel.createNote(onOpenNote)
                     } else {
-                        selectedName = TinaTab.CAPTURE.name
+                        CaptureFocus.request()
                     }
                 else -> Unit
             }
         }
     }
 
+    BackHandler(enabled = askOpen) { askOpen = false }
+
     NavigationSuiteScaffold(
-        // the whole shell (nav bar included) rides above the keyboard
+        // the whole shell (bar and nav included) rides above the keyboard
         modifier = Modifier.imePadding(),
         navigationSuiteItems = {
             tabs.forEach { tab ->
+                val selected = if (tab == TinaTab.ASK) askOpen else selectedTab == tab && !askOpen
                 item(
-                    selected = selectedTab == tab,
-                    onClick = { selectedName = tab.name },
-                    icon = {
-                        Icon(
-                            if (selectedTab == tab) tab.icon else tab.outlinedIcon,
-                            contentDescription = null,
-                        )
-                    },
+                    selected = selected,
+                    onClick = { if (tab == TinaTab.ASK) askOpen = true else showTab(tab) },
+                    icon = { Icon(if (selected) tab.icon else tab.outlinedIcon, contentDescription = null) },
                     label = { Text(stringResource(tab.label)) },
                 )
             }
         },
     ) {
-        val motion = rememberAppMotion()
-        AnimatedContent(
-            targetState = selectedTab,
-            modifier = Modifier.fillMaxSize(),
-            // tab order is the nav bar order, so the content moves the way your thumb did
-            transitionSpec = { motion.lateral(targetState.ordinal > initialState.ordinal) },
-        ) { tab ->
-        when (tab) {
-            TinaTab.CAPTURE -> CaptureScreen(
-                onOpenSettings = onOpenSettings,
-                onOpenItem = onOpenItem,
-                viewModel = captureViewModel,
-            )
-            TinaTab.TODAY -> TodayScreen(
-                onOpenSettings = onOpenSettings,
-                onOpenInbox = onOpenInbox,
-                onOpenItem = onOpenItem,
-                onOpenSearch = onOpenSearch,
-            )
-            TinaTab.CALENDAR -> CalendarScreen(
-                onOpenSettings = onOpenSettings,
-                onOpenItem = onOpenItem,
-                onCaptureForDate = { date ->
-                    // Prefill with a parser-friendly date token so capture stays one flow.
-                    captureViewModel.prefill("${date.month.number}/${date.day} ")
-                    selectedName = TinaTab.CAPTURE.name
-                },
-            )
-            TinaTab.NOTES -> NotesScreen(onOpenSettings = onOpenSettings, onOpenNote = onOpenNote)
-            TinaTab.ASK -> com.tina.app.ask.AskScreen()
-        }
+        Scaffold(
+            // the screens inside carry their own status-bar inset; adding it here doubled it
+            contentWindowInsets = WindowInsets(0.dp),
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            bottomBar = {
+                CaptureBar(
+                    askMode = askOpen,
+                    onAskModeChange = { askOpen = it && askEnabled },
+                    onAskSend = askViewModel::send,
+                    askBusy = askViewModel.sending,
+                    onOpenItem = onOpenItem,
+                    snackbarHostState = snackbarHostState,
+                    focusRequester = captureFocus,
+                    viewModel = captureViewModel,
+                )
+            },
+        ) { padding ->
+            val motion = rememberAppMotion()
+            Box(Modifier.fillMaxSize().padding(padding)) {
+                AnimatedContent(
+                    targetState = selectedTab,
+                    modifier = Modifier.fillMaxSize(),
+                    transitionSpec = { motion.lateral(targetState.ordinal > initialState.ordinal) },
+                ) { tab ->
+                    when (tab) {
+                        TinaTab.AGENDA -> AgendaScreen(
+                            onOpenSettings = onOpenSettings,
+                            onOpenSearch = { openLibrary(focusSearch = true) },
+                            onOpenInbox = { openLibrary(LibraryFilter.INBOX) },
+                            onOpenItem = onOpenItem,
+                            onCaptureForDate = { date ->
+                                // a parser-friendly date token keeps capture one flow
+                                captureViewModel.prefill("${date.month.number}/${date.day} ")
+                                CaptureFocus.request()
+                            },
+                        )
+                        TinaTab.LIBRARY -> LibraryScreen(
+                            onOpenSettings = onOpenSettings,
+                            onOpenItem = onOpenItem,
+                            onOpenNote = onOpenNote,
+                            searchFocusNonce = searchFocusNonce,
+                            viewModel = libraryViewModel,
+                            notesViewModel = notesViewModel,
+                        )
+                        TinaTab.ASK -> Unit
+                    }
+                }
+
+                SaveBurst(trigger = captureViewModel.saveCount, modifier = Modifier.align(Alignment.Center))
+
+                // Ask: a sheet over the page, with the bar still visible under it in ask mode
+                AnimatedVisibility(visible = askOpen, enter = fadeIn(), exit = fadeOut()) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) { askOpen = false },
+                    )
+                }
+                AnimatedVisibility(
+                    visible = askOpen,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut(),
+                ) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight(0.72f),
+                    ) {
+                        Column(Modifier.fillMaxSize()) {
+                            // ponytail: tap the handle to dismiss; a real drag-to-dismiss can come later
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                    ) { askOpen = false }
+                                    .padding(vertical = 12.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Box(
+                                    Modifier
+                                        .width(32.dp)
+                                        .height(4.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                            RoundedCornerShape(2.dp),
+                                        ),
+                                )
+                            }
+                            AskSheet(viewModel = askViewModel, snackbarHostState = snackbarHostState)
+                        }
+                    }
+                }
+            }
         }
     }
 }

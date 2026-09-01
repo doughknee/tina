@@ -32,6 +32,8 @@ kotlin {
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
+            // already in the graph via navigation3; declared so the sheet's BackHandler resolves
+            implementation(libs.compose.ui.backhandler)
             implementation(libs.navigation3.ui)
             implementation(libs.material3.adaptive)
             implementation(libs.material3.adaptive.navigation.suite)

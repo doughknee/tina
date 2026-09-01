@@ -5,7 +5,7 @@ import com.tina.app.ai.CaptureRefiner
 import com.tina.app.ask.AskViewModel
 import com.tina.app.ui.settings.subpages.TagManagerViewModel
 import com.tina.app.ui.settings.subpages.TrashViewModel
-import com.tina.app.calendar.CalendarViewModel
+import com.tina.app.agenda.AgendaViewModel
 import com.tina.app.calendar.EventEditorViewModel
 import com.tina.app.capture.CaptureViewModel
 import com.tina.app.data.AppDatabase
@@ -13,11 +13,9 @@ import com.tina.app.data.ItemRepository
 import com.tina.app.data.SettingsRepository
 import com.tina.app.data.buildDatabase
 import com.tina.app.detail.DetailViewModel
-import com.tina.app.inbox.InboxViewModel
+import com.tina.app.library.LibraryViewModel
 import com.tina.app.notes.NoteEditorViewModel
 import com.tina.app.notes.NotesViewModel
-import com.tina.app.search.SearchViewModel
-import com.tina.app.today.TodayViewModel
 import com.tina.app.ui.SettingsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -41,13 +39,11 @@ val commonModule = module {
     single { CaptureRefiner(get(), get(), get(), get()) }
     viewModelOf(::CaptureViewModel)
     viewModelOf(::SettingsViewModel)
-    viewModelOf(::TodayViewModel)
-    viewModelOf(::InboxViewModel)
-    viewModelOf(::CalendarViewModel)
+    viewModelOf(::AgendaViewModel)
+    viewModelOf(::LibraryViewModel)
     viewModel { (id: Long) -> DetailViewModel(id, get()) }
     viewModel { (id: Long) -> EventEditorViewModel(id, get()) }
     viewModelOf(::NotesViewModel)
-    viewModelOf(::SearchViewModel)
     viewModel { (tag: String) -> com.tina.app.search.TagViewModel(tag, get()) }
     viewModel { (id: Long) -> NoteEditorViewModel(id, get()) }
 }

@@ -1,9 +1,22 @@
 <resources>
     <string name="app_title">tina</string>
-    <string name="tab_capture">Capture</string>
-    <string name="tab_today">Today</string>
-    <string name="tab_calendar">Calendar</string>
-    <string name="tab_notes">Notes</string>
+    <string name="tab_agenda">Agenda</string>
+    <string name="tab_library">Library</string>
+    <string name="mode_capture">Capture</string>
+    <string name="mode_ask">Ask</string>
+    <string name="filter_all">All</string>
+    <string name="filter_inbox">Inbox</string>
+    <string name="filter_tasks">Tasks</string>
+    <string name="filter_events">Events</string>
+    <string name="filter_notes">Notes</string>
+    <string name="filter_done">Done</string>
+    <string name="library_triage">Needs triage</string>
+    <string name="library_everything">Everything else</string>
+    <string name="library_empty">Nothing here</string>
+    <string name="inbox_waiting">%1$d waiting in inbox</string>
+    <string name="section_series">Repeating</string>
+    <string name="span_day_of">Day %1$d of %2$d</string>
+    <string name="duplicate_copies">%1$d copies</string>
     <string name="back">Back</string>
 
     <string name="settings">Settings</string>
@@ -159,8 +172,8 @@
     <string name="set_haptics_sub">On complete, swipe and long-press</string>
     <string name="set_reduce_motion">Reduce motion</string>
     <string name="set_reduce_motion_system">Following system setting</string>
-    <string name="open_to_capture">Capture</string>
-    <string name="open_to_today">Today</string>
+    <string name="open_to_capture">Agenda</string>
+    <string name="open_to_today">Agenda</string>
     <string name="open_to_last">Last screen</string>
     <!-- Settings: Appearance -->
     <string name="set_theme">Theme</string>

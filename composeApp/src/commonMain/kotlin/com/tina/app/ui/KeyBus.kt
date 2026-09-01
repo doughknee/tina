@@ -21,7 +21,7 @@ object KeyBus {
  * "Open capture with the field focused, whatever the setting says" — raised by the
  * quick-capture widget and tile, whose entire purpose is a keyboard-up capture, and by
  * the desktop focus shortcut. State, not an event, so a cold start can't miss it while
- * the UI is still composing; Shell switches to the tab and CaptureScreen clears it.
+ * the UI is still composing; the shell drops ask mode and the capture bar clears it.
  */
 object CaptureFocus {
     private val _pending = MutableStateFlow(false)

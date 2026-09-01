@@ -47,6 +47,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -98,6 +101,11 @@ fun ItemRow(
     onOpen: (() -> Unit)? = null,
     selected: Boolean = false,
     leading: Boolean = true,
+    /** Replaces the checkbox/dot with a 22dp type icon (Library rows). */
+    leadingIcon: ImageVector? = null,
+    /** Small outlined label after the title, e.g. "×2" for merged duplicates. */
+    badge: String? = null,
+    badgeDescription: String? = null,
     extraContent: (@Composable () -> Unit)? = null,
 )
 {
@@ -159,6 +167,9 @@ fun ItemRow(
             onOpen = onOpen,
             selected = selected,
             leading = leading,
+            leadingIcon = leadingIcon,
+            badge = badge,
+            badgeDescription = badgeDescription,
             extraContent = extraContent,
         )
     }
@@ -176,6 +187,9 @@ private fun RowContent(
     onOpen: (() -> Unit)?,
     selected: Boolean,
     leading: Boolean,
+    leadingIcon: ImageVector?,
+    badge: String?,
+    badgeDescription: String?,
     extraContent: (@Composable () -> Unit)?,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -204,6 +218,15 @@ private fun RowContent(
         ) {
             if (!leading) {
                 // no leading widget (inbox rows: the type is the whole point of triage)
+            } else if (leadingIcon != null) {
+                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                    Icon(
+                        leadingIcon,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             } else if (onToggleComplete != null) {
                 Checkbox(
                     checked = item.completed,
@@ -281,6 +304,17 @@ private fun RowContent(
                                 stringResource(Res.string.ai_suggestion_pending),
                                 Modifier.padding(start = 6.dp).size(14.dp),
                                 tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        if (badge != null) {
+                            Text(
+                                badge,
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 5.dp, vertical = 1.dp)
+                                    .semantics { contentDescription = badgeDescription ?: badge },
                             )
                         }
                     }

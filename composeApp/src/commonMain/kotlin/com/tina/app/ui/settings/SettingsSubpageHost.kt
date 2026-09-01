@@ -14,7 +14,6 @@ import com.tina.app.resources.contrast_standard
 import com.tina.app.resources.licenses_title
 import com.tina.app.resources.open_to_capture
 import com.tina.app.resources.open_to_last
-import com.tina.app.resources.open_to_today
 import com.tina.app.resources.set_contrast
 import com.tina.app.resources.set_open_app_to
 import com.tina.app.resources.set_undo_window
@@ -41,13 +40,13 @@ fun SettingsSubpageHost(
     when (destination) {
         SettingsDestination.OPEN_APP_TO -> ChoiceSubpage(
             title = stringResource(Res.string.set_open_app_to),
+            // CAPTURE and TODAY both open the Agenda now; a persisted TODAY just reads as Agenda
             options = listOf(
                 stringResource(Res.string.open_to_capture),
-                stringResource(Res.string.open_to_today),
                 stringResource(Res.string.open_to_last),
             ),
-            selectedIndex = OpenAppTo.entries.indexOf(settings.openAppTo),
-            onSelect = { viewModel.setOpenAppTo(OpenAppTo.entries[it]) },
+            selectedIndex = if (settings.openAppTo == OpenAppTo.LAST) 1 else 0,
+            onSelect = { viewModel.setOpenAppTo(if (it == 1) OpenAppTo.LAST else OpenAppTo.CAPTURE) },
             onBack = onBack,
         )
         SettingsDestination.UNDO_WINDOW -> ChoiceSubpage(
@@ -82,11 +81,9 @@ fun SettingsSubpageHost(
             onBack = onBack,
             entries = listOf(
                 "Ctrl+N" to "Focus capture",
-                "N" to "New item on the current tab",
+                "N" to "New note in the Notes scope, otherwise focus capture",
                 "Ctrl+F" to "Search",
-                "Arrows" to "Move the calendar / select rows on Today",
-                "Enter" to "Complete the selected row",
-                "Delete" to "Delete the selected row",
+                "Arrows" to "Move the agenda date",
             ),
         )
         SettingsDestination.WHATS_NEW -> InfoSubpage(

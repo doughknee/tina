@@ -16,9 +16,7 @@ import com.tina.app.data.SettingsRepository
 import com.tina.app.detail.DetailScreen
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import com.tina.app.inbox.InboxScreen
 import com.tina.app.notes.NoteEditorScreen
-import com.tina.app.search.SearchScreen
 import com.tina.app.ui.LocalSharedTransitionScope
 import com.tina.app.ui.Shell
 import com.tina.app.ui.rememberAppMotion
@@ -30,15 +28,11 @@ data object SettingsRoute
 
 data class SettingsSubRoute(val destination: String)
 
-data object InboxRoute
-
 data class DetailRoute(val id: Long)
 
 data class EventEditRoute(val id: Long)
 
 data class NoteRoute(val id: Long)
-
-data object SearchRoute
 
 data class TagRoute(val tag: String)
 
@@ -76,10 +70,8 @@ fun App() {
                     entry<ShellRoute> {
                         Shell(
                             onOpenSettings = { backStack.add(SettingsRoute) },
-                            onOpenInbox = { backStack.add(InboxRoute) },
                             onOpenItem = ::openItem,
                             onOpenNote = { id -> backStack.add(NoteRoute(id)) },
-                            onOpenSearch = { backStack.add(SearchRoute) },
                         )
                     }
                     entry<SettingsRoute> {
@@ -94,12 +86,6 @@ fun App() {
                             onBack = { backStack.removeLastOrNull() },
                         )
                     }
-                    entry<InboxRoute> {
-                        InboxScreen(
-                            onBack = { backStack.removeLastOrNull() },
-                            onOpenItem = ::openItem,
-                        )
-                    }
                     entry<DetailRoute> { route ->
                         DetailScreen(
                             itemId = route.id,
@@ -112,13 +98,6 @@ fun App() {
                     }
                     entry<NoteRoute> { route ->
                         NoteEditorScreen(noteId = route.id, onBack = { backStack.removeLastOrNull() })
-                    }
-                    entry<SearchRoute> {
-                        SearchScreen(
-                            onBack = { backStack.removeLastOrNull() },
-                            onOpenItem = ::openItem,
-                            onOpenTag = { tag -> backStack.add(TagRoute(tag)) },
-                        )
                     }
                     entry<TagRoute> { route ->
                         com.tina.app.search.TagScreen(
