@@ -110,6 +110,7 @@ import com.tina.app.resources.ai_test_ok
 import com.tina.app.resources.ai_untested
 import com.tina.app.resources.ai_workspace_id
 import com.tina.app.resources.back
+import com.tina.app.resources.cancel
 import com.tina.app.resources.contrast_high
 import com.tina.app.resources.contrast_medium
 import com.tina.app.resources.contrast_standard
@@ -118,6 +119,7 @@ import com.tina.app.resources.export_done
 import com.tina.app.resources.import_data
 import com.tina.app.resources.import_done
 import com.tina.app.resources.import_failed
+import com.tina.app.resources.ok
 import com.tina.app.resources.open_to_capture
 import com.tina.app.resources.open_to_last
 import com.tina.app.resources.open_to_today
@@ -246,6 +248,9 @@ private val FIRST_DAY_OPTIONS = listOf(DayOfWeek.MONDAY, DayOfWeek.SATURDAY, Day
 /** Chevron rows are real destinations; the host maps these to routes. */
 enum class SettingsDestination { OPEN_APP_TO, UNDO_WINDOW, CONTRAST, WIDGETS, SHORTCUTS, WHATS_NEW, LICENSES }
 
+/** Which time a [SettingsRow.TimeRow] edits. */
+private enum class TimeTarget { MORNING, AFTERNOON, EVENING, DAILY_AGENDA, OVERDUE_NUDGE }
+
 @Composable
 private fun minutesLabel(minutes: Int, use24h: Boolean): String =
     timeLabel(LocalTime(minutes / 60, minutes % 60), use24h)
@@ -280,15 +285,43 @@ fun SettingsScreen(
         },
     )
 
+    var timeTarget by remember { mutableStateOf<TimeTarget?>(null) }
+
     val sections = rememberSettingsSections(
         settings = settings,
         stats = stats,
         viewModel = viewModel,
         onNavigate = onNavigate,
+        onPickTime = { timeTarget = it },
         onExport = backupHandlers.export,
         onImport = backupHandlers.restore,
         snackbarHostState = snackbarHostState,
     )
+
+    timeTarget?.let { target ->
+        val current = when (target) {
+            TimeTarget.MORNING -> settings.morningStartMinutes
+            TimeTarget.AFTERNOON -> settings.afternoonStartMinutes
+            TimeTarget.EVENING -> settings.eveningStartMinutes
+            TimeTarget.DAILY_AGENDA -> settings.dailyAgendaMinutes
+            TimeTarget.OVERDUE_NUDGE -> settings.overdueNudgeMinutes
+        }
+        SettingsTimePicker(
+            initialMinutes = current,
+            use24h = settings.use24h,
+            onDismiss = { timeTarget = null },
+            onPicked = { minutes ->
+                when (target) {
+                    TimeTarget.MORNING -> viewModel.setMorningStart(minutes)
+                    TimeTarget.AFTERNOON -> viewModel.setAfternoonStart(minutes)
+                    TimeTarget.EVENING -> viewModel.setEveningStart(minutes)
+                    TimeTarget.DAILY_AGENDA -> viewModel.setDailyAgendaMinutes(minutes)
+                    TimeTarget.OVERDUE_NUDGE -> viewModel.setOverdueNudgeMinutes(minutes)
+                }
+                timeTarget = null
+            },
+        )
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -457,6 +490,7 @@ private fun rememberSettingsSections(
     stats: SettingsViewModel.Stats,
     viewModel: SettingsViewModel,
     onNavigate: (SettingsDestination) -> Unit,
+    onPickTime: (TimeTarget) -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
     snackbarHostState: SnackbarHostState,
@@ -675,21 +709,21 @@ private fun rememberSettingsSections(
                 title = stringResource(Res.string.set_morning),
                 keywords = listOf("morning"),
                 timeLabel = minutesLabel(settings.morningStartMinutes, use24h),
-                onClick = { },
+                onClick = { onPickTime(TimeTarget.MORNING) },
             ),
             SettingsRow.TimeRow(
                 id = "afternoon",
                 title = stringResource(Res.string.set_afternoon),
                 keywords = listOf("afternoon"),
                 timeLabel = minutesLabel(settings.afternoonStartMinutes, use24h),
-                onClick = { },
+                onClick = { onPickTime(TimeTarget.AFTERNOON) },
             ),
             SettingsRow.TimeRow(
                 id = "evening",
                 title = stringResource(Res.string.set_evening),
                 keywords = listOf("evening", "tonight"),
                 timeLabel = minutesLabel(settings.eveningStartMinutes, use24h),
-                onClick = { },
+                onClick = { onPickTime(TimeTarget.EVENING) },
             ),
         ),
     )
@@ -712,7 +746,7 @@ private fun rememberSettingsSections(
                 keywords = listOf("agenda time"),
                 visible = settings.dailyAgenda,
                 timeLabel = minutesLabel(settings.dailyAgendaMinutes, use24h),
-                onClick = { },
+                onClick = { onPickTime(TimeTarget.DAILY_AGENDA) },
             ),
             SettingsRow.Switch(
                 id = "overdueNudge",
@@ -946,6 +980,33 @@ private fun rememberSettingsSections(
     return listOf(
         general, appearance, capture, dateTime, notifications,
         ai, organisation, privacy, data, desktop, about,
+    )
+}
+
+/** A picker, not a confirmation — the house rule bans dialogs that only ask "are you sure". */
+@Composable
+private fun SettingsTimePicker(
+    initialMinutes: Int,
+    use24h: Boolean,
+    onDismiss: () -> Unit,
+    onPicked: (Int) -> Unit,
+) {
+    val state = androidx.compose.material3.rememberTimePickerState(
+        initialHour = initialMinutes / 60,
+        initialMinute = initialMinutes % 60,
+        is24Hour = use24h,
+    )
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = { onPicked(state.hour * 60 + state.minute) }) {
+                Text(stringResource(Res.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) }
+        },
+        text = { androidx.compose.material3.TimePicker(state = state) },
     )
 }
 

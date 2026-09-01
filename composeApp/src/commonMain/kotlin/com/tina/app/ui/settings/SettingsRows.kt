@@ -106,6 +106,8 @@ private fun RowSupporting(text: String) {
 
 @Composable
 fun SwitchRow(row: SettingsRow.Switch) {
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val hapticsOn = com.tina.app.LocalSettings.current.haptics
     ListItem(
         headlineContent = { RowText(row.title) },
         supportingContent = row.supporting?.let { { RowSupporting(it) } },
@@ -113,7 +115,12 @@ fun SwitchRow(row: SettingsRow.Switch) {
         colors = transparentListItem,
         // whole row is the target, not just the thumb
         modifier = Modifier
-            .toggleable(value = row.checked, role = Role.Switch, onValueChange = row.onCheckedChange)
+            .toggleable(value = row.checked, role = Role.Switch) {
+                if (hapticsOn) {
+                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.Confirm)
+                }
+                row.onCheckedChange(it)
+            }
             .semantics(mergeDescendants = true) {},
     )
 }

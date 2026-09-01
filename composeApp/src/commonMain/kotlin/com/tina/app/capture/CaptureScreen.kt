@@ -239,7 +239,7 @@ fun CaptureScreen(
                     maxLines = 6,
                     trailingIcon = {
                         Row {
-                            if (speech.available) {
+                            if (speech.available && LocalSettings.current.voiceCapture) {
                                 IconButton(onClick = speech.start) {
                                     Icon(Icons.Outlined.Mic, stringResource(Res.string.capture_voice))
                                 }

@@ -5,8 +5,25 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import android.provider.Settings as AndroidSettings
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+
+/** Mirrors the system "Remove animations" accessibility switch. */
+@Composable
+actual fun systemPrefersReducedMotion(): Boolean {
+    val context = LocalContext.current
+    return remember(context) {
+        runCatching {
+            AndroidSettings.Global.getFloat(
+                context.contentResolver,
+                AndroidSettings.Global.ANIMATOR_DURATION_SCALE,
+                1f,
+            ) == 0f
+        }.getOrDefault(false)
+    }
+}
 
 @Composable
 actual fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorScheme {
