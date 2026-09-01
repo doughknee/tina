@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,9 +17,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -113,12 +114,12 @@ fun ItemRow(
             val (color, icon, alignment) = when (dismissState.dismissDirection) {
                 SwipeToDismissBoxValue.StartToEnd -> Triple(
                     MaterialTheme.colorScheme.primaryContainer,
-                    Icons.Filled.Check,
+                    Icons.Outlined.Check,
                     Alignment.CenterStart,
                 )
                 else -> Triple(
                     MaterialTheme.colorScheme.errorContainer,
-                    Icons.Filled.Delete,
+                    Icons.Outlined.Delete,
                     Alignment.CenterEnd,
                 )
             }
@@ -163,20 +164,24 @@ private fun RowContent(
     var editText by remember(item.id) { mutableStateOf(item.title) }
     val focusRequester = remember { FocusRequester() }
 
+    val twoLine = timeText != null || item.priority != Priority.NONE
     Column(
         Modifier
             .fillMaxWidth()
             .background(
                 if (selected) MaterialTheme.colorScheme.surfaceContainerHighest
-                else MaterialTheme.colorScheme.surface,
+                else Color.Transparent,
             )
             .clickable {
                 editText = item.title
                 editing = true
             }
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.defaultMinSize(minHeight = if (twoLine) 72.dp else 56.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             if (onToggleComplete != null) {
                 Checkbox(
                     checked = item.completed,
@@ -186,19 +191,30 @@ private fun RowContent(
                     },
                 )
             } else {
-                Box(Modifier.padding(horizontal = 16.dp)) {
+                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                    // 2dp halo ring so low-chroma dots stay visible on any surface
                     Box(
                         Modifier
-                            .size(12.dp)
+                            .size(14.dp)
                             .background(
-                                item.color?.let { Color(it) } ?: MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
                                 CircleShape,
                             ),
-                    )
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Box(
+                            Modifier
+                                .size(10.dp)
+                                .background(
+                                    item.color?.let { Color(it) } ?: MaterialTheme.colorScheme.primary,
+                                    CircleShape,
+                                ),
+                        )
+                    }
                 }
             }
 
-            Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+            Column(Modifier.weight(1f).padding(start = 4.dp, top = 8.dp, bottom = 8.dp)) {
                 if (editing) {
                     LaunchedEffect(Unit) { focusRequester.requestFocus() }
                     BasicTextField(
@@ -238,19 +254,20 @@ private fun RowContent(
                                 else -> null
                             },
                         ).joinToString(" · "),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
 
             if (dateText != null && onReschedule != null) {
-                RescheduleChip(dateText, today, onReschedule)
-            }
-            if (onOpen != null) {
+                Box(Modifier.padding(start = 4.dp)) {
+                    RescheduleChip(dateText, today, onReschedule)
+                }
+            } else if (onOpen != null) {
                 IconButton(onClick = onOpen) {
                     Icon(
-                        Icons.Filled.ChevronRight,
+                        Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                         stringResource(Res.string.open_details),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
