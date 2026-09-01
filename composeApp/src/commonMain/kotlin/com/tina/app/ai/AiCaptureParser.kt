@@ -107,6 +107,23 @@ class AiCaptureParser(
         return aiJsonToParsedCapture(text, raw)
     }
 
+    /** Same path as [refine], but reports what went wrong. Null = success. */
+    suspend fun testConnection(now: LocalDateTime, firstDayOfWeek: DayOfWeek): String? {
+        val settings = settingsRepository.settings.first()
+        if (settings.aiProvider == AiProvider.OFF) return "provider off"
+        if (settings.aiModel.isBlank()) return "no model set"
+        val prompt = buildParsePrompt("lunch with sam tomorrow at noon", now, firstDayOfWeek)
+        val text = try {
+            when (settings.aiProvider) {
+                AiProvider.ANTHROPIC -> anthropicComplete(settings, prompt)
+                else -> openAiComplete(settings, prompt)
+            }
+        } catch (e: Throwable) {
+            return "${e::class.simpleName}: ${e.message}".take(200)
+        } ?: return "empty response from server"
+        return if (aiJsonToParsedCapture(text, "x") != null) null else "model returned unusable JSON"
+    }
+
     private suspend fun openAiComplete(settings: Settings, prompt: String): String? {
         val baseUrl = settings.aiBaseUrl.ifBlank {
             when (settings.aiProvider) {

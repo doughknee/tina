@@ -233,6 +233,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                     }
                 }
                 if (settings.aiProvider != AiProvider.OFF) {
+                    com.tina.app.ai.RequestAiNetworkPermissions(enabled = true)
                     AiConfigFields(settings, viewModel, snackbarHostState)
                 }
             }
@@ -306,9 +307,14 @@ private fun AiConfigFields(
         OutlinedButton(
             onClick = {
                 testing = true
-                viewModel.testAi { ok ->
+                viewModel.testAi { error ->
                     testing = false
-                    scope.launch { snackbarHostState.showSnackbar(if (ok) okText else failText) }
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            if (error == null) okText else "$failText — $error",
+                            duration = androidx.compose.material3.SnackbarDuration.Long,
+                        )
+                    }
                 }
             },
             enabled = !testing,

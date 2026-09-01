@@ -74,11 +74,11 @@ class SettingsViewModel(
         viewModelScope.launch { repository.setAiApiKey(key) }
     }
 
-    fun testAi(onResult: (Boolean) -> Unit) {
+    /** Callback receives null on success, otherwise a human-readable failure reason. */
+    fun testAi(onResult: (String?) -> Unit) {
         viewModelScope.launch {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-            val parsed = aiParser.refine("lunch with sam tomorrow at noon", now, settings.value.firstDayOfWeek)
-            onResult(parsed != null)
+            onResult(aiParser.testConnection(now, settings.value.firstDayOfWeek))
         }
     }
 }
