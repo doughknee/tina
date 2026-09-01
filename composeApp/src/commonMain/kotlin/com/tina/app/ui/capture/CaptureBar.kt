@@ -85,7 +85,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -165,6 +167,12 @@ fun CaptureBar(
     var askInput by rememberSaveable { mutableStateOf("") }
     var focused by remember { mutableStateOf(false) }
     val text = if (askMode) askInput else viewModel.text
+    // a plain String field keeps its cursor where it was, so a prefill from a starter chip or
+    // a calendar long-press left the caret at index 0 and typing landed in front of the token
+    var field by remember { mutableStateOf(TextFieldValue()) }
+    LaunchedEffect(text) {
+        if (field.text != text) field = TextFieldValue(text, TextRange(text.length))
+    }
 
     // "Keyboard on open": the only automatic focus; widgets and shortcuts go through CaptureFocus
     LaunchedEffect(Unit) {
@@ -249,8 +257,11 @@ fun CaptureBar(
                     if (askMode) Res.string.ask_placeholder else Res.string.capture_placeholder,
                 )
                 BasicTextField(
-                    value = text,
-                    onValueChange = { if (askMode) askInput = it else viewModel.onTextChange(it) },
+                    value = field,
+                    onValueChange = {
+                        field = it
+                        if (askMode) askInput = it.text else viewModel.onTextChange(it.text)
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 12.dp, vertical = 12.dp)
