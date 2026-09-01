@@ -121,6 +121,7 @@ $context
 class AiChat(
     private val http: HttpClient,
     private val settingsRepository: SettingsRepository,
+    private val network: com.tina.app.data.NetworkStatus,
 ) {
     /** Null on failure; error text is intentionally not surfaced beyond a retry affordance. */
     suspend fun chat(
@@ -132,6 +133,8 @@ class AiChat(
         if (settings.aiProvider == AiProvider.OFF) return null
         val model = modelOverride ?: settings.aiModel
         if (model.isBlank()) return null
+        // Wi-Fi only: hold cloud chat off metered connections
+        if (settings.aiWifiOnly && settings.aiProvider != AiProvider.OLLAMA && !network.isUnmetered) return null
         return runCatching {
             when (settings.aiProvider) {
                 AiProvider.ANTHROPIC -> anthropic(settings, model, system, messages)

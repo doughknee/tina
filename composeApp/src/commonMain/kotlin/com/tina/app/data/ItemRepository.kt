@@ -38,6 +38,33 @@ class ItemRepository(
 
     suspend fun allItems(): List<Item> = dao.getAll()
 
+    /**
+     * Rename a tag everywhere. If [to] already exists on an item this merges them
+     * (distinct collapses the duplicate). Returns the pre-change items for undo.
+     */
+    suspend fun renameTag(from: String, to: String): List<Item> {
+        val target = to.trim().lowercase().removePrefix("#")
+        if (target.isEmpty() || target == from) return emptyList()
+        val affected = dao.getAll().filter { from in it.tags }
+        affected.forEach { item ->
+            val tags = item.tags.map { if (it == from) target else it }.distinct()
+            dao.update(item.copy(tags = tags, updatedAt = nowMillis()))
+        }
+        return affected
+    }
+
+    /** Strip a tag from every item. Returns the pre-change items for undo. */
+    suspend fun removeTag(tag: String): List<Item> {
+        val affected = dao.getAll().filter { tag in it.tags }
+        affected.forEach { item ->
+            dao.update(item.copy(tags = item.tags - tag, updatedAt = nowMillis()))
+        }
+        return affected
+    }
+
+    /** Put a batch of items back exactly as they were (tag edit undo). */
+    suspend fun restoreAll(items: List<Item>) = items.forEach { dao.update(it) }
+
     fun observeAll(): Flow<List<Item>> = dao.observeAll()
 
     /** Irreversible; only the hold-to-confirm control in Settings calls this. */

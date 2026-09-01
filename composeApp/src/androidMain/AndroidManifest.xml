@@ -58,6 +58,10 @@
             android:exported="false" />
 
         <receiver
+            android:name=".notifications.DigestReceiver"
+            android:exported="false" />
+
+        <receiver
             android:name=".notifications.BootReceiver"
             android:exported="true">
             <intent-filter>

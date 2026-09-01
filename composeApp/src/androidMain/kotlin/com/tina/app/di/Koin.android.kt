@@ -32,6 +32,7 @@ val androidModule = module {
     }
     single<Notifier> { PlatformNotifier(androidContext()) }
     single<ReminderScheduler> { AndroidReminderScheduler(androidContext()) }
+    single<com.tina.app.data.NetworkStatus> { com.tina.app.data.AndroidNetworkStatus(androidContext()) }
     single {
         HttpClient(OkHttp) {
             install(HttpTimeout) {

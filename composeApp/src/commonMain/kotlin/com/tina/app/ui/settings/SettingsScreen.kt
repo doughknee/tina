@@ -207,6 +207,8 @@ import com.tina.app.resources.set_show_completed
 import com.tina.app.resources.set_show_completed_sub
 import com.tina.app.resources.set_sound
 import com.tina.app.resources.set_sound_sub
+import com.tina.app.resources.set_tags
+import com.tina.app.resources.set_tags_sub
 import com.tina.app.resources.set_theme
 import com.tina.app.resources.set_undo_window
 import com.tina.app.resources.set_undo_window_sub
@@ -258,7 +260,7 @@ private val FIRST_DAY_OPTIONS = listOf(DayOfWeek.MONDAY, DayOfWeek.SATURDAY, Day
 
 /** Chevron rows are real destinations; the host maps these to routes. */
 enum class SettingsDestination {
-    OPEN_APP_TO, UNDO_WINDOW, CONTRAST, WIDGETS, SHORTCUTS, WHATS_NEW, LICENSES, TRASH
+    OPEN_APP_TO, UNDO_WINDOW, CONTRAST, WIDGETS, SHORTCUTS, WHATS_NEW, LICENSES, TRASH, TAGS
 }
 
 /** Which time a [SettingsRow.TimeRow] edits. */
@@ -303,8 +305,10 @@ fun SettingsScreen(
 
     var timeTarget by remember { mutableStateOf<TimeTarget?>(null) }
 
+    val actions = rememberPlatformActions()
     val sections = rememberSettingsSections(
         settings = settings,
+        actions = actions,
         stats = stats,
         viewModel = viewModel,
         onNavigate = onNavigate,
@@ -509,6 +513,7 @@ private fun HighlightedText(text: String, query: String) {
 @Composable
 private fun rememberSettingsSections(
     settings: Settings,
+    actions: PlatformActions,
     stats: SettingsViewModel.Stats,
     viewModel: SettingsViewModel,
     onNavigate: (SettingsDestination) -> Unit,
@@ -759,8 +764,7 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Switch(
                 id = "dailyAgenda",
-                enabled = false,
-                title = stringResource(Res.string.set_daily_agenda),
+                                title = stringResource(Res.string.set_daily_agenda),
                 supporting = stringResource(Res.string.set_daily_agenda_sub),
                 keywords = listOf("morning", "summary", "digest", "remind"),
                 checked = settings.dailyAgenda,
@@ -768,8 +772,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.TimeRow(
                 id = "dailyAgendaTime",
-                enabled = false,
-                title = stringResource(Res.string.set_daily_agenda),
+                                title = stringResource(Res.string.set_daily_agenda),
                 keywords = listOf("agenda time"),
                 visible = settings.dailyAgenda,
                 timeLabel = minutesLabel(settings.dailyAgendaMinutes, use24h),
@@ -777,8 +780,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "overdueNudge",
-                enabled = false,
-                title = stringResource(Res.string.set_overdue_nudge),
+                                title = stringResource(Res.string.set_overdue_nudge),
                 supporting = stringResource(Res.string.set_overdue_nudge_sub),
                 keywords = listOf("overdue", "remind", "late"),
                 checked = settings.overdueNudge,
@@ -786,8 +788,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "inboxReminder",
-                enabled = false,
-                title = stringResource(Res.string.set_inbox_reminder),
+                                title = stringResource(Res.string.set_inbox_reminder),
                 supporting = stringResource(Res.string.set_inbox_reminder_sub, settings.inboxReminderDays),
                 keywords = listOf("inbox", "triage", "remind"),
                 checked = settings.inboxReminder,
@@ -838,8 +839,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "wifiOnly",
-                enabled = false,
-                title = stringResource(Res.string.set_wifi_only),
+                                title = stringResource(Res.string.set_wifi_only),
                 supporting = stringResource(Res.string.set_wifi_only_sub),
                 keywords = listOf("data", "cellular", "mobile"),
                 visible = settings.aiProvider != AiProvider.OFF && settings.aiProvider != AiProvider.OLLAMA,
@@ -860,6 +860,13 @@ private fun rememberSettingsSections(
         id = "organisation",
         title = stringResource(Res.string.sec_organisation),
         rows = listOf(
+            SettingsRow.Navigation(
+                id = "tags",
+                title = stringResource(Res.string.set_tags),
+                supporting = stringResource(Res.string.set_tags_sub, stats.tags),
+                keywords = listOf("label", "hashtag", "rename", "merge"),
+                onClick = { onNavigate(SettingsDestination.TAGS) },
+            ),
             SettingsRow.Switch(
                 id = "showCompleted",
                                 title = stringResource(Res.string.set_show_completed),
@@ -895,8 +902,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "hideSwitcher",
-                enabled = false,
-                title = stringResource(Res.string.set_hide_switcher),
+                                title = stringResource(Res.string.set_hide_switcher),
                 supporting = stringResource(Res.string.set_hide_switcher_sub),
                 keywords = listOf("recents", "privacy", "secure"),
                 checked = settings.hideInAppSwitcher,

@@ -8,7 +8,9 @@ import com.tina.app.notifications.ensureReminderChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.component.KoinComponent
@@ -22,12 +24,25 @@ class TinaApp : Application(), KoinComponent {
         super.onCreate()
         initKoin(androidModule) { androidContext(this@TinaApp) }
         ensureReminderChannel(this)
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        scope.launch {
             // Alarms drift across app updates and process death; re-arm on every cold start.
             repository.rescheduleAllReminders()
             // Trash retention is enforced here rather than by a scheduled job.
             val retention = settingsRepository.settings.first().trashRetention
             repository.purgeExpiredTrash(retention.days)
+        }
+        // digest alarms follow the settings that describe them
+        scope.launch {
+            settingsRepository.settings
+                .map { listOf(it.dailyAgenda, it.dailyAgendaMinutes, it.overdueNudge, it.overdueNudgeMinutes, it.inboxReminder) }
+                .distinctUntilChanged()
+                .collect {
+                    com.tina.app.notifications.DigestScheduler.sync(
+                        this@TinaApp,
+                        settingsRepository.settings.first(),
+                    )
+                }
         }
     }
 }

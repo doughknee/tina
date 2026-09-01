@@ -208,7 +208,7 @@
     <string name="ai_failed">last test failed</string>
     <!-- Settings: Organisation -->
     <string name="set_tags">Tags</string>
-    <string name="set_tags_sub">%1$d tags · rename, merge, recolour</string>
+    <string name="set_tags_sub">%1$d tags · rename, merge, delete</string>
     <string name="set_show_completed">Show completed in Today</string>
     <string name="set_show_completed_sub">Struck through, at the section end</string>
     <string name="set_search_completed">Search completed items</string>
@@ -219,7 +219,7 @@
     <string name="set_hide_switcher">Hide in app switcher</string>
     <string name="set_hide_switcher_sub">Blank the recents thumbnail</string>
     <!-- Settings: Data -->
-    <string name="set_export_sub">%1$d items</string>
+    <string name="set_export_sub">%1$d items saved</string>
     <string name="set_import_sub">Merges, never overwrites</string>
     <string name="set_auto_backup">Auto-backup</string>
     <string name="set_auto_backup_sub">Weekly, keeps the last 4</string>
@@ -269,7 +269,10 @@
     <string name="tags_title">Tags</string>
     <string name="tags_empty">No tags yet</string>
     <string name="tags_rename">Rename</string>
-    <string name="tags_count">%1$d items</string>
+    <string name="tags_count">used %1$d×</string>
+    <string name="tags_renamed">Tag renamed</string>
+    <string name="tags_merged">Tags merged</string>
+    <string name="tags_removed">Tag removed</string>
     <string name="whats_new_title">What’s new</string>
     <string name="licenses_title">Open-source licenses</string>
     <string name="shortcuts_title">Keyboard shortcuts</string>

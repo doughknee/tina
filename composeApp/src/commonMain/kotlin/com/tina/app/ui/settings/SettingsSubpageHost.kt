@@ -100,6 +100,7 @@ fun SettingsSubpageHost(
                 "1.0" to "Capture, Today, Calendar, Notes, reminders, widgets, backup.",
             ),
         )
+        SettingsDestination.TAGS -> com.tina.app.ui.settings.subpages.TagManagerScreen(onBack = onBack)
         SettingsDestination.TRASH -> com.tina.app.ui.settings.subpages.TrashScreen(onBack = onBack)
         SettingsDestination.LICENSES -> InfoSubpage(
             title = stringResource(Res.string.licenses_title),

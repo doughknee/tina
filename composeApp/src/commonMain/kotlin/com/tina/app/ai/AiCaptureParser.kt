@@ -137,11 +137,17 @@ fun mergeParses(local: ParsedCapture, ai: ParsedCapture): ParsedCapture {
 class AiCaptureParser(
     private val http: HttpClient,
     private val settingsRepository: SettingsRepository,
+    private val network: com.tina.app.data.NetworkStatus,
 ) {
+    /** Wi-Fi only holds cloud calls off metered connections; Ollama is on your own network. */
+    private fun blockedByMeteredNetwork(settings: Settings): Boolean =
+        settings.aiWifiOnly && settings.aiProvider != AiProvider.OLLAMA && !network.isUnmetered
+
     /** One best-effort completion against whichever provider is configured. Null on any failure. */
     suspend fun complete(prompt: String): String? {
         val settings = settingsRepository.settings.first()
         if (settings.aiProvider == AiProvider.OFF || settings.aiModel.isBlank()) return null
+        if (blockedByMeteredNetwork(settings)) return null
         return runCatching {
             when (settings.aiProvider) {
                 AiProvider.ANTHROPIC -> anthropicComplete(settings, prompt)

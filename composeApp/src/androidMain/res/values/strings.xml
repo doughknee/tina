@@ -7,6 +7,12 @@
     <string name="widget_description">One tap to capture a thought</string>
     <string name="reminder_channel_name">Reminders</string>
     <string name="reminder_channel_desc">Task and event reminders</string>
+    <string name="digest_channel_name">Daily summaries</string>
+    <string name="digest_channel_desc">Morning agenda, overdue nudge and inbox reminders</string>
+    <string name="digest_agenda_title">Today</string>
+    <string name="digest_overdue_title">%1$d overdue</string>
+    <string name="digest_inbox_title">%1$d waiting in your inbox</string>
+    <string name="digest_inbox_body">Tap to triage them</string>
     <string name="action_done">Done</string>
     <string name="action_snooze_10">Snooze 10 min</string>
     <string name="action_snooze_60">Snooze 1 hour</string>

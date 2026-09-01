@@ -31,6 +31,7 @@ val desktopModule = module {
     }
     single<Notifier> { PlatformNotifier() }
     single<ReminderScheduler> { NoopReminderScheduler }
+    single<com.tina.app.data.NetworkStatus> { com.tina.app.data.DesktopNetworkStatus() }
     single {
         HttpClient(CIO) {
             install(HttpTimeout) {
