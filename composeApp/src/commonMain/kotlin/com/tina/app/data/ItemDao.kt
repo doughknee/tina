@@ -29,6 +29,12 @@ interface ItemDao {
     @Query("SELECT * FROM items WHERE tags != '' ORDER BY updatedAt DESC")
     fun observeTagged(): Flow<List<Item>>
 
+    @Query("SELECT * FROM items ORDER BY createdAt")
+    fun observeAll(): Flow<List<Item>>
+
+    @Query("DELETE FROM items")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM items WHERE type = 'INBOX' ORDER BY createdAt DESC")
     fun observeInbox(): Flow<List<Item>>
 

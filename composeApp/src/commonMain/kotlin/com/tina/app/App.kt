@@ -20,13 +20,14 @@ import com.tina.app.inbox.InboxScreen
 import com.tina.app.notes.NoteEditorScreen
 import com.tina.app.search.SearchScreen
 import com.tina.app.ui.LocalSharedTransitionScope
-import com.tina.app.ui.SettingsScreen
 import com.tina.app.ui.Shell
 import org.koin.compose.koinInject
 
 data object ShellRoute
 
 data object SettingsRoute
+
+data class SettingsSubRoute(val destination: String)
 
 data object InboxRoute
 
@@ -76,7 +77,16 @@ fun App() {
                         )
                     }
                     entry<SettingsRoute> {
-                        SettingsScreen(onBack = { backStack.removeLastOrNull() })
+                        com.tina.app.ui.settings.SettingsScreen(
+                            onBack = { backStack.removeLastOrNull() },
+                            onNavigate = { backStack.add(SettingsSubRoute(it.name)) },
+                        )
+                    }
+                    entry<SettingsSubRoute> { route ->
+                        com.tina.app.ui.settings.SettingsSubpageHost(
+                            destination = com.tina.app.ui.settings.SettingsDestination.valueOf(route.destination),
+                            onBack = { backStack.removeLastOrNull() },
+                        )
                     }
                     entry<InboxRoute> {
                         InboxScreen(

@@ -37,6 +37,11 @@ class ItemRepository(
     fun observeTagged(): Flow<List<Item>> = dao.observeTagged()
 
     suspend fun allItems(): List<Item> = dao.getAll()
+
+    fun observeAll(): Flow<List<Item>> = dao.observeAll()
+
+    /** Irreversible; only the hold-to-confirm control in Settings calls this. */
+    suspend fun deleteEverything() = dao.deleteAll()
     fun observeNotes(): Flow<List<Item>> = dao.observeNotes()
 
     fun observeTasksForDay(day: LocalDate, tz: TimeZone): Flow<List<Item>> {

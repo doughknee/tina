@@ -15,6 +15,15 @@ import okio.Path.Companion.toPath
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
+enum class OpenAppTo { CAPTURE, TODAY, LAST }
+
+/** SYSTEM follows the platform accessibility flag; ON/OFF override it. */
+enum class ReduceMotionMode { SYSTEM, ON, OFF }
+
+enum class ContrastMode { STANDARD, MEDIUM, HIGH }
+
+enum class TrashRetention(val days: Int?) { DAYS_7(7), DAYS_30(30), FOREVER(null) }
+
 enum class AiProvider { OFF, OLLAMA, ANTHROPIC, OPENAI, CUSTOM }
 
 /** AUTO applies refinements silently, SUGGEST computes but waits for the user, MANUAL only runs on demand. */
@@ -35,6 +44,43 @@ data class Settings(
     val aiInstructions: String = "",
     val aiAskEnabled: Boolean = false,
     val aiAskWriteEnabled: Boolean = false,
+    val aiWifiOnly: Boolean = false,
+    // General
+    val openAppTo: OpenAppTo = OpenAppTo.CAPTURE,
+    val haptics: Boolean = true,
+    val reduceMotion: ReduceMotionMode = ReduceMotionMode.SYSTEM,
+    // Appearance
+    val contrast: ContrastMode = ContrastMode.STANDARD,
+    val pureBlack: Boolean = false,
+    // Capture
+    val quickSettingsTile: Boolean = true,
+    val keepKeyboardUp: Boolean = true,
+    val voiceCapture: Boolean = true,
+    val undoWindowSeconds: Int = 5,
+    // Day sections: minutes from midnight, drive Today's Morning/Afternoon/Evening split
+    val morningStartMinutes: Int = 6 * 60,
+    val afternoonStartMinutes: Int = 12 * 60,
+    val eveningStartMinutes: Int = 18 * 60,
+    // Notifications
+    val dailyAgenda: Boolean = false,
+    val dailyAgendaMinutes: Int = 7 * 60 + 30,
+    val overdueNudge: Boolean = false,
+    val overdueNudgeMinutes: Int = 18 * 60,
+    val inboxReminder: Boolean = false,
+    val inboxReminderDays: Int = 3,
+    // Organisation
+    val showCompletedInToday: Boolean = true,
+    val searchCompleted: Boolean = true,
+    // Privacy
+    val appLock: Boolean = false,
+    val appLockGraceSeconds: Int = 60,
+    val hideInAppSwitcher: Boolean = false,
+    // Data
+    val autoBackup: Boolean = false,
+    val trashRetention: TrashRetention = TrashRetention.DAYS_30,
+    // Desktop
+    val launchAtLogin: Boolean = false,
+    val closeToTray: Boolean = true,
 )
 
 fun createSettingsStore(producePath: () -> String): DataStore<Preferences> =
@@ -54,6 +100,34 @@ private val KEY_AI_REFINE_MODE = stringPreferencesKey("aiRefineMode")
 private val KEY_AI_INSTRUCTIONS = stringPreferencesKey("aiInstructions")
 private val KEY_AI_ASK_ENABLED = booleanPreferencesKey("aiAskEnabled")
 private val KEY_AI_ASK_WRITE = booleanPreferencesKey("aiAskWriteEnabled")
+private val KEY_AI_WIFI_ONLY = booleanPreferencesKey("aiWifiOnly")
+private val KEY_OPEN_APP_TO = stringPreferencesKey("openAppTo")
+private val KEY_HAPTICS = booleanPreferencesKey("haptics")
+private val KEY_REDUCE_MOTION = stringPreferencesKey("reduceMotion")
+private val KEY_CONTRAST = stringPreferencesKey("contrast")
+private val KEY_PURE_BLACK = booleanPreferencesKey("pureBlack")
+private val KEY_QS_TILE = booleanPreferencesKey("quickSettingsTile")
+private val KEY_KEEP_KEYBOARD = booleanPreferencesKey("keepKeyboardUp")
+private val KEY_VOICE_CAPTURE = booleanPreferencesKey("voiceCapture")
+private val KEY_UNDO_SECONDS = intPreferencesKey("undoWindowSeconds")
+private val KEY_MORNING = intPreferencesKey("morningStartMinutes")
+private val KEY_AFTERNOON = intPreferencesKey("afternoonStartMinutes")
+private val KEY_EVENING = intPreferencesKey("eveningStartMinutes")
+private val KEY_DAILY_AGENDA = booleanPreferencesKey("dailyAgenda")
+private val KEY_DAILY_AGENDA_MIN = intPreferencesKey("dailyAgendaMinutes")
+private val KEY_OVERDUE_NUDGE = booleanPreferencesKey("overdueNudge")
+private val KEY_OVERDUE_NUDGE_MIN = intPreferencesKey("overdueNudgeMinutes")
+private val KEY_INBOX_REMINDER = booleanPreferencesKey("inboxReminder")
+private val KEY_INBOX_REMINDER_DAYS = intPreferencesKey("inboxReminderDays")
+private val KEY_SHOW_COMPLETED = booleanPreferencesKey("showCompletedInToday")
+private val KEY_SEARCH_COMPLETED = booleanPreferencesKey("searchCompleted")
+private val KEY_APP_LOCK = booleanPreferencesKey("appLock")
+private val KEY_APP_LOCK_GRACE = intPreferencesKey("appLockGraceSeconds")
+private val KEY_HIDE_SWITCHER = booleanPreferencesKey("hideInAppSwitcher")
+private val KEY_AUTO_BACKUP = booleanPreferencesKey("autoBackup")
+private val KEY_TRASH_RETENTION = stringPreferencesKey("trashRetention")
+private val KEY_LAUNCH_AT_LOGIN = booleanPreferencesKey("launchAtLogin")
+private val KEY_CLOSE_TO_TRAY = booleanPreferencesKey("closeToTray")
 
 class SettingsRepository(private val store: DataStore<Preferences>) {
     val settings: Flow<Settings> = store.data.map { p ->
@@ -77,6 +151,38 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
             aiInstructions = p[KEY_AI_INSTRUCTIONS] ?: "",
             aiAskEnabled = p[KEY_AI_ASK_ENABLED] ?: false,
             aiAskWriteEnabled = p[KEY_AI_ASK_WRITE] ?: false,
+            aiWifiOnly = p[KEY_AI_WIFI_ONLY] ?: false,
+            openAppTo = p[KEY_OPEN_APP_TO]?.let { v -> OpenAppTo.entries.firstOrNull { it.name == v } }
+                ?: OpenAppTo.CAPTURE,
+            haptics = p[KEY_HAPTICS] ?: true,
+            reduceMotion = p[KEY_REDUCE_MOTION]?.let { v -> ReduceMotionMode.entries.firstOrNull { it.name == v } }
+                ?: ReduceMotionMode.SYSTEM,
+            contrast = p[KEY_CONTRAST]?.let { v -> ContrastMode.entries.firstOrNull { it.name == v } }
+                ?: ContrastMode.STANDARD,
+            pureBlack = p[KEY_PURE_BLACK] ?: false,
+            quickSettingsTile = p[KEY_QS_TILE] ?: true,
+            keepKeyboardUp = p[KEY_KEEP_KEYBOARD] ?: true,
+            voiceCapture = p[KEY_VOICE_CAPTURE] ?: true,
+            undoWindowSeconds = p[KEY_UNDO_SECONDS] ?: 5,
+            morningStartMinutes = p[KEY_MORNING] ?: (6 * 60),
+            afternoonStartMinutes = p[KEY_AFTERNOON] ?: (12 * 60),
+            eveningStartMinutes = p[KEY_EVENING] ?: (18 * 60),
+            dailyAgenda = p[KEY_DAILY_AGENDA] ?: false,
+            dailyAgendaMinutes = p[KEY_DAILY_AGENDA_MIN] ?: (7 * 60 + 30),
+            overdueNudge = p[KEY_OVERDUE_NUDGE] ?: false,
+            overdueNudgeMinutes = p[KEY_OVERDUE_NUDGE_MIN] ?: (18 * 60),
+            inboxReminder = p[KEY_INBOX_REMINDER] ?: false,
+            inboxReminderDays = p[KEY_INBOX_REMINDER_DAYS] ?: 3,
+            showCompletedInToday = p[KEY_SHOW_COMPLETED] ?: true,
+            searchCompleted = p[KEY_SEARCH_COMPLETED] ?: true,
+            appLock = p[KEY_APP_LOCK] ?: false,
+            appLockGraceSeconds = p[KEY_APP_LOCK_GRACE] ?: 60,
+            hideInAppSwitcher = p[KEY_HIDE_SWITCHER] ?: false,
+            autoBackup = p[KEY_AUTO_BACKUP] ?: false,
+            trashRetention = p[KEY_TRASH_RETENTION]?.let { v -> TrashRetention.entries.firstOrNull { it.name == v } }
+                ?: TrashRetention.DAYS_30,
+            launchAtLogin = p[KEY_LAUNCH_AT_LOGIN] ?: false,
+            closeToTray = p[KEY_CLOSE_TO_TRAY] ?: true,
         )
     }
 
@@ -103,6 +209,34 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     suspend fun setAiInstructions(text: String) = store.edit { it[KEY_AI_INSTRUCTIONS] = text }
     suspend fun setAiAskEnabled(enabled: Boolean) = store.edit { it[KEY_AI_ASK_ENABLED] = enabled }
     suspend fun setAiAskWriteEnabled(enabled: Boolean) = store.edit { it[KEY_AI_ASK_WRITE] = enabled }
+    suspend fun setAiWifiOnly(enabled: Boolean) = store.edit { it[KEY_AI_WIFI_ONLY] = enabled }
+    suspend fun setOpenAppTo(value: OpenAppTo) = store.edit { it[KEY_OPEN_APP_TO] = value.name }
+    suspend fun setHaptics(enabled: Boolean) = store.edit { it[KEY_HAPTICS] = enabled }
+    suspend fun setReduceMotion(mode: ReduceMotionMode) = store.edit { it[KEY_REDUCE_MOTION] = mode.name }
+    suspend fun setContrast(mode: ContrastMode) = store.edit { it[KEY_CONTRAST] = mode.name }
+    suspend fun setPureBlack(enabled: Boolean) = store.edit { it[KEY_PURE_BLACK] = enabled }
+    suspend fun setQuickSettingsTile(enabled: Boolean) = store.edit { it[KEY_QS_TILE] = enabled }
+    suspend fun setKeepKeyboardUp(enabled: Boolean) = store.edit { it[KEY_KEEP_KEYBOARD] = enabled }
+    suspend fun setVoiceCapture(enabled: Boolean) = store.edit { it[KEY_VOICE_CAPTURE] = enabled }
+    suspend fun setUndoWindowSeconds(seconds: Int) = store.edit { it[KEY_UNDO_SECONDS] = seconds }
+    suspend fun setMorningStart(minutes: Int) = store.edit { it[KEY_MORNING] = minutes }
+    suspend fun setAfternoonStart(minutes: Int) = store.edit { it[KEY_AFTERNOON] = minutes }
+    suspend fun setEveningStart(minutes: Int) = store.edit { it[KEY_EVENING] = minutes }
+    suspend fun setDailyAgenda(enabled: Boolean) = store.edit { it[KEY_DAILY_AGENDA] = enabled }
+    suspend fun setDailyAgendaMinutes(minutes: Int) = store.edit { it[KEY_DAILY_AGENDA_MIN] = minutes }
+    suspend fun setOverdueNudge(enabled: Boolean) = store.edit { it[KEY_OVERDUE_NUDGE] = enabled }
+    suspend fun setOverdueNudgeMinutes(minutes: Int) = store.edit { it[KEY_OVERDUE_NUDGE_MIN] = minutes }
+    suspend fun setInboxReminder(enabled: Boolean) = store.edit { it[KEY_INBOX_REMINDER] = enabled }
+    suspend fun setInboxReminderDays(days: Int) = store.edit { it[KEY_INBOX_REMINDER_DAYS] = days }
+    suspend fun setShowCompletedInToday(enabled: Boolean) = store.edit { it[KEY_SHOW_COMPLETED] = enabled }
+    suspend fun setSearchCompleted(enabled: Boolean) = store.edit { it[KEY_SEARCH_COMPLETED] = enabled }
+    suspend fun setAppLock(enabled: Boolean) = store.edit { it[KEY_APP_LOCK] = enabled }
+    suspend fun setAppLockGrace(seconds: Int) = store.edit { it[KEY_APP_LOCK_GRACE] = seconds }
+    suspend fun setHideInAppSwitcher(enabled: Boolean) = store.edit { it[KEY_HIDE_SWITCHER] = enabled }
+    suspend fun setAutoBackup(enabled: Boolean) = store.edit { it[KEY_AUTO_BACKUP] = enabled }
+    suspend fun setTrashRetention(value: TrashRetention) = store.edit { it[KEY_TRASH_RETENTION] = value.name }
+    suspend fun setLaunchAtLogin(enabled: Boolean) = store.edit { it[KEY_LAUNCH_AT_LOGIN] = enabled }
+    suspend fun setCloseToTray(enabled: Boolean) = store.edit { it[KEY_CLOSE_TO_TRAY] = enabled }
 
     /** One atomic write restoring a backed-up settings block. */
     suspend fun applyBackup(s: BackupSettings) = store.edit { p ->

@@ -138,6 +138,141 @@
     <string name="capture_try_3">water plants every friday</string>
     <string name="ai_improve">AI improve</string>
     <string name="search_tags">Tags</string>
+
+    <!-- Settings: sections -->
+    <string name="sec_general">General</string>
+    <string name="sec_appearance">Appearance</string>
+    <string name="sec_capture">Capture</string>
+    <string name="sec_datetime">Date &amp; time</string>
+    <string name="sec_notifications">Notifications</string>
+    <string name="sec_ai">Parsing &amp; AI</string>
+    <string name="sec_organisation">Organisation</string>
+    <string name="sec_privacy">Privacy &amp; security</string>
+    <string name="sec_data">Data</string>
+    <string name="sec_desktop">Desktop</string>
+    <string name="sec_about">About</string>
+    <!-- Settings: General -->
+    <string name="set_open_app_to">Open app to</string>
+    <string name="set_language">Language &amp; region</string>
+    <string name="set_language_sub">System default</string>
+    <string name="set_haptics">Haptics</string>
+    <string name="set_haptics_sub">On complete, swipe and long-press</string>
+    <string name="set_reduce_motion">Reduce motion</string>
+    <string name="set_reduce_motion_system">Following system setting</string>
+    <string name="open_to_capture">Capture</string>
+    <string name="open_to_today">Today</string>
+    <string name="open_to_last">Last screen</string>
+    <!-- Settings: Appearance -->
+    <string name="set_theme">Theme</string>
+    <string name="set_contrast">Contrast</string>
+    <string name="contrast_standard">Standard</string>
+    <string name="contrast_medium">Medium</string>
+    <string name="contrast_high">High</string>
+    <string name="set_pure_black">Pure black</string>
+    <string name="set_pure_black_sub">For OLED · dark theme only</string>
+    <!-- Settings: Capture -->
+    <string name="set_qs_tile">Quick Settings tile</string>
+    <string name="set_qs_tile_sub">Capture from the shade</string>
+    <string name="set_keep_keyboard">Keep keyboard up</string>
+    <string name="set_keep_keyboard_sub">Stay in capture after saving</string>
+    <string name="set_voice_capture">Voice capture</string>
+    <string name="set_voice_capture_sub">Mic button next to the field</string>
+    <string name="set_widgets">Widgets</string>
+    <string name="set_widgets_sub">Today list · 1×1 capture</string>
+    <string name="set_undo_window">Undo window</string>
+    <string name="set_undo_window_sub">Snackbar stays %1$d s</string>
+    <!-- Settings: Date &amp; time -->
+    <string name="set_day_sections">Day sections</string>
+    <string name="set_day_sections_sub">When Today splits morning / afternoon / evening</string>
+    <string name="set_morning">Morning starts</string>
+    <string name="set_afternoon">Afternoon starts</string>
+    <string name="set_evening">Evening starts</string>
+    <!-- Settings: Notifications -->
+    <string name="set_daily_agenda">Daily agenda</string>
+    <string name="set_daily_agenda_sub">One morning notification listing today</string>
+    <string name="set_overdue_nudge">Overdue nudge</string>
+    <string name="set_overdue_nudge_sub">One evening summary, never per item</string>
+    <string name="set_inbox_reminder">Inbox reminder</string>
+    <string name="set_inbox_reminder_sub">After %1$d days untouched</string>
+    <string name="set_sound">Sound &amp; vibration</string>
+    <string name="set_sound_sub">Android notification settings</string>
+    <!-- Settings: AI -->
+    <string name="set_provider">Provider</string>
+    <string name="set_provider_sub">Natural-language parsing runs on-device either way</string>
+    <string name="set_wifi_only">Wi-Fi only</string>
+    <string name="set_wifi_only_sub">Hold cloud refinement off cellular</string>
+    <string name="ai_key_saved">Key saved</string>
+    <string name="ai_no_key">No key yet</string>
+    <string name="ai_connected">connected</string>
+    <string name="ai_untested">not tested</string>
+    <string name="ai_failed">last test failed</string>
+    <!-- Settings: Organisation -->
+    <string name="set_tags">Tags</string>
+    <string name="set_tags_sub">%1$d tags · rename, merge, recolour</string>
+    <string name="set_show_completed">Show completed in Today</string>
+    <string name="set_show_completed_sub">Struck through, at the section end</string>
+    <string name="set_search_completed">Search completed items</string>
+    <string name="set_search_completed_sub">Includes anything still in Trash</string>
+    <!-- Settings: Privacy -->
+    <string name="set_app_lock">App lock</string>
+    <string name="set_app_lock_sub">Fingerprint, after %1$d minute away</string>
+    <string name="set_hide_switcher">Hide in app switcher</string>
+    <string name="set_hide_switcher_sub">Blank the recents thumbnail</string>
+    <!-- Settings: Data -->
+    <string name="set_export_sub">%1$d items</string>
+    <string name="set_import_sub">Merges, never overwrites</string>
+    <string name="set_auto_backup">Auto-backup</string>
+    <string name="set_auto_backup_sub">Weekly, keeps the last 4</string>
+    <string name="set_trash">Trash</string>
+    <string name="set_trash_sub">%1$d items · kept %2$s</string>
+    <string name="set_clear_completed">Clear completed</string>
+    <string name="set_clear_completed_sub">%1$d done items</string>
+    <string name="set_clear">Clear</string>
+    <string name="set_delete_all">Delete everything</string>
+    <string name="set_delete_all_sub">Hold the button for 2 seconds. No dialog, no undo.</string>
+    <string name="set_delete_all_action">Hold to delete…</string>
+    <string name="set_deleted_all">Everything deleted</string>
+    <!-- Settings: Desktop -->
+    <string name="set_quick_shortcut">Quick capture shortcut</string>
+    <string name="set_quick_shortcut_sub">Works while tina is in the background</string>
+    <string name="set_launch_login">Launch at login</string>
+    <string name="set_launch_login_sub">Start hidden in the tray</string>
+    <string name="set_close_tray">Close to tray</string>
+    <string name="set_close_tray_sub">Closing the window keeps tina running</string>
+    <string name="set_shortcuts">Keyboard shortcuts</string>
+    <string name="set_shortcuts_sub">%1$d bindings</string>
+    <!-- Settings: About -->
+    <string name="set_version">Version</string>
+    <string name="set_whats_new">What’s new</string>
+    <string name="set_licenses">Open-source licenses</string>
+    <string name="set_diagnostics">Diagnostics</string>
+    <string name="set_diagnostics_sub">Export logs</string>
+    <!-- Settings: search + subpages -->
+    <string name="settings_search">Search settings</string>
+    <string name="settings_search_empty">No matching settings</string>
+    <string name="trash_title">Trash</string>
+    <string name="trash_sub">Deleted items are kept %1$s, then removed for good</string>
+    <string name="trash_keep_for">Keep for</string>
+    <string name="trash_7">7 days</string>
+    <string name="trash_30">30 days</string>
+    <string name="trash_forever">Forever</string>
+    <string name="trash_empty">Trash is empty</string>
+    <string name="trash_restore">Restore</string>
+    <string name="trash_restored">Restored</string>
+    <string name="trash_purged">Removed for good</string>
+    <string name="trash_empty_all">Empty trash</string>
+    <string name="trash_deleted_ago">deleted %1$s</string>
+    <string name="trash_days_left">%1$d left</string>
+    <string name="trash_swipe_hint">Swipe an item to purge it now</string>
+    <string name="tags_title">Tags</string>
+    <string name="tags_empty">No tags yet</string>
+    <string name="tags_rename">Rename</string>
+    <string name="tags_count">%1$d items</string>
+    <string name="whats_new_title">What’s new</string>
+    <string name="licenses_title">Open-source licenses</string>
+    <string name="shortcuts_title">Keyboard shortcuts</string>
+    <string name="widgets_title">Widgets</string>
+    <string name="widgets_hint">Long-press your home screen, choose Widgets, then tina.</string>
     <string name="tab_ask">Ask</string>
     <string name="settings_ask">Ask page</string>
     <string name="settings_ask_desc">Chat with your data — the model can read everything in the app</string>
