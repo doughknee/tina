@@ -18,18 +18,26 @@ import com.tina.app.ai.buildAskContext
 import com.tina.app.ai.buildAskSystemPrompt
 import com.tina.app.ai.extractAskActions
 import com.tina.app.capture.ParsedCapture
+import com.tina.app.data.ChatDao
+import com.tina.app.data.ChatEntity
+import com.tina.app.data.ChatMessageEntity
 import com.tina.app.data.Item
 import com.tina.app.data.ItemRepository
 import com.tina.app.data.ItemType
 import com.tina.app.data.Priority
 import com.tina.app.data.SettingsRepository
 import kotlin.time.Clock
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+
+private const val ROLE_USER = "user"
+private const val ROLE_ASSISTANT = "assistant"
 
 private sealed interface UndoStep {
     /** Put a prior version back (re-inserting if the action deleted it). */
@@ -43,8 +51,14 @@ class AskViewModel(
     private val repository: ItemRepository,
     private val chat: AiChat,
     private val settingsRepository: SettingsRepository,
+    private val chatDao: ChatDao,
 ) : ViewModel() {
     val messages = mutableStateListOf<ChatMessage>()
+    val history = chatDao.observeChats()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    var currentChatId by mutableStateOf<Long?>(null)
+        private set
     var sending by mutableStateOf(false)
         private set
     var lastFailed by mutableStateOf(false)
@@ -58,33 +72,89 @@ class AskViewModel(
     var appliedCount by mutableStateOf(0)
         private set
 
+    /** Bumps when a chat is deleted; the screen offers undo. */
+    var chatDeletedNonce by mutableStateOf(0)
+        private set
+
     private var modelOverride: String? = null
     private var undoBatch: List<UndoStep> = emptyList()
+    private var deletedChat: Pair<ChatEntity, List<ChatMessageEntity>>? = null
+
+    private fun now(): Long = Clock.System.now().toEpochMilliseconds()
 
     fun effectiveModel(settingsModel: String): String = modelOverride ?: settingsModel
 
     fun setModelOverride(model: String) {
         modelOverride = model
+        persistChatMeta()
     }
 
     fun setReasoningLevel(level: ReasoningLevel) {
         reasoning = level
+        persistChatMeta()
     }
 
     fun setWriteEnabled(enabled: Boolean) {
         viewModelScope.launch { settingsRepository.setAiAskWriteEnabled(enabled) }
     }
 
-    fun send(text: String) {
-        messages += ChatMessage(ChatRole.USER, text)
-        ask()
-    }
-
-    fun retry() = ask()
-
-    fun clear() {
+    fun newChat() {
+        currentChatId = null
         messages.clear()
         lastFailed = false
+    }
+
+    fun openChat(id: Long) {
+        viewModelScope.launch {
+            val entity = chatDao.chat(id) ?: return@launch
+            currentChatId = id
+            reasoning = ReasoningLevel.entries.firstOrNull { it.name == entity.reasoning }
+                ?: ReasoningLevel.BALANCED
+            modelOverride = entity.model
+            lastFailed = false
+            messages.clear()
+            messages += chatDao.messages(id).map {
+                ChatMessage(
+                    if (it.role == ROLE_USER) ChatRole.USER else ChatRole.ASSISTANT,
+                    it.content,
+                )
+            }
+        }
+    }
+
+    fun deleteChat(id: Long) {
+        viewModelScope.launch {
+            val entity = chatDao.chat(id) ?: return@launch
+            deletedChat = entity to chatDao.messages(id)
+            chatDao.deleteMessages(id)
+            chatDao.deleteChat(id)
+            if (currentChatId == id) newChat()
+            chatDeletedNonce++
+        }
+    }
+
+    fun undoDeleteChat() {
+        val (entity, entityMessages) = deletedChat ?: return
+        deletedChat = null
+        viewModelScope.launch {
+            chatDao.insertChat(entity)
+            entityMessages.forEach { chatDao.insertMessage(it) }
+        }
+    }
+
+    fun send(text: String) {
+        messages += ChatMessage(ChatRole.USER, text)
+        viewModelScope.launch {
+            val id = ensureChat(text)
+            chatDao.insertMessage(
+                ChatMessageEntity(chatId = id, role = ROLE_USER, content = text, createdAt = now()),
+            )
+            askInternal()
+        }
+    }
+
+    fun retry() {
+        viewModelScope.launch { askInternal() }
     }
 
     fun undoLastBatch() {
@@ -102,34 +172,68 @@ class AskViewModel(
         }
     }
 
-    private fun ask() {
+    private suspend fun ensureChat(firstText: String): Long {
+        currentChatId?.let { return it }
+        val id = chatDao.insertChat(
+            ChatEntity(
+                title = firstText.trim().take(48),
+                model = modelOverride,
+                reasoning = reasoning.name,
+                createdAt = now(),
+                updatedAt = now(),
+            ),
+        )
+        currentChatId = id
+        return id
+    }
+
+    private fun persistChatMeta() {
+        val id = currentChatId ?: return
+        viewModelScope.launch {
+            chatDao.chat(id)?.let {
+                chatDao.updateChat(it.copy(model = modelOverride, reasoning = reasoning.name))
+            }
+        }
+    }
+
+    private suspend fun askInternal() {
         if (sending) return
         sending = true
         lastFailed = false
-        viewModelScope.launch {
-            val settings = settingsRepository.settings.first()
-            val tz = TimeZone.currentSystemDefault()
-            val now = Clock.System.now().toLocalDateTime(tz)
-            val writeEnabled = settings.aiAskWriteEnabled
-            // fresh context per question so answers always reflect current data
-            val context = buildAskContext(repository.allItems(), tz)
-            val system = buildAskSystemPrompt(context, now, reasoning, writeEnabled)
-            val reply = chat.chat(system, messages.toList(), modelOverride)
-            if (reply == null) {
-                lastFailed = true
-            } else if (writeEnabled) {
-                val (text, actions) = extractAskActions(reply)
-                when {
-                    text.isNotBlank() -> messages += ChatMessage(ChatRole.ASSISTANT, text)
-                    // model sent only actions: the applied-changes snackbar is the reply
-                    actions.isEmpty() -> messages += ChatMessage(ChatRole.ASSISTANT, reply.trim())
-                }
-                if (actions.isNotEmpty()) applyActions(actions, tz, settings.defaultReminderMinutes)
+        val settings = settingsRepository.settings.first()
+        val tz = TimeZone.currentSystemDefault()
+        val nowLocal = Clock.System.now().toLocalDateTime(tz)
+        val writeEnabled = settings.aiAskWriteEnabled
+        // fresh context per question so answers always reflect current data
+        val context = buildAskContext(repository.allItems(), tz)
+        val system = buildAskSystemPrompt(context, nowLocal, reasoning, writeEnabled)
+        val reply = chat.chat(system, messages.toList(), modelOverride)
+        if (reply == null) {
+            lastFailed = true
+        } else {
+            val (visible, actions) = if (writeEnabled) {
+                extractAskActions(reply)
             } else {
-                messages += ChatMessage(ChatRole.ASSISTANT, reply.trim())
+                reply.trim() to emptyList()
             }
-            sending = false
+            val shown = when {
+                visible.isNotBlank() -> visible
+                // model sent only actions: the applied-changes snackbar is the reply
+                actions.isEmpty() -> reply.trim()
+                else -> null
+            }
+            shown?.let { messages += ChatMessage(ChatRole.ASSISTANT, it) }
+            currentChatId?.let { id ->
+                shown?.let {
+                    chatDao.insertMessage(
+                        ChatMessageEntity(chatId = id, role = ROLE_ASSISTANT, content = it, createdAt = now()),
+                    )
+                }
+                chatDao.chat(id)?.let { chatDao.updateChat(it.copy(updatedAt = now())) }
+            }
+            if (actions.isNotEmpty()) applyActions(actions, tz, settings.defaultReminderMinutes)
         }
+        sending = false
     }
 
     private suspend fun applyActions(actions: List<AskAction>, tz: TimeZone, defaultReminder: Int) {

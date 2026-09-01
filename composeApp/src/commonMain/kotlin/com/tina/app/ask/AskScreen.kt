@@ -1,6 +1,7 @@
 package com.tina.app.ask
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
@@ -18,9 +19,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.AddComment
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.DeleteSweep
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -45,18 +48,21 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.tina.app.LocalSettings
 import com.tina.app.data.AiProvider
 import com.tina.app.resources.Res
-import com.tina.app.resources.ask_clear
 import com.tina.app.resources.ask_error
 import com.tina.app.resources.ask_hint
 import com.tina.app.resources.ask_placeholder
@@ -69,7 +75,13 @@ import com.tina.app.resources.ask_sugg_2
 import com.tina.app.resources.ask_sugg_3
 import com.tina.app.resources.ask_sugg_4
 import com.tina.app.resources.ask_applied
+import com.tina.app.resources.ask_chat_deleted
+import com.tina.app.resources.ask_copied
+import com.tina.app.resources.ask_history
+import com.tina.app.resources.ask_history_empty
+import com.tina.app.resources.ask_new_chat
 import com.tina.app.resources.ask_thinking
+import com.tina.app.resources.delete
 import com.tina.app.resources.ask_write_off
 import com.tina.app.resources.ask_write_on
 import com.tina.app.resources.capture_save
@@ -78,10 +90,16 @@ import com.tina.app.resources.undo
 import com.tina.app.ai.ANTHROPIC_MODELS
 import com.tina.app.ai.ChatRole
 import com.tina.app.ai.ReasoningLevel
+import com.tina.app.ui.relativeAge
+import kotlin.time.Clock
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+)
 @Composable
 fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
     val settings = LocalSettings.current
@@ -92,6 +110,12 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
     val appliedText = stringResource(Res.string.ask_applied)
     val undoText = stringResource(Res.string.undo)
 
+    var showHistory by remember { mutableStateOf(false) }
+    val chatDeletedText = stringResource(Res.string.ask_chat_deleted)
+    val copiedText = stringResource(Res.string.ask_copied)
+    val clipboard = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(viewModel.appliedNonce) {
         if (viewModel.appliedNonce == 0) return@LaunchedEffect
         val result = snackbarHostState.showSnackbar(
@@ -100,6 +124,16 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
             duration = SnackbarDuration.Long,
         )
         if (result == SnackbarResult.ActionPerformed) viewModel.undoLastBatch()
+    }
+
+    LaunchedEffect(viewModel.chatDeletedNonce) {
+        if (viewModel.chatDeletedNonce == 0) return@LaunchedEffect
+        val result = snackbarHostState.showSnackbar(
+            chatDeletedText,
+            undoText,
+            duration = SnackbarDuration.Short,
+        )
+        if (result == SnackbarResult.ActionPerformed) viewModel.undoDeleteChat()
     }
 
     LaunchedEffect(viewModel.messages.size, viewModel.sending) {
@@ -146,8 +180,17 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
                             }
                         }
                     }
-                    IconButton(onClick = viewModel::clear, enabled = viewModel.messages.isNotEmpty()) {
-                        Icon(Icons.Outlined.DeleteSweep, stringResource(Res.string.ask_clear))
+                    IconButton(onClick = { showHistory = true }) {
+                        Icon(Icons.Outlined.History, stringResource(Res.string.ask_history))
+                    }
+                    IconButton(
+                        onClick = viewModel::newChat,
+                        enabled = viewModel.messages.isNotEmpty(),
+                    ) {
+                        Icon(
+                            Icons.Outlined.AddComment,
+                            stringResource(Res.string.ask_new_chat),
+                        )
                     }
                 },
             )
@@ -252,6 +295,13 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
                                 },
                                 modifier = Modifier
                                     .widthIn(max = 320.dp)
+                                    .combinedClickable(
+                                        onClick = {},
+                                        onLongClick = {
+                                            clipboard.setText(AnnotatedString(message.content))
+                                            scope.launch { snackbarHostState.showSnackbar(copiedText) }
+                                        },
+                                    )
                                     .background(
                                         if (fromUser) {
                                             MaterialTheme.colorScheme.primaryContainer
@@ -295,6 +345,65 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
                                 OutlinedButton(onClick = viewModel::retry) {
                                     Text(stringResource(Res.string.ask_retry))
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showHistory) {
+        val historyChats = viewModel.history.collectAsState().value
+        val nowMillis = remember(historyChats) { Clock.System.now().toEpochMilliseconds() }
+        androidx.compose.material3.ModalBottomSheet(onDismissRequest = { showHistory = false }) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)) {
+                Text(
+                    stringResource(Res.string.ask_history),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+                if (historyChats.isEmpty()) {
+                    Text(
+                        stringResource(Res.string.ask_history_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 24.dp),
+                    )
+                }
+                LazyColumn(
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp),
+                ) {
+                    items(historyChats) { entry ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .combinedClickable(onClick = {
+                                    viewModel.openChat(entry.id)
+                                    showHistory = false
+                                })
+                                .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    entry.title,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    relativeAge(nowMillis - entry.updatedAt),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            IconButton(onClick = { viewModel.deleteChat(entry.id) }) {
+                                Icon(
+                                    Icons.Outlined.Delete,
+                                    stringResource(Res.string.delete),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                     }

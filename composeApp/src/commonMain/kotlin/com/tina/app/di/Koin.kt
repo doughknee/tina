@@ -32,6 +32,7 @@ val commonModule = module {
     single { AiCaptureParser(get(), get()) }
     single { com.tina.app.ai.AiImprover(get(), get()) }
     single { com.tina.app.ai.AiChat(get(), get()) }
+    single { get<com.tina.app.data.AppDatabase>().chatDao() }
     viewModelOf(::AskViewModel)
     single { CaptureRefiner(get(), get(), get(), get()) }
     viewModelOf(::CaptureViewModel)
