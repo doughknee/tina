@@ -34,6 +34,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -77,6 +79,7 @@ import com.tina.app.resources.Res
 import com.tina.app.resources.tab_agenda
 import com.tina.app.resources.tab_ask
 import com.tina.app.resources.tab_library
+import com.tina.app.resources.mode_capture
 import com.tina.app.ui.capture.CaptureBar
 import com.tina.app.ui.capture.SaveBurst
 import kotlinx.datetime.number
@@ -88,6 +91,8 @@ import org.koin.compose.viewmodel.koinViewModel
 enum class TinaTab(val icon: ImageVector, val outlinedIcon: ImageVector, val label: StringResource) {
     AGENDA(Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, Res.string.tab_agenda),
     LIBRARY(Icons.Filled.Inventory2, Icons.Outlined.Inventory2, Res.string.tab_library),
+    /** A mode, not a page: focuses the capture field over whatever is showing. */
+    CAPTURE(Icons.Filled.Edit, Icons.Outlined.Edit, Res.string.mode_capture),
     ASK(Icons.Filled.AutoAwesome, Icons.Outlined.AutoAwesome, Res.string.tab_ask),
 }
 
@@ -104,12 +109,13 @@ fun Shell(
 ) {
     val settings = LocalSettings.current
     val askEnabled = settings.aiAskEnabled && settings.aiProvider != AiProvider.OFF
-    val tabs = if (askEnabled) TinaTab.entries.toList() else listOf(TinaTab.AGENDA, TinaTab.LIBRARY)
+    val tabs = if (askEnabled) TinaTab.entries.toList() else listOf(TinaTab.AGENDA, TinaTab.LIBRARY, TinaTab.CAPTURE)
 
     // saved by name so toggling the Ask tab never shifts the selection; LAST relies on
     // rememberSaveable surviving process death, the others pin a start page
     var selectedName by rememberSaveable(settings.openAppTo) { mutableStateOf(TinaTab.AGENDA.name) }
-    val selectedTab = tabs.firstOrNull { it.name == selectedName && it != TinaTab.ASK } ?: TinaTab.AGENDA
+    val selectedTab = tabs.firstOrNull { it.name == selectedName && it != TinaTab.ASK && it != TinaTab.CAPTURE }
+        ?: TinaTab.AGENDA
     // deliberately not saveable: the bar always comes back in capture mode
     var askOpen by remember { mutableStateOf(false) }
     var captureFocused by remember { mutableStateOf(false) }
@@ -123,9 +129,13 @@ fun Shell(
     val captureFocus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
+    // the TRY / RECENT sheet rises while the empty capture field has focus
+    val suggestionsOpen = !askOpen && captureFocused && captureViewModel.text.isBlank()
+
     fun showTab(tab: TinaTab) {
         selectedName = tab.name
         askOpen = false
+        focusManager.clearFocus()
     }
 
     fun openLibrary(filter: LibraryFilter? = null, focusSearch: Boolean = false) {
@@ -165,10 +175,20 @@ fun Shell(
         modifier = Modifier.imePadding(),
         navigationSuiteItems = {
             tabs.forEach { tab ->
-                val selected = if (tab == TinaTab.ASK) askOpen else selectedTab == tab && !askOpen
+                val selected = when (tab) {
+                    TinaTab.ASK -> askOpen
+                    TinaTab.CAPTURE -> suggestionsOpen
+                    else -> selectedTab == tab && !askOpen && !suggestionsOpen
+                }
                 item(
                     selected = selected,
-                    onClick = { if (tab == TinaTab.ASK) askOpen = true else showTab(tab) },
+                    onClick = {
+                        when (tab) {
+                            TinaTab.ASK -> askOpen = true
+                            TinaTab.CAPTURE -> CaptureFocus.request()
+                            else -> showTab(tab)
+                        }
+                    },
                     icon = { Icon(if (selected) tab.icon else tab.outlinedIcon, contentDescription = null) },
                     label = { Text(stringResource(tab.label)) },
                 )
@@ -219,14 +239,12 @@ fun Shell(
                             viewModel = libraryViewModel,
                             notesViewModel = notesViewModel,
                         )
-                        TinaTab.ASK -> Unit
+                        TinaTab.ASK, TinaTab.CAPTURE -> Unit
                     }
                 }
 
                 SaveBurst(trigger = captureViewModel.saveCount, modifier = Modifier.align(Alignment.Center))
 
-                // the TRY / RECENT sheet rises while the empty capture field has focus
-                val suggestionsOpen = !askOpen && captureFocused && captureViewModel.text.isBlank()
                 ShellSheet(
                     visible = suggestionsOpen,
                     onDismiss = { focusManager.clearFocus() },
