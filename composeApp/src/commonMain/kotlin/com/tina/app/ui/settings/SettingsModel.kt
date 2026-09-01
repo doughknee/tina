@@ -29,12 +29,20 @@ sealed interface SettingsRow {
     val keywords: List<String>
     val visible: Boolean
 
+    /**
+     * False for settings that exist in the design but aren't wired up yet. They render
+     * greyed with a "Soon" tag rather than silently doing nothing when tapped.
+     * (Distinct from [visible], which hides rows that don't apply to the platform.)
+     */
+    val enabled: Boolean get() = true
+
     data class Switch(
         override val id: String,
         override val title: String,
         override val supporting: String? = null,
         override val keywords: List<String> = emptyList(),
         override val visible: Boolean = true,
+        override val enabled: Boolean = true,
         val checked: Boolean,
         val onCheckedChange: (Boolean) -> Unit,
     ) : SettingsRow
@@ -46,6 +54,7 @@ sealed interface SettingsRow {
         override val supporting: String? = null,
         override val keywords: List<String> = emptyList(),
         override val visible: Boolean = true,
+        override val enabled: Boolean = true,
         val badge: String? = null,
         val onClick: () -> Unit,
     ) : SettingsRow
@@ -57,6 +66,7 @@ sealed interface SettingsRow {
         override val supporting: String? = null,
         override val keywords: List<String> = emptyList(),
         override val visible: Boolean = true,
+        override val enabled: Boolean = true,
         val onClick: () -> Unit,
     ) : SettingsRow
 
@@ -67,6 +77,7 @@ sealed interface SettingsRow {
         override val supporting: String? = null,
         override val keywords: List<String> = emptyList(),
         override val visible: Boolean = true,
+        override val enabled: Boolean = true,
     ) : SettingsRow
 
     /**
@@ -79,6 +90,7 @@ sealed interface SettingsRow {
         override val supporting: String? = null,
         override val keywords: List<String> = emptyList(),
         override val visible: Boolean = true,
+        override val enabled: Boolean = true,
         val options: List<Option>,
         val selectedIndex: Int,
         val onSelect: (Int) -> Unit,
@@ -93,6 +105,7 @@ sealed interface SettingsRow {
         override val supporting: String? = null,
         override val keywords: List<String> = emptyList(),
         override val visible: Boolean = true,
+        override val enabled: Boolean = true,
         val options: List<String>,
         val selectedIndex: Int,
         val onSelect: (Int) -> Unit,
@@ -105,6 +118,7 @@ sealed interface SettingsRow {
         override val supporting: String? = null,
         override val keywords: List<String> = emptyList(),
         override val visible: Boolean = true,
+        override val enabled: Boolean = true,
         val timeLabel: String,
         val onClick: () -> Unit,
     ) : SettingsRow
@@ -116,6 +130,7 @@ sealed interface SettingsRow {
         override val supporting: String? = null,
         override val keywords: List<String> = emptyList(),
         override val visible: Boolean = true,
+        override val enabled: Boolean = true,
         val actionLabel: String,
         val onAction: () -> Unit,
     ) : SettingsRow
@@ -127,6 +142,7 @@ sealed interface SettingsRow {
         override val supporting: String? = null,
         override val keywords: List<String> = emptyList(),
         override val visible: Boolean = true,
+        override val enabled: Boolean = true,
         /** When false the row draws its own surface and sits outside the group card. */
         val inGroup: Boolean = true,
         val content: @Composable () -> Unit,

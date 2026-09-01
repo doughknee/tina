@@ -569,6 +569,7 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Navigation(
                 id = "openAppTo",
+                enabled = false,
                 title = stringResource(Res.string.set_open_app_to),
                 supporting = openToLabel,
                 keywords = listOf("start", "launch", "home"),
@@ -576,6 +577,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.External(
                 id = "language",
+                enabled = false,
                 title = stringResource(Res.string.set_language),
                 supporting = stringResource(Res.string.set_language_sub),
                 keywords = listOf("locale", "translate"),
@@ -653,6 +655,7 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Switch(
                 id = "qsTile",
+                enabled = false,
                 title = stringResource(Res.string.set_qs_tile),
                 supporting = stringResource(Res.string.set_qs_tile_sub),
                 keywords = listOf("shade", "tile", "quick"),
@@ -662,6 +665,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "keepKeyboard",
+                enabled = false,
                 title = stringResource(Res.string.set_keep_keyboard),
                 supporting = stringResource(Res.string.set_keep_keyboard_sub),
                 keywords = listOf("keyboard", "ime"),
@@ -686,6 +690,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Navigation(
                 id = "undoWindow",
+                enabled = false,
                 title = stringResource(Res.string.set_undo_window),
                 supporting = stringResource(Res.string.set_undo_window_sub, settings.undoWindowSeconds),
                 keywords = listOf("snackbar", "undo"),
@@ -725,12 +730,14 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Value(
                 id = "daySections",
+                enabled = false,
                 title = stringResource(Res.string.set_day_sections),
                 supporting = stringResource(Res.string.set_day_sections_sub),
                 keywords = listOf("morning", "afternoon", "evening", "tonight"),
             ),
             SettingsRow.TimeRow(
                 id = "morning",
+                enabled = false,
                 title = stringResource(Res.string.set_morning),
                 keywords = listOf("morning"),
                 timeLabel = minutesLabel(settings.morningStartMinutes, use24h),
@@ -738,6 +745,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.TimeRow(
                 id = "afternoon",
+                enabled = false,
                 title = stringResource(Res.string.set_afternoon),
                 keywords = listOf("afternoon"),
                 timeLabel = minutesLabel(settings.afternoonStartMinutes, use24h),
@@ -745,6 +753,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.TimeRow(
                 id = "evening",
+                enabled = false,
                 title = stringResource(Res.string.set_evening),
                 keywords = listOf("evening", "tonight"),
                 timeLabel = minutesLabel(settings.eveningStartMinutes, use24h),
@@ -759,6 +768,7 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Switch(
                 id = "dailyAgenda",
+                enabled = false,
                 title = stringResource(Res.string.set_daily_agenda),
                 supporting = stringResource(Res.string.set_daily_agenda_sub),
                 keywords = listOf("morning", "summary", "digest", "remind"),
@@ -767,6 +777,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.TimeRow(
                 id = "dailyAgendaTime",
+                enabled = false,
                 title = stringResource(Res.string.set_daily_agenda),
                 keywords = listOf("agenda time"),
                 visible = settings.dailyAgenda,
@@ -775,6 +786,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "overdueNudge",
+                enabled = false,
                 title = stringResource(Res.string.set_overdue_nudge),
                 supporting = stringResource(Res.string.set_overdue_nudge_sub),
                 keywords = listOf("overdue", "remind", "late"),
@@ -783,6 +795,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "inboxReminder",
+                enabled = false,
                 title = stringResource(Res.string.set_inbox_reminder),
                 supporting = stringResource(Res.string.set_inbox_reminder_sub, settings.inboxReminderDays),
                 keywords = listOf("inbox", "triage", "remind"),
@@ -791,6 +804,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.External(
                 id = "sound",
+                enabled = false,
                 title = stringResource(Res.string.set_sound),
                 supporting = stringResource(Res.string.set_sound_sub),
                 keywords = listOf("vibrate", "channel", "ringtone"),
@@ -833,6 +847,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "wifiOnly",
+                enabled = false,
                 title = stringResource(Res.string.set_wifi_only),
                 supporting = stringResource(Res.string.set_wifi_only_sub),
                 keywords = listOf("data", "cellular", "mobile"),
@@ -856,6 +871,7 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Switch(
                 id = "showCompleted",
+                enabled = false,
                 title = stringResource(Res.string.set_show_completed),
                 supporting = stringResource(Res.string.set_show_completed_sub),
                 keywords = listOf("done", "finished"),
@@ -880,6 +896,7 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Switch(
                 id = "appLock",
+                enabled = false,
                 title = stringResource(Res.string.set_app_lock),
                 supporting = stringResource(Res.string.set_app_lock_sub, settings.appLockGraceSeconds / 60),
                 keywords = listOf("biometric", "fingerprint", "lock", "security"),
@@ -888,6 +905,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "hideSwitcher",
+                enabled = false,
                 title = stringResource(Res.string.set_hide_switcher),
                 supporting = stringResource(Res.string.set_hide_switcher_sub),
                 keywords = listOf("recents", "privacy", "secure"),
@@ -917,6 +935,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "autoBackup",
+                enabled = false,
                 title = stringResource(Res.string.set_auto_backup),
                 supporting = stringResource(Res.string.set_auto_backup_sub),
                 keywords = listOf("backup", "weekly", "automatic"),
@@ -956,12 +975,14 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Value(
                 id = "quickShortcut",
+                enabled = false,
                 title = stringResource(Res.string.set_quick_shortcut),
                 supporting = stringResource(Res.string.set_quick_shortcut_sub),
                 keywords = listOf("hotkey", "global", "shortcut"),
             ),
             SettingsRow.Switch(
                 id = "launchAtLogin",
+                enabled = false,
                 title = stringResource(Res.string.set_launch_login),
                 supporting = stringResource(Res.string.set_launch_login_sub),
                 keywords = listOf("startup", "boot", "tray"),
@@ -970,6 +991,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.Switch(
                 id = "closeToTray",
+                enabled = false,
                 title = stringResource(Res.string.set_close_tray),
                 supporting = stringResource(Res.string.set_close_tray_sub),
                 keywords = listOf("tray", "background"),
@@ -1010,6 +1032,7 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.External(
                 id = "diagnostics",
+                enabled = false,
                 title = stringResource(Res.string.set_diagnostics),
                 supporting = stringResource(Res.string.set_diagnostics_sub),
                 keywords = listOf("logs", "crash", "debug"),

@@ -38,6 +38,9 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import com.tina.app.resources.Res
+import com.tina.app.resources.set_soon
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -386,9 +390,51 @@ fun RadioRow(label: String, selected: Boolean, onSelect: () -> Unit) {
     )
 }
 
+/**
+ * A designed-but-not-yet-wired setting. Rendered greyed with a "Soon" tag and no
+ * interaction, so it reads as planned rather than broken.
+ */
+@Composable
+fun PlaceholderRow(row: SettingsRow) {
+    val muted = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+    ListItem(
+        headlineContent = { Text(row.title, style = MaterialTheme.typography.bodyLarge, color = muted) },
+        supportingContent = row.supporting?.let {
+            {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                )
+            }
+        },
+        trailingContent = {
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                shape = RoundedCornerShape(8.dp),
+            ) {
+                Text(
+                    stringResource(Res.string.set_soon),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                )
+            }
+        },
+        colors = transparentListItem,
+        modifier = Modifier.semantics(mergeDescendants = true) {
+            disabled()
+        },
+    )
+}
+
 /** Renders any row kind inside its group slice. */
 @Composable
 fun SettingsRowContent(row: SettingsRow) {
+    if (!row.enabled) {
+        PlaceholderRow(row)
+        return
+    }
     when (row) {
         is SettingsRow.Switch -> SwitchRow(row)
         is SettingsRow.Navigation -> NavigationRow(row)
