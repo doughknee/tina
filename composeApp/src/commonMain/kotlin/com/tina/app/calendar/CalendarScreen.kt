@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarViewMonth
 import androidx.compose.material.icons.outlined.ViewWeek
@@ -240,8 +241,11 @@ fun CalendarScreen(
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Text(
-                        stringResource(Res.string.calendar_nothing),
-                        style = MaterialTheme.typography.bodyLarge,
+                        stringResource(
+                            Res.string.calendar_nothing,
+                            com.tina.app.ui.dateLabel(selectedDate, today),
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
@@ -341,8 +345,8 @@ private fun AgendaHeader(date: LocalDate) {
     Text(
         "${weekdays[date.dayOfWeek.isoDayNumber - 1]}, ${months[date.month.number - 1]} ${date.day}",
         style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 8.dp),
     )
 }
 
@@ -381,23 +385,35 @@ private fun DayCell(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 date.day.toString(),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.labelLarge,
                 color = when {
                     isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
-                    !inMonth -> MaterialTheme.colorScheme.outline
+                    !inMonth -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
                     else -> MaterialTheme.colorScheme.onSurface
                 },
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                dotColors.forEach { color ->
-                    Box(
-                        Modifier
-                            .size(4.dp)
-                            .background(
-                                color?.let { Color(it) } ?: MaterialTheme.colorScheme.primary,
-                                CircleShape,
-                            ),
-                    )
+            if (isSelected && dotColors.isNotEmpty()) {
+                // one calm pill instead of dots once the day is focused
+                Box(
+                    Modifier
+                        .size(width = 12.dp, height = 4.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onPrimaryContainer,
+                            RoundedCornerShape(2.dp),
+                        ),
+                )
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    dotColors.forEach { color ->
+                        Box(
+                            Modifier
+                                .size(4.dp)
+                                .background(
+                                    color?.let { Color(it) } ?: MaterialTheme.colorScheme.primary,
+                                    CircleShape,
+                                ),
+                        )
+                    }
                 }
             }
         }

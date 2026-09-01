@@ -64,7 +64,7 @@
     <string name="calendar_jump_today">Today</string>
     <string name="calendar_view_month">Month view</string>
     <string name="calendar_view_week">Week view</string>
-    <string name="calendar_nothing">Nothing this day</string>
+    <string name="calendar_nothing">Nothing on %1$s</string>
     <string name="calendar_capture_hint">Long-press a day to capture for that date</string>
 
     <string name="event_all_day">All-day</string>
