@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.animation.core.Animatable
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -259,8 +261,11 @@ private fun ShellSheet(
     content: @Composable () -> Unit,
 ) {
     val dismissDistance = with(LocalDensity.current) { 80.dp.toPx() }
-    var drag by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(visible) { drag = 0f }
+    val scope = rememberCoroutineScope()
+    // the dragged offset survives a dismiss so the exit slide continues from where the
+    // finger left it; resetting it on close made the sheet jump back up first
+    val drag = remember { Animatable(0f) }
+    LaunchedEffect(visible) { if (visible) drag.snapTo(0f) }
     Box(Modifier.fillMaxSize()) {
         AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut()) {
             Box(
@@ -283,7 +288,7 @@ private fun ShellSheet(
             Surface(
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
                 shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                modifier = Modifier.fillMaxWidth().offset { IntOffset(0, drag.roundToInt()) },
+                modifier = Modifier.fillMaxWidth().offset { IntOffset(0, drag.value.roundToInt()) },
             ) {
                 Column(Modifier.fillMaxWidth()) {
                     Box(
@@ -297,11 +302,13 @@ private fun ShellSheet(
                             .pointerInput(Unit) {
                                 detectVerticalDragGestures(
                                     onDragEnd = {
-                                        if (drag > dismissDistance) onDismiss()
-                                        drag = 0f
+                                        if (drag.value > dismissDistance) onDismiss()
+                                        else scope.launch { drag.animateTo(0f) }
                                     },
-                                    onDragCancel = { drag = 0f },
-                                ) { _, dy -> drag = (drag + dy).coerceAtLeast(0f) }
+                                    onDragCancel = { scope.launch { drag.animateTo(0f) } },
+                                ) { _, dy ->
+                                    scope.launch { drag.snapTo((drag.value + dy).coerceAtLeast(0f)) }
+                                }
                             }
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center,
