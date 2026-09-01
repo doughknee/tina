@@ -7,6 +7,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -239,7 +240,13 @@ fun CaptureScreen(
                     },
                 )
 
-                CaptureChips(viewModel)
+                AnimatedVisibility(
+                    visible = viewModel.text.isNotBlank(),
+                    enter = fadeIn(tween(150)) + scaleIn(initialScale = 0.8f, animationSpec = tween(150)),
+                    exit = fadeOut(tween(150)),
+                ) {
+                    CaptureChips(viewModel)
+                }
 
                 // suggestions + recents only while idle; gone the instant typing starts
                 AnimatedVisibility(

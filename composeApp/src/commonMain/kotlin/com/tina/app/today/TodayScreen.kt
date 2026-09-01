@@ -247,7 +247,7 @@ fun TodayScreen(
                     }
                 } else {
                     itemsIndexed(entries, key = { _, it -> "$section-${it.item.id}-${it.time}" }) { index, entry ->
-                        SectionCardItem(index, entries.size) {
+                        SectionCardItem(index, entries.size, Modifier.animateItem()) {
                             ItemRow(
                                 item = entry.item,
                                 today = today,

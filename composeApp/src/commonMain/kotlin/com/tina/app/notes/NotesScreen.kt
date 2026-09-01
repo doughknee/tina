@@ -180,6 +180,7 @@ fun NotesScreen(
                     note = note,
                     onClick = { onOpenNote(note.id) },
                     onTogglePin = { viewModel.togglePin(note) },
+                    modifier = Modifier.animateItem(),
                 )
             }
         }
@@ -187,9 +188,15 @@ fun NotesScreen(
 }
 
 @Composable
-private fun NoteCard(note: Item, onClick: () -> Unit, onTogglePin: () -> Unit) {
+private fun NoteCard(
+    note: Item,
+    onClick: () -> Unit,
+    onTogglePin: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Card(
         onClick = onClick,
+        modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = note.color?.let { Color(it).copy(alpha = 0.18f) }
                 ?: MaterialTheme.colorScheme.surfaceContainerHigh,

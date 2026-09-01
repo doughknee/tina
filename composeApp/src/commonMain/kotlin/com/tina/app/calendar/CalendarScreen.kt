@@ -254,7 +254,7 @@ fun CalendarScreen(
             } else {
                 LazyColumn(Modifier.weight(1f)) {
                     itemsIndexed(agenda, key = { _, it -> "${it.item.id}-${it.time}" }) { index, entry ->
-                        SectionCardItem(index, agenda.size) {
+                        SectionCardItem(index, agenda.size, Modifier.animateItem()) {
                             ItemRow(
                                 item = entry.item,
                                 today = today,

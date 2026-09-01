@@ -1,6 +1,11 @@
 package com.tina.app.ui
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -311,7 +316,15 @@ private fun RowContent(
 private fun RescheduleChip(label: String, today: LocalDate, onReschedule: (LocalDate?) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
-        AssistChip(onClick = { open = true }, label = { Text(label) })
+        AssistChip(
+            onClick = { open = true },
+            label = {
+                AnimatedContent(
+                    targetState = label,
+                    transitionSpec = { fadeIn(tween(150)) togetherWith fadeOut(tween(150)) },
+                ) { Text(it) }
+            },
+        )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.date_today)) },

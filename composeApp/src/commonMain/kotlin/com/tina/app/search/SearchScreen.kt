@@ -170,7 +170,7 @@ fun SearchScreen(
         }
         LazyColumn(Modifier.fillMaxSize().padding(padding)) {
             items(results, key = { it.id }) { item ->
-                Column {
+                Column(Modifier.animateItem()) {
                     Text(
                         typeLabel(item.type),
                         style = MaterialTheme.typography.labelSmall,
