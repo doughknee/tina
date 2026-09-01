@@ -212,7 +212,7 @@ fun CaptureScreen(
         // the composer lives at the bottom, in thumb reach and just above the nav bar;
         // Shell's imePadding lifts the whole thing when the keyboard opens
         bottomBar = {
-            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
                 // chips describe what's being typed, so they stay attached to the field
                 AnimatedVisibility(
                     visible = viewModel.text.isNotBlank(),
@@ -222,57 +222,58 @@ fun CaptureScreen(
                     CaptureChips(viewModel)
                 }
 
-                TextField(
-                    value = viewModel.text,
-                    onValueChange = viewModel::onTextChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                        .onPreviewKeyEvent { event ->
-                            // physical keyboards: Enter saves, Shift+Enter makes a newline
-                            if (event.key == Key.Enter &&
-                                event.type == KeyEventType.KeyDown &&
-                                !event.isShiftPressed
-                            ) {
-                                saveNow()
-                                true
-                            } else {
-                                false
-                            }
-                        },
-                    textStyle = MaterialTheme.typography.titleLarge,
-                    placeholder = {
-                        Text(
-                            stringResource(Res.string.capture_placeholder),
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-                    },
-                    // a filled pill, same composer shape as Ask: at the bottom of an open
-                    // page the field needs its own container or it reads as loose text
-                    shape = RoundedCornerShape(28.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Sentences,
-                        imeAction = ImeAction.Send,
-                    ),
-                    keyboardActions = KeyboardActions(onSend = { saveNow() }),
-                    maxLines = 6,
-                    trailingIcon = {
-                        Row {
-                            if (speech.available && LocalSettings.current.voiceCapture) {
+                // same composer as Ask: a filled pill with the send button beside it,
+                // not inside it
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    val micVisible = speech.available && LocalSettings.current.voiceCapture
+                    TextField(
+                        value = viewModel.text,
+                        onValueChange = viewModel::onTextChange,
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusRequester(focusRequester)
+                            .onPreviewKeyEvent { event ->
+                                // physical keyboards: Enter saves, Shift+Enter makes a newline
+                                if (event.key == Key.Enter &&
+                                    event.type == KeyEventType.KeyDown &&
+                                    !event.isShiftPressed
+                                ) {
+                                    saveNow()
+                                    true
+                                } else {
+                                    false
+                                }
+                            },
+                        placeholder = { Text(stringResource(Res.string.capture_placeholder)) },
+                        shape = RoundedCornerShape(28.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
+                            imeAction = ImeAction.Send,
+                        ),
+                        keyboardActions = KeyboardActions(onSend = { saveNow() }),
+                        maxLines = 4,
+                        // the mic belongs to the field; the send button does not
+                        trailingIcon = if (!micVisible) null else {
+                            {
                                 IconButton(onClick = speech.start) {
                                     Icon(Icons.Outlined.Mic, stringResource(Res.string.capture_voice))
                                 }
                             }
-                            FilledIconButton(onClick = { saveNow() }) {
-                                Icon(Icons.AutoMirrored.Outlined.Send, stringResource(Res.string.capture_save))
-                            }
-                        }
-                    },
-                )
+                        },
+                    )
+                    FilledIconButton(
+                        onClick = { saveNow() },
+                        modifier = Modifier.padding(start = 8.dp),
+                        // save() already ignores blank input; this just stops offering it
+                        enabled = viewModel.text.isNotBlank(),
+                    ) {
+                        Icon(Icons.AutoMirrored.Outlined.Send, stringResource(Res.string.capture_save))
+                    }
+                }
             }
         },
     ) { padding ->
