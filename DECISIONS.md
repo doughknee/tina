@@ -220,3 +220,11 @@ Running log of choices made without asking, newest last.
 - **Verified live** against a local Ollama (`qwen3-coder:30b`): "coffee with jess thursday around 130ish" → EVENT Thursday 13:00–14:00 titled "coffee with Jess", refined on-device end to end.
 - **Android 17 network permissions are a real gate**: INTERNET added via an app update is not auto-granted (user-sensitive), and LAN endpoints need the new `ACCESS_LOCAL_NETWORK` runtime permission — a fresh device denies sockets with EPERM until both are granted. The AI settings section requests them when a provider is enabled, and the test button surfaces the underlying exception instead of a generic failure precisely because this class of problem is invisible otherwise.
 - **AI HTTP timeouts are 3 minutes** (10s connect): a cold local 30B model takes ~a minute to load before it can answer; OkHttp's default 10s read timeout made every cold request fail.
+
+## Page transitions
+
+- **One horizontal axis for the whole app.** Depth reads as direction: pushing a page slides it in from the trailing edge while the page beneath parallaxes a quarter-width and fades; popping plays that in reverse; switching nav-bar tabs uses the same axis at a tenth of the distance, because tabs are peers with no hierarchy to express. Navigation 3's stock fade-and-zoom is replaced outright — scaling a full page reads as a dialog, not as travel.
+- **Pop inverts z-order** (`targetContentZIndex = -1f`). The page you're leaving has to stay *above* the one being revealed, otherwise the outgoing slide happens behind an opaque page and the whole transition is invisible.
+- **Predictive back honours the swipe edge** — nav3 passes it to `predictivePopTransitionSpec`, and a right-edge swipe mirrors the pop so the page follows the thumb.
+- **The expressive spring constants are copied, not imported.** `MotionScheme` is public in material3's JVM jar but `internal` in the KMP metadata at 1.9.0, so `MaterialTheme.motionScheme` and `MaterialExpressiveTheme` don't compile from commonMain. The two token pairs (spatial 0.8/380, effects 1.0/1600) are lifted from `ExpressiveMotionTokens` into `ui/Motion.kt`. Delete them and use the real API once material3 exposes it.
+- **Reduce motion collapses every transition to a cross-fade** on the same springs, not to a hard cut — the setting removes movement, not feedback.

@@ -21,6 +21,7 @@ import com.tina.app.notes.NoteEditorScreen
 import com.tina.app.search.SearchScreen
 import com.tina.app.ui.LocalSharedTransitionScope
 import com.tina.app.ui.Shell
+import com.tina.app.ui.rememberAppMotion
 import org.koin.compose.koinInject
 
 data object ShellRoute
@@ -63,9 +64,14 @@ fun App() {
                     },
                 )
             }
+            val motion = rememberAppMotion()
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
+                transitionSpec = { motion.push() },
+                popTransitionSpec = { motion.pop() },
+                // nav3 hands us the swipe edge: 1 is the right edge, which mirrors the pop.
+                predictivePopTransitionSpec = { edge -> motion.pop(fromRightEdge = edge == 1) },
                 entryProvider = entryProvider {
                     entry<ShellRoute> {
                         Shell(

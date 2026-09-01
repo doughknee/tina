@@ -1,5 +1,7 @@
 package com.tina.app.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -109,7 +111,14 @@ fun Shell(
             }
         },
     ) {
-        when (selectedTab) {
+        val motion = rememberAppMotion()
+        AnimatedContent(
+            targetState = selectedTab,
+            modifier = Modifier.fillMaxSize(),
+            // tab order is the nav bar order, so the content moves the way your thumb did
+            transitionSpec = { motion.lateral(targetState.ordinal > initialState.ordinal) },
+        ) { tab ->
+        when (tab) {
             TinaTab.CAPTURE -> CaptureScreen(
                 onOpenSettings = onOpenSettings,
                 onOpenItem = onOpenItem,
@@ -132,6 +141,7 @@ fun Shell(
             )
             TinaTab.NOTES -> NotesScreen(onOpenSettings = onOpenSettings, onOpenNote = onOpenNote)
             TinaTab.ASK -> com.tina.app.ask.AskScreen()
+        }
         }
     }
 }
