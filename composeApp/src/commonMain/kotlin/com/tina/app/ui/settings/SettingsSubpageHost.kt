@@ -93,6 +93,9 @@ fun SettingsSubpageHost(
             title = stringResource(Res.string.whats_new_title),
             onBack = onBack,
             entries = listOf(
+                "1.3 — Settings, rebuilt" to
+                    "Grouped and searchable settings, Trash with restore, tag manager, " +
+                        "daily summaries, app lock, auto-backup.",
                 "1.2 — Ask your app anything" to
                     "Chat with your data, optional write access, saved conversations, browsable tags.",
                 "1.1 — AI parsing" to
