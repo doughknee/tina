@@ -19,6 +19,8 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.isoDayNumber
+import kotlinx.datetime.plus
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.add
@@ -71,6 +73,11 @@ fun aiJsonToParsedCapture(text: String, fallbackTitle: String): ParsedCapture? {
     )
 }
 
+private fun nextWeekdayAfter(from: LocalDate, target: kotlinx.datetime.DayOfWeek): LocalDate {
+    val delta = (target.isoDayNumber - from.dayOfWeek.isoDayNumber).let { if (it <= 0) it + 7 else it }
+    return from.plus(delta, kotlinx.datetime.DateTimeUnit.DAY)
+}
+
 fun buildParsePrompt(raw: String, now: LocalDateTime, firstDayOfWeek: DayOfWeek): String = """
 You convert one captured line of text into structured JSON for a personal task/calendar/notes app.
 Today is ${now.date} (${now.date.dayOfWeek}), current time ${now.time}. The week starts on $firstDayOfWeek.
@@ -85,9 +92,36 @@ Rules: a concrete clock time means EVENT; a date without a time means TASK; no s
 with null date; multi-sentence prose means NOTE (body = full text); keep INBOX only if genuinely
 undecidable. "title" is the text with all parsed tokens removed, cleaned up. Resolve relative dates
 against today. "!" means MEDIUM, "!!" means HIGH. "#word" entries become tags.
+Weekday convention (strict): a bare weekday name means its next occurrence after today, never today;
+"next <weekday>" means one week after that. Resolved against today: "friday" is
+${nextWeekdayAfter(now.date, DayOfWeek.FRIDAY)}, "next friday" is
+${nextWeekdayAfter(now.date, DayOfWeek.FRIDAY).plus(7, kotlinx.datetime.DateTimeUnit.DAY)}.
 
 Text: ${json.encodeToString(kotlinx.serialization.serializer<String>(), raw)}
 """.trimIndent()
+
+/**
+ * The deterministic parser is authoritative for everything it actually found —
+ * its tokens have defined app semantics ("next friday" = bare friday + 7).
+ * The AI only fills the gaps: fuzzy times, implied types, cleaned titles.
+ */
+fun mergeParses(local: ParsedCapture, ai: ParsedCapture): ParsedCapture {
+    val merged = ai.copy(
+        date = local.date ?: ai.date,
+        time = local.time ?: ai.time,
+        durationMinutes = local.durationMinutes ?: ai.durationMinutes,
+        rrule = local.rrule ?: ai.rrule,
+        priority = if (local.priority != Priority.NONE) local.priority else ai.priority,
+        tags = local.tags.ifEmpty { ai.tags },
+    )
+    val type = when {
+        ai.type == ItemType.NOTE -> ItemType.NOTE
+        merged.rrule != null || merged.time != null -> ItemType.EVENT
+        merged.date != null -> ItemType.TASK
+        else -> ai.type
+    }
+    return merged.copy(type = type)
+}
 
 class AiCaptureParser(
     private val http: HttpClient,

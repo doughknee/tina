@@ -38,7 +38,9 @@ class CaptureRefiner(
             val tz = TimeZone.currentSystemDefault()
             // anchor "now" at capture time so defaults (next round hour) stay stable
             val capturedAt = Instant.fromEpochMilliseconds(original.createdAt).toLocalDateTime(tz)
-            val parsed = aiParser.refine(raw, capturedAt, settings.firstDayOfWeek) ?: return@launch
+            val aiParsed = aiParser.refine(raw, capturedAt, settings.firstDayOfWeek) ?: return@launch
+            val localParsed = com.tina.app.capture.parseCapture(raw, capturedAt, settings.firstDayOfWeek)
+            val parsed = mergeParses(localParsed, aiParsed)
             val candidate = itemFromCapture(parsed, capturedAt, tz, settings.defaultReminderMinutes).copy(
                 id = original.id,
                 createdAt = original.createdAt,

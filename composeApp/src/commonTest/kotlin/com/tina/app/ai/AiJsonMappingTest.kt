@@ -46,4 +46,47 @@ class AiJsonMappingTest {
     @Test fun blankTitleFallsBack() {
         assertEquals("raw text", aiJsonToParsedCapture("""{"title":"","type":"TASK"}""", "raw text")?.title)
     }
+
+    // --- merge policy: deterministic parser wins where it found something ---
+
+    @Test fun localDateBeatsAiDate() {
+        val local = com.tina.app.capture.ParsedCapture("dinner", ItemType.TASK, date = LocalDate(2026, 9, 11))
+        val ai = com.tina.app.capture.ParsedCapture(
+            "dinner with mom", ItemType.EVENT, date = LocalDate(2026, 9, 4), time = LocalTime(19, 0),
+        )
+        val merged = mergeParses(local, ai)
+        assertEquals(LocalDate(2026, 9, 11), merged.date)
+        assertEquals(LocalTime(19, 0), merged.time)
+        assertEquals("dinner with mom", merged.title)
+        assertEquals(ItemType.EVENT, merged.type)
+    }
+
+    @Test fun aiFillsWhatLocalMissed() {
+        val local = com.tina.app.capture.ParsedCapture("thing", ItemType.TASK)
+        val ai = com.tina.app.capture.ParsedCapture(
+            "thing", ItemType.EVENT, date = LocalDate(2026, 9, 5), time = LocalTime(10, 0),
+        )
+        val merged = mergeParses(local, ai)
+        assertEquals(LocalDate(2026, 9, 5), merged.date)
+        assertEquals(LocalTime(10, 0), merged.time)
+        assertEquals(ItemType.EVENT, merged.type)
+    }
+
+    @Test fun aiNoteStaysNote() {
+        val local = com.tina.app.capture.ParsedCapture("x", ItemType.TASK, date = LocalDate(2026, 9, 5))
+        val ai = com.tina.app.capture.ParsedCapture("x", ItemType.NOTE, body = "long text")
+        assertEquals(ItemType.NOTE, mergeParses(local, ai).type)
+    }
+
+    @Test fun localTagsAndPriorityWin() {
+        val local = com.tina.app.capture.ParsedCapture(
+            "x", ItemType.TASK, priority = Priority.HIGH, tags = listOf("work"),
+        )
+        val ai = com.tina.app.capture.ParsedCapture(
+            "x", ItemType.TASK, priority = Priority.LOW, tags = listOf("invented"),
+        )
+        val merged = mergeParses(local, ai)
+        assertEquals(Priority.HIGH, merged.priority)
+        assertEquals(listOf("work"), merged.tags)
+    }
 }
