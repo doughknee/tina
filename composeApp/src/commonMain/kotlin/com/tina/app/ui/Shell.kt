@@ -145,6 +145,12 @@ fun Shell(
     val suggestionsOpen = !askOpen && (captureFocused || hasDraft)
     var discardPrompt by remember { mutableStateOf(false) }
 
+    // closing Ask also drops focus: a focused field in capture mode would raise the capture sheet
+    fun closeAsk() {
+        askOpen = false
+        focusManager.clearFocus()
+    }
+
     // dismissing with a draft asks first; with nothing typed it just folds
     // reads the view model at call time: this reference gets memoised across recompositions,
     // so a captured `hasDraft` went stale and drags kept seeing an empty field
@@ -188,7 +194,7 @@ fun Shell(
         }
     }
 
-    BackHandler(enabled = askOpen) { askOpen = false }
+    BackHandler(enabled = askOpen) { closeAsk() }
     // the keyboard takes the first back itself; the next one, with a draft still up, asks
     BackHandler(enabled = !askOpen && hasDraft && !captureFocused) { discardPrompt = true }
 
@@ -309,7 +315,7 @@ fun Shell(
                 // Ask: a sheet over the page, with the bar still visible under it in ask mode
                 ShellSheet(
                     visible = askOpen,
-                    onDismiss = { askOpen = false },
+                    onDismiss = ::closeAsk,
                     modifier = Modifier.align(Alignment.BottomCenter).fillMaxHeight(0.72f),
                 ) {
                     AskSheet(viewModel = askViewModel, snackbarHostState = snackbarHostState)
