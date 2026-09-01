@@ -164,15 +164,11 @@ fun CaptureBar(
     val refinedText = stringResource(Res.string.ai_refined)
 
     // a half-typed capture survives a detour into ask mode: the two modes keep separate text
-    var askInput by rememberSaveable { mutableStateOf("") }
+    var askField by remember { mutableStateOf(TextFieldValue()) }
+    val askInput = askField.text
     var focused by remember { mutableStateOf(false) }
     val text = if (askMode) askInput else viewModel.text
-    // a plain String field keeps its cursor where it was, so a prefill from a starter chip or
-    // a calendar long-press left the caret at index 0 and typing landed in front of the token
-    var field by remember { mutableStateOf(TextFieldValue()) }
-    LaunchedEffect(text) {
-        if (field.text != text) field = TextFieldValue(text, TextRange(text.length))
-    }
+    val field = if (askMode) askField else viewModel.fieldValue
 
     // "Keyboard on open": the only automatic focus; widgets and shortcuts go through CaptureFocus
     LaunchedEffect(Unit) {
@@ -200,7 +196,7 @@ fun CaptureBar(
         if (askMode) {
             val question = askInput.trim()
             if (question.isEmpty() || askBusy) return
-            askInput = ""
+            askField = TextFieldValue()
             onAskSend(question)
             return
         }
@@ -258,10 +254,7 @@ fun CaptureBar(
                 )
                 BasicTextField(
                     value = field,
-                    onValueChange = {
-                        field = it
-                        if (askMode) askInput = it.text else viewModel.onTextChange(it.text)
-                    },
+                    onValueChange = { if (askMode) askField = it else viewModel.onFieldChange(it) },
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 12.dp, vertical = 12.dp)

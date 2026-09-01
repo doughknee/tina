@@ -3,6 +3,8 @@ package com.tina.app.capture
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tina.app.data.ItemRepository
@@ -59,8 +61,14 @@ class CaptureViewModel(
             Starters(titles, tags)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, Starters())
 
-    var text by mutableStateOf("")
+    /**
+     * The field's whole state, selection included, so a programmatic replace (starter chip,
+     * calendar long-press) can put the caret at the end. One owner: mirroring this into a
+     * second state in the bar raced fast typing and dropped characters.
+     */
+    var fieldValue by mutableStateOf(TextFieldValue())
         private set
+    val text: String get() = fieldValue.text
     var removedKinds by mutableStateOf(emptySet<ChipKind>())
         private set
     var removedTags by mutableStateOf(emptySet<String>())
@@ -93,14 +101,17 @@ class CaptureViewModel(
         return p
     }
 
+    fun onFieldChange(value: TextFieldValue) {
+        fieldValue = value
+    }
+
+    /** Replace the text and park the caret at the end (speech, starters, calendar). */
     fun onTextChange(value: String) {
-        text = value
+        fieldValue = TextFieldValue(value, TextRange(value.length))
     }
 
     /** Seed the field (e.g. from a calendar long-press) without disturbing other state. */
-    fun prefill(value: String) {
-        text = value
-    }
+    fun prefill(value: String) = onTextChange(value)
 
     fun removeChip(kind: ChipKind) {
         removedKinds = removedKinds + kind
@@ -128,7 +139,7 @@ class CaptureViewModel(
             lastSavedId?.let { id ->
                 refiner.refineInBackground(id, raw) { original, _ -> refinedEvents.tryEmit(original) }
             }
-            text = ""
+            fieldValue = TextFieldValue()
             removedKinds = emptySet()
             removedTags = emptySet()
             typeOverride = null
