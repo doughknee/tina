@@ -148,6 +148,14 @@ class CaptureViewModel(
         }
     }
 
+    /** Throw the draft away: text, removed chips, type override. */
+    fun discard() {
+        fieldValue = TextFieldValue()
+        removedKinds = emptySet()
+        removedTags = emptySet()
+        typeOverride = null
+    }
+
     fun undoLastSave() {
         val id = lastSavedId ?: return
         lastSavedId = null

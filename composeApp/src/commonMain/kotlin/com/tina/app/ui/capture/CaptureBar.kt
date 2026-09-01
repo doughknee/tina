@@ -218,15 +218,6 @@ fun CaptureBar(
     val micVisible = !askMode && speech.available && settings.voiceCapture
 
     Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
-        // while focused the sheet shows these; inline is the fallback once the keyboard is gone
-        AnimatedVisibility(
-            visible = !askMode && !focused && viewModel.text.isNotBlank(),
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically(),
-        ) {
-            CaptureChips(viewModel)
-        }
-
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             shape = RoundedCornerShape(26.dp),

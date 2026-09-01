@@ -170,6 +170,9 @@
     <string name="capture_voice">Voice capture</string>
     <string name="capture_try">Try</string>
     <string name="capture_start">Start with</string>
+    <string name="draft_discard_title">Discard this draft?</string>
+    <string name="draft_discard">Discard</string>
+    <string name="draft_keep">Keep editing</string>
     <string name="starter_today">Today</string>
     <string name="starter_tomorrow">Tomorrow</string>
     <string name="starter_next_week">Next week</string>

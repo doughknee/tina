@@ -42,7 +42,13 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.style.TextOverflow
+import com.tina.app.resources.draft_discard
+import com.tina.app.resources.draft_discard_title
+import com.tina.app.resources.draft_keep
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -131,8 +137,16 @@ fun Shell(
     val captureFocus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
-    // the capture sheet rises while the field has focus: starters when empty, parse chips while typing
-    val suggestionsOpen = !askOpen && captureFocused
+    // the capture sheet rises while the field has focus and stays while there is a draft:
+    // starters when empty, parse chips while typing, and it survives the keyboard going away
+    val hasDraft = captureViewModel.text.isNotBlank()
+    val suggestionsOpen = !askOpen && (captureFocused || hasDraft)
+    var discardPrompt by remember { mutableStateOf(false) }
+
+    // dismissing with a draft asks first; with nothing typed it just folds
+    fun dismissCaptureSheet() {
+        if (hasDraft) discardPrompt = true else focusManager.clearFocus()
+    }
 
     fun showTab(tab: TinaTab) {
         selectedName = tab.name
@@ -171,6 +185,29 @@ fun Shell(
     }
 
     BackHandler(enabled = askOpen) { askOpen = false }
+    // the keyboard takes the first back itself; the next one, with a draft still up, asks
+    BackHandler(enabled = !askOpen && hasDraft && !captureFocused) { discardPrompt = true }
+
+    if (discardPrompt) {
+        AlertDialog(
+            onDismissRequest = { discardPrompt = false },
+            title = { Text(stringResource(Res.string.draft_discard_title)) },
+            text = { Text(captureViewModel.text, maxLines = 3, overflow = TextOverflow.Ellipsis) },
+            confirmButton = {
+                TextButton(onClick = {
+                    discardPrompt = false
+                    captureViewModel.discard()
+                    focusManager.clearFocus()
+                }) { Text(stringResource(Res.string.draft_discard)) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    discardPrompt = false
+                    CaptureFocus.request()
+                }) { Text(stringResource(Res.string.draft_keep)) }
+            },
+        )
+    }
 
     NavigationSuiteScaffold(
         // the whole shell (bar and nav included) rides above the keyboard
@@ -249,7 +286,7 @@ fun Shell(
 
                 ShellSheet(
                     visible = suggestionsOpen,
-                    onDismiss = { focusManager.clearFocus() },
+                    onDismiss = ::dismissCaptureSheet,
                     modifier = Modifier.align(Alignment.BottomCenter),
                 ) {
                     AnimatedContent(
