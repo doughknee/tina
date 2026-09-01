@@ -90,6 +90,9 @@ fun SettingsSubpageHost(
             title = stringResource(Res.string.whats_new_title),
             onBack = onBack,
             entries = listOf(
+                "1.4 — Three places, four zoom levels" to
+                    "Agenda, Library and Ask; capture from anywhere; Day / Week / Month / All with " +
+                        "repeats rolled up and completed per day.",
                 "1.3.1 — Capture, out of your way" to
                     "The keyboard no longer opens with the app, the composer moved to the " +
                         "bottom, and pages slide instead of zooming.",
