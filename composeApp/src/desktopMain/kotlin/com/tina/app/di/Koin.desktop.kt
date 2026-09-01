@@ -2,7 +2,7 @@ package com.tina.app.di
 
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.tina.app.db.AppDatabase
+import com.tina.app.data.AppDatabase
 import com.tina.app.notifications.Notifier
 import com.tina.app.notifications.PlatformNotifier
 import java.io.File

@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import com.tina.app.db.NoteDao
+import com.tina.app.data.ItemRepository
 import org.koin.compose.koinInject
 
 data object HomeRoute
@@ -33,11 +33,11 @@ fun App() {
 }
 
 @Composable
-private fun HomeScreen(dao: NoteDao = koinInject()) {
-    val notes by dao.all().collectAsState(initial = emptyList())
+private fun HomeScreen(repository: ItemRepository = koinInject()) {
+    val inboxCount by repository.observeInboxCount().collectAsState(initial = 0)
     Scaffold { padding ->
         Text(
-            text = "tina — ${notes.size} notes",
+            text = "tina — $inboxCount in inbox",
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
         )
     }

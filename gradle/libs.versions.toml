@@ -2,6 +2,7 @@
 agp = "9.1.1"
 kotlin = "2.4.10"
 composeMultiplatform = "1.12.0"
+material3Cmp = "1.9.0"
 ksp = "2.3.11"
 room = "2.8.4"
 sqlite = "2.7.0"
@@ -13,8 +14,13 @@ work = "2.11.2"
 calendar = "2.10.1"
 richeditor = "1.1.0"
 coroutines = "1.11.0"
+kotlinxDatetime = "0.8.0"
 
 [libraries]
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3Cmp" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
@@ -28,6 +34,7 @@ material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adapti
 calendar-compose = { module = "com.kizitonwose.calendar:compose-multiplatform", version.ref = "calendar" }
 richeditor-compose = { module = "com.mohamedrejeb.richeditor:richeditor-compose", version.ref = "richeditor" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

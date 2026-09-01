@@ -13,15 +13,19 @@ plugins {
 kotlin {
     jvmToolchain(21)
 
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     androidTarget()
     jvm("desktop")
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
             implementation(libs.navigation3.ui)
             implementation(libs.material3.adaptive)
             implementation(libs.androidx.room.runtime)
@@ -30,6 +34,10 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.calendar.compose)
             implementation(libs.richeditor.compose)
+            implementation(libs.kotlinx.datetime)
+        }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
