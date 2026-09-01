@@ -86,6 +86,10 @@ class SettingsViewModel(
         viewModelScope.launch { repository.setAiInstructions(text) }
     }
 
+    fun setAiAskEnabled(enabled: Boolean) {
+        viewModelScope.launch { repository.setAiAskEnabled(enabled) }
+    }
+
     /** Callback receives null on success, otherwise a human-readable failure reason. */
     fun testAi(onResult: (String?) -> Unit) {
         viewModelScope.launch {

@@ -1,0 +1,192 @@
+package com.tina.app.ai
+
+import com.tina.app.data.AiProvider
+import com.tina.app.data.Item
+import com.tina.app.data.ItemType
+import com.tina.app.data.Priority
+import com.tina.app.data.Settings
+import com.tina.app.data.SettingsRepository
+import io.ktor.client.HttpClient
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import kotlin.time.Instant
+import kotlinx.coroutines.flow.first
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+
+private val chatJson = Json { ignoreUnknownKeys = true; isLenient = true }
+
+enum class ChatRole { USER, ASSISTANT }
+
+data class ChatMessage(val role: ChatRole, val content: String)
+
+enum class ReasoningLevel { QUICK, BALANCED, THOROUGH }
+
+/** Compact one-item-per-line dump the model can scan; newest first, capped. */
+fun buildAskContext(items: List<Item>, tz: TimeZone, maxChars: Int = 80_000): String {
+    val sorted = items.sortedByDescending { it.updatedAt }
+    val sb = StringBuilder()
+    for (item in sorted) {
+        val line = buildString {
+            append("- [").append(item.type.name)
+            if (item.completed) append(" done")
+            append("] ").append(item.title)
+            item.startAt?.let {
+                val s = Instant.fromEpochMilliseconds(it).toLocalDateTime(tz)
+                append(" @").append(s.date)
+                if (!item.allDay) append(' ').append(s.time)
+            }
+            item.dueLocalDate?.let { append(" due:").append(it) }
+            item.dueTime?.let { append(' ').append(LocalTime(it / 60, it % 60)) }
+            item.recurrence?.let { append(" repeats:").append(it) }
+            if (item.priority != Priority.NONE) append(" priority:").append(item.priority.name)
+            if (item.tags.isNotEmpty()) append(' ').append(item.tags.joinToString(" ") { "#$it" })
+            if (item.type == ItemType.NOTE) {
+                item.body?.let { body ->
+                    val preview = com.tina.app.notes.htmlPreview(body).take(300)
+                    if (preview.isNotBlank()) append(" | ").append(preview)
+                }
+            }
+        }
+        if (sb.length + line.length > maxChars) break
+        sb.appendLine(line)
+    }
+    return sb.toString()
+}
+
+fun buildAskSystemPrompt(
+    context: String,
+    now: LocalDateTime,
+    reasoning: ReasoningLevel,
+): String = """
+You are the assistant inside "tina", the user's personal capture/tasks/calendar/notes app.
+Today is ${now.date} (${now.date.dayOfWeek}), current time ${now.time}.
+Below is the user's complete database, one item per line, newest first. Dates are ISO.
+Answer questions about it accurately — check dates carefully against today. Items marked
+"done" are finished: never count them as pending or overdue. Answer in natural language;
+never echo the raw line format (write "due Aug 31", not "due:2026-08-31"). If the data
+doesn't contain the answer, say so plainly. You are read-only: if asked to change or add
+something, explain that capture and editing happen in the app itself.
+${
+    when (reasoning) {
+        ReasoningLevel.QUICK -> "Answer in one or two short sentences."
+        ReasoningLevel.BALANCED -> "Be concise but complete."
+        ReasoningLevel.THOROUGH ->
+            "Reason step by step through the relevant items before answering, then give the answer."
+    }
+}
+
+DATABASE:
+$context
+""".trimIndent()
+
+class AiChat(
+    private val http: HttpClient,
+    private val settingsRepository: SettingsRepository,
+) {
+    /** Null on failure; error text is intentionally not surfaced beyond a retry affordance. */
+    suspend fun chat(
+        system: String,
+        messages: List<ChatMessage>,
+        modelOverride: String? = null,
+    ): String? {
+        val settings = settingsRepository.settings.first()
+        if (settings.aiProvider == AiProvider.OFF) return null
+        val model = modelOverride ?: settings.aiModel
+        if (model.isBlank()) return null
+        return runCatching {
+            when (settings.aiProvider) {
+                AiProvider.ANTHROPIC -> anthropic(settings, model, system, messages)
+                else -> openAi(settings, model, system, messages)
+            }
+        }.getOrNull()
+    }
+
+    private suspend fun openAi(
+        settings: Settings,
+        model: String,
+        system: String,
+        messages: List<ChatMessage>,
+    ): String? {
+        val baseUrl = settings.aiBaseUrl.ifBlank {
+            when (settings.aiProvider) {
+                AiProvider.OLLAMA -> OLLAMA_DEFAULT_BASE_URL
+                AiProvider.OPENAI -> OPENAI_DEFAULT_BASE_URL
+                else -> return null
+            }
+        }.trimEnd('/')
+        val body = buildJsonObject {
+            put("model", model)
+            put("messages", buildJsonArray {
+                add(buildJsonObject { put("role", "system"); put("content", system) })
+                messages.forEach { m ->
+                    add(buildJsonObject {
+                        put("role", if (m.role == ChatRole.USER) "user" else "assistant")
+                        put("content", m.content)
+                    })
+                }
+            })
+        }
+        val response = http.post("$baseUrl/chat/completions") {
+            contentType(ContentType.Application.Json)
+            val key = settings.aiApiKey.trim()
+            if (key.isNotEmpty()) header("Authorization", "Bearer $key")
+            setBody(body.toString())
+        }
+        if (!response.status.isSuccess()) return null
+        return chatJson.parseToJsonElement(response.bodyAsText())
+            .jsonObject["choices"]?.jsonArray?.firstOrNull()
+            ?.jsonObject?.get("message")?.jsonObject?.get("content")?.jsonPrimitive?.content
+    }
+
+    private suspend fun anthropic(
+        settings: Settings,
+        model: String,
+        system: String,
+        messages: List<ChatMessage>,
+    ): String? {
+        val baseUrl = settings.aiBaseUrl.ifBlank { ANTHROPIC_DEFAULT_BASE_URL }.trimEnd('/')
+        val body = buildJsonObject {
+            put("model", model)
+            put("max_tokens", 2048)
+            put("system", system)
+            put("messages", buildJsonArray {
+                messages.forEach { m ->
+                    add(buildJsonObject {
+                        put("role", if (m.role == ChatRole.USER) "user" else "assistant")
+                        put("content", m.content)
+                    })
+                }
+            })
+        }
+        val response = http.post("$baseUrl/v1/messages") {
+            contentType(ContentType.Application.Json)
+            header("x-api-key", settings.aiApiKey.trim())
+            header("anthropic-version", "2023-06-01")
+            settings.aiWorkspaceId.trim().takeIf { it.isNotEmpty() }?.let {
+                header("anthropic-workspace-id", it)
+            }
+            setBody(body.toString())
+        }
+        if (!response.status.isSuccess()) return null
+        val payload = chatJson.parseToJsonElement(response.bodyAsText()).jsonObject
+        return payload["content"]?.jsonArray
+            ?.firstOrNull { it.jsonObject["type"]?.jsonPrimitive?.content == "text" }
+            ?.jsonObject?.get("text")?.jsonPrimitive?.content
+    }
+}

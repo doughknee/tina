@@ -1,7 +1,9 @@
 package com.tina.app.ui
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.automirrored.outlined.Notes
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
@@ -29,6 +31,7 @@ import com.tina.app.resources.Res
 import com.tina.app.today.TodayScreen
 import kotlinx.datetime.number
 import org.koin.compose.viewmodel.koinViewModel
+import com.tina.app.resources.tab_ask
 import com.tina.app.resources.tab_calendar
 import com.tina.app.resources.tab_capture
 import com.tina.app.resources.tab_notes
@@ -42,6 +45,7 @@ enum class TinaTab(val icon: ImageVector, val outlinedIcon: ImageVector, val lab
     TODAY(Icons.Filled.Today, Icons.Outlined.Today, Res.string.tab_today),
     CALENDAR(Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, Res.string.tab_calendar),
     NOTES(Icons.AutoMirrored.Filled.Notes, Icons.AutoMirrored.Outlined.Notes, Res.string.tab_notes),
+    ASK(Icons.AutoMirrored.Filled.Chat, Icons.AutoMirrored.Outlined.Chat, Res.string.tab_ask),
 }
 
 @Composable
@@ -52,21 +56,26 @@ fun Shell(
     onOpenNote: (Long) -> Unit,
     onOpenSearch: () -> Unit,
 ) {
-    var selectedIndex by rememberSaveable { mutableStateOf(0) }
-    val selectedTab = TinaTab.entries[selectedIndex]
+    val settings = com.tina.app.LocalSettings.current
+    val askEnabled = settings.aiAskEnabled &&
+        settings.aiProvider != com.tina.app.data.AiProvider.OFF
+    val tabs = if (askEnabled) TinaTab.entries.toList() else TinaTab.entries.filter { it != TinaTab.ASK }
+    // saved by name, not index, so toggling the Ask tab never shifts the selection
+    var selectedName by rememberSaveable { mutableStateOf(TinaTab.CAPTURE.name) }
+    val selectedTab = tabs.firstOrNull { it.name == selectedName } ?: TinaTab.CAPTURE
     val captureViewModel: CaptureViewModel = koinViewModel()
     val notesViewModel: NotesViewModel = koinViewModel()
 
     LaunchedEffect(Unit) {
         KeyBus.events.collect { command ->
             when (command) {
-                KeyCommand.FOCUS_CAPTURE -> selectedIndex = 0
+                KeyCommand.FOCUS_CAPTURE -> selectedName = TinaTab.CAPTURE.name
                 KeyCommand.SEARCH -> onOpenSearch()
                 KeyCommand.NEW_ITEM ->
-                    if (TinaTab.entries[selectedIndex] == TinaTab.NOTES) {
+                    if (selectedName == TinaTab.NOTES.name) {
                         notesViewModel.createNote(onOpenNote)
                     } else {
-                        selectedIndex = 0
+                        selectedName = TinaTab.CAPTURE.name
                     }
                 else -> Unit
             }
@@ -75,13 +84,13 @@ fun Shell(
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            TinaTab.entries.forEachIndexed { index, tab ->
+            tabs.forEach { tab ->
                 item(
-                    selected = selectedIndex == index,
-                    onClick = { selectedIndex = index },
+                    selected = selectedTab == tab,
+                    onClick = { selectedName = tab.name },
                     icon = {
                         Icon(
-                            if (selectedIndex == index) tab.icon else tab.outlinedIcon,
+                            if (selectedTab == tab) tab.icon else tab.outlinedIcon,
                             contentDescription = null,
                         )
                     },
@@ -108,10 +117,11 @@ fun Shell(
                 onCaptureForDate = { date ->
                     // Prefill with a parser-friendly date token so capture stays one flow.
                     captureViewModel.prefill("${date.month.number}/${date.day} ")
-                    selectedIndex = 0
+                    selectedName = TinaTab.CAPTURE.name
                 },
             )
             TinaTab.NOTES -> NotesScreen(onOpenSettings = onOpenSettings, onOpenNote = onOpenNote)
+            TinaTab.ASK -> com.tina.app.ask.AskScreen()
         }
     }
 }

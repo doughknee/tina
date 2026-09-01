@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import com.tina.app.data.AiProvider
 import com.tina.app.data.AiRefineMode
 import com.tina.app.resources.ai_instructions_hint
+import com.tina.app.resources.settings_ask
+import com.tina.app.resources.settings_ask_desc
 import com.tina.app.resources.refine_auto
 import com.tina.app.resources.refine_manual
 import com.tina.app.resources.refine_suggest
@@ -289,6 +291,29 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                                 },
                             )
                         }
+                    }
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .toggleable(
+                                value = settings.aiAskEnabled,
+                                role = Role.Switch,
+                                onValueChange = viewModel::setAiAskEnabled,
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                stringResource(Res.string.settings_ask),
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                            Text(
+                                stringResource(Res.string.settings_ask_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(checked = settings.aiAskEnabled, onCheckedChange = null)
                     }
                     AiConfigFields(settings, viewModel, snackbarHostState)
                     var instructions by remember(settings.aiProvider) {

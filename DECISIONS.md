@@ -1,5 +1,22 @@
 # Decisions
 
+## Ask page (REL-142, Sep 2026)
+
+- Architecture: context stuffing, not MCP/tool-calling. The whole database is
+  serialized compactly (one line per item, newest first, 80k-char cap with
+  oldest dropped) into the system prompt per question. Rationale: the app owns
+  the DB — a protocol layer to talk to itself adds nothing; works identically
+  on Ollama/Claude/OpenAI including models with weak tool-calling. MCP remains
+  the right shape later for exposing tina to EXTERNAL hosts (Claude Desktop).
+- Reasoning level (Quick/Balanced/Thorough) is prompt-driven, not an API
+  parameter — provider-agnostic and immune to API drift.
+- Chat-scoped model picker enumerates models only for Anthropic (fixed list);
+  other providers use the settings model (Ollama model listing via /api/tags is
+  the obvious upgrade).
+- Chat history is session-only (ViewModel memory), not persisted.
+- Read-only by design: the system prompt says so; giving chat write access to
+  the DB is a separate, deliberate decision for another day.
+
 ## Tags + settings backup (REL-140/141, Sep 2026)
 
 - Backups now carry a `settings` block (nullable — v1.0 backups import fine).

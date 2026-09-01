@@ -33,6 +33,7 @@ data class Settings(
     val aiWorkspaceId: String = "",
     val aiRefineMode: AiRefineMode = AiRefineMode.AUTO,
     val aiInstructions: String = "",
+    val aiAskEnabled: Boolean = false,
 )
 
 fun createSettingsStore(producePath: () -> String): DataStore<Preferences> =
@@ -50,6 +51,7 @@ private val KEY_AI_API_KEY = stringPreferencesKey("aiApiKey")
 private val KEY_AI_WORKSPACE_ID = stringPreferencesKey("aiWorkspaceId")
 private val KEY_AI_REFINE_MODE = stringPreferencesKey("aiRefineMode")
 private val KEY_AI_INSTRUCTIONS = stringPreferencesKey("aiInstructions")
+private val KEY_AI_ASK_ENABLED = booleanPreferencesKey("aiAskEnabled")
 
 class SettingsRepository(private val store: DataStore<Preferences>) {
     val settings: Flow<Settings> = store.data.map { p ->
@@ -71,6 +73,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
                 AiRefineMode.entries.firstOrNull { it.name == value }
             } ?: AiRefineMode.AUTO,
             aiInstructions = p[KEY_AI_INSTRUCTIONS] ?: "",
+            aiAskEnabled = p[KEY_AI_ASK_ENABLED] ?: false,
         )
     }
 
@@ -95,6 +98,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     suspend fun setAiWorkspaceId(id: String) = store.edit { it[KEY_AI_WORKSPACE_ID] = id.trim() }
     suspend fun setAiRefineMode(mode: AiRefineMode) = store.edit { it[KEY_AI_REFINE_MODE] = mode.name }
     suspend fun setAiInstructions(text: String) = store.edit { it[KEY_AI_INSTRUCTIONS] = text }
+    suspend fun setAiAskEnabled(enabled: Boolean) = store.edit { it[KEY_AI_ASK_ENABLED] = enabled }
 
     /** One atomic write restoring a backed-up settings block. */
     suspend fun applyBackup(s: BackupSettings) = store.edit { p ->
@@ -110,5 +114,6 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
         p[KEY_AI_WORKSPACE_ID] = s.aiWorkspaceId
         p[KEY_AI_REFINE_MODE] = s.aiRefineMode
         p[KEY_AI_INSTRUCTIONS] = s.aiInstructions
+        p[KEY_AI_ASK_ENABLED] = s.aiAskEnabled
     }
 }
