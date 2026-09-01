@@ -1,5 +1,6 @@
 package com.tina.app.ui
 
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Notes
@@ -20,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.tina.app.calendar.CalendarScreen
 import com.tina.app.capture.CaptureScreen
@@ -83,6 +85,8 @@ fun Shell(
     }
 
     NavigationSuiteScaffold(
+        // the whole shell (nav bar included) rides above the keyboard
+        modifier = Modifier.imePadding(),
         navigationSuiteItems = {
             tabs.forEach { tab ->
                 item(

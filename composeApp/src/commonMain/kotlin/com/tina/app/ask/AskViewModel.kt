@@ -71,6 +71,10 @@ class AskViewModel(
         reasoning = level
     }
 
+    fun setWriteEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.setAiAskWriteEnabled(enabled) }
+    }
+
     fun send(text: String) {
         messages += ChatMessage(ChatRole.USER, text)
         ask()

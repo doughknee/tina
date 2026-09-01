@@ -1,13 +1,14 @@
 package com.tina.app.ask
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -19,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.DeleteSweep
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -67,6 +70,8 @@ import com.tina.app.resources.ask_sugg_3
 import com.tina.app.resources.ask_sugg_4
 import com.tina.app.resources.ask_applied
 import com.tina.app.resources.ask_thinking
+import com.tina.app.resources.ask_write_off
+import com.tina.app.resources.ask_write_on
 import com.tina.app.resources.capture_save
 import com.tina.app.resources.tab_ask
 import com.tina.app.resources.undo
@@ -149,7 +154,7 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
         },
         bottomBar = {
             Row(
-                Modifier.fillMaxWidth().imePadding().padding(horizontal = 12.dp, vertical = 8.dp),
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 TextField(
@@ -176,8 +181,12 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             Row(
-                Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 ReasoningLevel.entries.forEach { level ->
                     FilterChip(
@@ -196,6 +205,25 @@ fun AskScreen(viewModel: AskViewModel = koinViewModel()) {
                         },
                     )
                 }
+                val writeOn = settings.aiAskWriteEnabled
+                FilterChip(
+                    selected = writeOn,
+                    onClick = { viewModel.setWriteEnabled(!writeOn) },
+                    label = {
+                        Text(
+                            stringResource(
+                                if (writeOn) Res.string.ask_write_on else Res.string.ask_write_off,
+                            ),
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            if (writeOn) Icons.Outlined.Edit else Icons.Outlined.Lock,
+                            contentDescription = null,
+                            Modifier.size(16.dp),
+                        )
+                    },
+                )
             }
             if (viewModel.messages.isEmpty() && !viewModel.sending) {
                 AskEmptyState(onAsk = ::sendNow)

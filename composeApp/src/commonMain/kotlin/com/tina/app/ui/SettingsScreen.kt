@@ -51,8 +51,6 @@ import com.tina.app.data.AiRefineMode
 import com.tina.app.resources.ai_instructions_hint
 import com.tina.app.resources.settings_ask
 import com.tina.app.resources.settings_ask_desc
-import com.tina.app.resources.settings_ask_write
-import com.tina.app.resources.settings_ask_write_desc
 import com.tina.app.resources.refine_auto
 import com.tina.app.resources.refine_manual
 import com.tina.app.resources.refine_suggest
@@ -316,31 +314,6 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                             )
                         }
                         Switch(checked = settings.aiAskEnabled, onCheckedChange = null)
-                    }
-                    if (settings.aiAskEnabled) {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .toggleable(
-                                    value = settings.aiAskWriteEnabled,
-                                    role = Role.Switch,
-                                    onValueChange = viewModel::setAiAskWriteEnabled,
-                                ),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    stringResource(Res.string.settings_ask_write),
-                                    style = MaterialTheme.typography.titleSmall,
-                                )
-                                Text(
-                                    stringResource(Res.string.settings_ask_write_desc),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            Switch(checked = settings.aiAskWriteEnabled, onCheckedChange = null)
-                        }
                     }
                     AiConfigFields(settings, viewModel, snackbarHostState)
                     var instructions by remember(settings.aiProvider) {
