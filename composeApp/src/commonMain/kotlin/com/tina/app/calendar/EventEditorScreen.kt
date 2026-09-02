@@ -80,6 +80,7 @@ import com.tina.app.resources.back
 import com.tina.app.resources.cancel
 import com.tina.app.resources.color_default
 import com.tina.app.resources.delete
+import com.tina.app.resources.deleted
 import com.tina.app.resources.detail_notes
 import com.tina.app.resources.detail_reminder
 import com.tina.app.resources.event_all_day
@@ -159,7 +160,8 @@ fun EventEditorScreen(
                             Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_improve))
                         }
                     }
-                    IconButton(onClick = { viewModel.delete(onDeleted = onBack) }) {
+                    val deletedText = stringResource(Res.string.deleted)
+                    IconButton(onClick = { viewModel.delete(deletedText, onDeleted = onBack) }) {
                         Icon(Icons.Outlined.Delete, stringResource(Res.string.delete))
                     }
                 },

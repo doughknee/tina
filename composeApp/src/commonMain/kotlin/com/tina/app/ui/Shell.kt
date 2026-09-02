@@ -83,6 +83,7 @@ import com.tina.app.resources.draft_keep
 import com.tina.app.resources.tab_sort
 import com.tina.app.resources.tab_agenda
 import com.tina.app.resources.tab_notes
+import com.tina.app.resources.undo
 import com.tina.app.search.SearchSheet
 import com.tina.app.search.SearchViewModel
 import com.tina.app.ui.capture.CaptureBar
@@ -141,6 +142,14 @@ fun Shell(
     val searchViewModel: SearchViewModel = koinViewModel()
     val inboxCount by inboxViewModel.count.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoText = stringResource(Res.string.undo)
+    val undoWindow = rememberUndoWindow()
+    // deletes from the item and event pages land here, so the undo outlives the page
+    LaunchedEffect(Unit) {
+        PendingUndo.events.collect { request ->
+            if (snackbarHostState.showUndo(request.message, undoText, undoWindow)) request.undo()
+        }
+    }
     val captureFocus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboardShift = rememberKeyboardShift()

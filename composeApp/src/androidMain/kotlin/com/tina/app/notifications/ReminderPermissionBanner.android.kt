@@ -38,8 +38,8 @@ import com.tina.app.resources.reminders_banner_title
 import org.jetbrains.compose.resources.stringResource
 
 private fun hasNotificationPermission(context: Context): Boolean =
-    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-        PackageManager.PERMISSION_GRANTED
+    android.os.Build.VERSION.SDK_INT < 33 ||
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
 private fun canExactAlarm(context: Context): Boolean =
     context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()

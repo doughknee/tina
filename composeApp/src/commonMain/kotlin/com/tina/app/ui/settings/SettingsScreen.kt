@@ -675,12 +675,11 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.External(
                 id = "language",
-                enabled = false,
                 title = stringResource(Res.string.set_language),
                 supporting = stringResource(Res.string.set_language_sub),
                 keywords = listOf("locale", "translate"),
-                visible = Platform.isAndroid,
-                onClick = { },
+                visible = Platform.isAndroid && actions.supportsLanguageSettings,
+                onClick = actions::openLanguageSettings,
             ),
             SettingsRow.Switch(
                 id = "haptics",
@@ -757,13 +756,15 @@ private fun rememberSettingsSections(
         rows = listOf(
             SettingsRow.Switch(
                 id = "qsTile",
-                enabled = false,
                 title = stringResource(Res.string.set_qs_tile),
                 supporting = stringResource(Res.string.set_qs_tile_sub),
                 keywords = listOf("shade", "tile", "quick"),
-                visible = Platform.isAndroid,
+                visible = Platform.isAndroid && actions.supportsQuickTile,
                 checked = settings.quickSettingsTile,
-                onCheckedChange = viewModel::setQuickSettingsTile,
+                onCheckedChange = {
+                    viewModel.setQuickSettingsTile(it)
+                    actions.setQuickTileEnabled(it)
+                },
             ),
             SettingsRow.Switch(
                 id = "autoFocusCapture",
@@ -916,12 +917,11 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.External(
                 id = "sound",
-                enabled = false,
                 title = stringResource(Res.string.set_sound),
                 supporting = stringResource(Res.string.set_sound_sub),
                 keywords = listOf("vibrate", "channel", "ringtone"),
                 visible = Platform.isAndroid,
-                onClick = { },
+                onClick = actions::openNotificationSettings,
             ),
         ),
     )
@@ -1158,11 +1158,11 @@ private fun rememberSettingsSections(
             ),
             SettingsRow.External(
                 id = "diagnostics",
-                enabled = false,
                 title = stringResource(Res.string.set_diagnostics),
                 supporting = stringResource(Res.string.set_diagnostics_sub),
                 keywords = listOf("logs", "crash", "debug"),
-                onClick = { },
+                visible = actions.supportsDiagnostics,
+                onClick = actions::exportDiagnostics,
             ),
         ),
     )

@@ -23,6 +23,15 @@ object KeyBus {
  * the desktop focus shortcut. State, not an event, so a cold start can't miss it while
  * the UI is still composing; the shell drops ask mode and the capture bar clears it.
  */
+/** An undo raised by a page that is about to close; the shell shows it once it is back on top. */
+class UndoRequest(val message: String, val undo: suspend () -> Unit)
+
+object PendingUndo {
+    private val _events = kotlinx.coroutines.flow.MutableSharedFlow<UndoRequest>(extraBufferCapacity = 4)
+    val events: kotlinx.coroutines.flow.SharedFlow<UndoRequest> = _events
+    fun request(message: String, undo: suspend () -> Unit) { _events.tryEmit(UndoRequest(message, undo)) }
+}
+
 /** A notification tap asks the shell to open one item once it is composed. */
 object OpenItemRequests {
     private val _pending = MutableStateFlow<Long?>(null)

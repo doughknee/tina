@@ -50,9 +50,11 @@ class DetailViewModel(
         viewModelScope.launch { repository.update(updated) }
     }
 
-    fun delete(onDeleted: () -> Unit) {
+    fun delete(deletedMessage: String, onDeleted: () -> Unit) {
         viewModelScope.launch {
+            val item = repository.get(itemId)
             repository.delete(itemId)
+            if (item != null) com.tina.app.ui.PendingUndo.request(deletedMessage) { repository.restore(item) }
             onDeleted()
         }
     }

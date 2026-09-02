@@ -89,9 +89,11 @@ class EventEditorViewModel(
         return item.copy(endAt = if (newEnd <= start) start + 30 * 60_000L else newEnd)
     }
 
-    fun delete(onDeleted: () -> Unit) {
+    fun delete(deletedMessage: String, onDeleted: () -> Unit) {
         viewModelScope.launch {
+            val item = repository.get(itemId)
             repository.delete(itemId)
+            if (item != null) com.tina.app.ui.PendingUndo.request(deletedMessage) { repository.restore(item) }
             onDeleted()
         }
     }

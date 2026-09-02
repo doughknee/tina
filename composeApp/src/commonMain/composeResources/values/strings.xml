@@ -350,8 +350,8 @@
     <string name="ask_thinking">Thinking…</string>
     <string name="ask_error">Couldn’t reach the model</string>
     <string name="ask_retry">Retry</string>
-    <string name="ask_pending">The model wants to make %1$d changes. Apply them?</string>
-    <string name="ask_pending_deletes">The model wants to make %1$d changes, including %2$d deletions. Apply them?</string>
+    <string name="ask_pending">Apply %1$d proposed change(s)?</string>
+    <string name="ask_pending_deletes">Apply %1$d proposed change(s)? %2$d would delete items (recoverable from Trash).</string>
     <string name="ask_apply">Apply</string>
     <string name="ask_not_now">Not now</string>
     <string name="ask_clear">Clear chat</string>

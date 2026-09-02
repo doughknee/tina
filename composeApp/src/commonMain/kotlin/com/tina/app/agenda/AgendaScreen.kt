@@ -422,7 +422,12 @@ fun AgendaScreen(
                 }
             }
 
-            val ui = state ?: return@Column
+            val ui = state ?: run {
+                Box(Modifier.fillMaxWidth().padding(top = 48.dp), contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.LoadingIndicator()
+                }
+                return@Column
+            }
             com.tina.app.notifications.ReminderPermissionBanner(
                 Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )

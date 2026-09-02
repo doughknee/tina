@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -73,7 +74,7 @@ fun ColorSwatchRow(selected: Long?, onSelect: (Long?) -> Unit) {
                     Icon(
                         Icons.Outlined.Check,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = if ((preset?.let { Color(it).luminance() } ?: 0f) > 0.5f) Color.Black else Color.White,
                         modifier = Modifier.size(18.dp),
                     )
                 }

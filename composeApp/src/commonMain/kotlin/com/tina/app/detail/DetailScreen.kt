@@ -65,6 +65,7 @@ import com.tina.app.resources.ai_improve
 import com.tina.app.resources.back
 import com.tina.app.resources.cancel
 import com.tina.app.resources.delete
+import com.tina.app.resources.deleted
 import com.tina.app.resources.improve_applied
 import com.tina.app.resources.undo
 import com.tina.app.resources.detail_completed
@@ -136,7 +137,8 @@ fun DetailScreen(
                             Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_improve))
                         }
                     }
-                    IconButton(onClick = { viewModel.delete(onDeleted = onBack) }) {
+                    val deletedText = stringResource(Res.string.deleted)
+                    IconButton(onClick = { viewModel.delete(deletedText, onDeleted = onBack) }) {
                         Icon(Icons.Outlined.Delete, stringResource(Res.string.delete))
                     }
                 },
