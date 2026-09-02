@@ -32,7 +32,8 @@ val androidModule = module {
     }
     single<com.tina.app.data.SecretCipher> { com.tina.app.data.KeystoreSecretCipher() }
     single<Notifier> { PlatformNotifier(androidContext()) }
-    single<com.tina.app.pro.ProStore> {
+    // eager: the entitlement refreshes from Play at launch, not when Settings first opens
+    single<com.tina.app.pro.ProStore>(createdAtStart = true) {
         com.tina.app.pro.PlayProStore(androidContext().applicationContext as android.app.Application, get())
     }
     single<ReminderScheduler> { AndroidReminderScheduler(androidContext()) }
