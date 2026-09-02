@@ -113,9 +113,9 @@ dependencies {
 
 configurations.configureEach {
     resolutionStrategy {
-        // richeditor 1.1.0 pulls material3 1.11.0-alpha07, whose Android mapping is
-        // compiled against foundation 1.11.0-beta02 and crashes (AbstractMethodError in
-        // TextFieldDefaults) on foundation 1.12.0. Pin the stable CMP 1.12 pairing.
+        // one material3 for everything: richeditor 1.2.0 was built against this same alpha,
+        // which is compiled against foundation 1.12.0-beta01 (our 1.12.0 line), so the
+        // AbstractMethodError that the 1.11 alpha caused on foundation 1.12 cannot recur
         force("org.jetbrains.compose.material3:material3:${libs.versions.material3Cmp.get()}")
     }
 }

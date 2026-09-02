@@ -269,3 +269,9 @@ Running log of choices made without asking, newest last.
 - **A repeat's due date is its anchor, never a deadline**, so repeating tasks are excluded from Overdue.
 - **Part-of-day words need context.** "morning pages every day" captured as "pages" at 9 AM because `morning` was always a time. It now counts as a time only after a day word ("tomorrow morning", "in the evening", "friday afternoon") or at the end of the phrase ("dentist afternoon"); otherwise it stays in the title. `noon`/`midnight` are unconditional — nobody names a task "noon".
 - **Widgets and digests still see a repeating task on its anchor date only**; rolling them through `buildAgenda` remains the open follow-up.
+
+## material3 1.12.0-alpha03 (the expressive unlock)
+
+- **Upgraded from the 1.9.0 pin.** The pin existed because richeditor 1.1.0 pulled material3 1.11.0-alpha07, compiled against foundation 1.11.0-beta02, which threw `AbstractMethodError` on our foundation 1.12.0. richeditor 1.2.0 was built against material3 1.12.0-alpha03, and that alpha is compiled against foundation/ui 1.12.0-beta01 — the same minor line as the CMP 1.12.0 we run — so the mismatch that caused the crash cannot recur. Verified on the phone: Agenda, Settings (text fields), Library, Ask, and the rich note editor all render and type with zero source changes and no runtime errors.
+- **No stable material3 past 1.9.0 exists for CMP** (only 1.10/1.11/1.12 alphas), so an alpha is the price of expressive components. Accepted for a single-user app; the alternative is hand-copying tokens forever.
+- **What the alpha unlocks** (probed in the jar): `ButtonGroup`, `ToggleButton`, `LoadingIndicator`, `SplitButton`, `FloatingActionButtonMenu`, `MaterialShapes`, a public `MotionScheme`. Every `// TODO(expressive)` fallback and the copied spring constants in `ui/Motion.kt` can now be replaced with the real thing.
