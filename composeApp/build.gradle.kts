@@ -110,6 +110,9 @@ android {
         release {
             // unsigned on a machine without a keystore (CI pull requests); signed everywhere else
             signingConfigs.getByName("release").takeIf { it.storeFile != null }?.let { signingConfig = it }
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }
