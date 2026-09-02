@@ -198,10 +198,10 @@ class AgendaRangeTest {
     }
 
     @Test
-    fun undatedTasksLandInAnytimeOnce() {
+    fun undatedTasksNeverAppearOnPlan() {
+        // a someday item lives on Sort until it has a date
         val groups = buildAgenda(listOf(task(1, "Fix the gate", due = null)), AgendaRange.All, TODAY, TZ)
-        assertEquals(GroupKey.Anytime, groups.single().key)
-        assertEquals(1, groups.single().rows.size)
+        assertTrue(groups.isEmpty())
     }
 
     // ---- caps

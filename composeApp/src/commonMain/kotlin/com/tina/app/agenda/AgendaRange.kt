@@ -243,8 +243,8 @@ fun buildAgenda(
                 val date = item.dueLocalDate!!
                 if (date in rangeStart..rangeEnd) placements += Placement(item, date, item.dueLocalTime)
             }
-            // Rule 4: undated tasks live in one Anytime group at the end.
-            else -> anytime += item
+            // Rule 4: an undated task is a decision, not a plan; it lives on Sort until it gets a date.
+            else -> Unit
         }
     }
 

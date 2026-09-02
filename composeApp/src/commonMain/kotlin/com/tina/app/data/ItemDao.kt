@@ -91,9 +91,9 @@ interface ItemDao {
     @Query("SELECT * FROM items WHERE type = 'TASK' AND completed = 0 AND recurrence IS NULL AND dueDate IS NOT NULL AND dueDate < :todayEpochDay AND deletedAt IS NULL ORDER BY dueDate")
     fun observeOverdue(todayEpochDay: Int): Flow<List<Item>>
 
-    /** Someday items nobody has touched for a while. */
-    @Query("SELECT * FROM items WHERE type = 'TASK' AND completed = 0 AND dueDate IS NULL AND recurrence IS NULL AND updatedAt < :cutoffMillis AND deletedAt IS NULL ORDER BY updatedAt")
-    fun observeStale(cutoffMillis: Long): Flow<List<Item>>
+    /** Someday: tasks with no date, oldest untouched first. Plan never shows these. */
+    @Query("SELECT * FROM items WHERE type = 'TASK' AND completed = 0 AND dueDate IS NULL AND recurrence IS NULL AND deletedAt IS NULL ORDER BY updatedAt")
+    fun observeSomeday(): Flow<List<Item>>
 
     @Query("SELECT * FROM items WHERE snoozedUntil IS NOT NULL AND completed = 0 AND deletedAt IS NULL ORDER BY snoozedUntil")
     fun observeSnoozed(): Flow<List<Item>>

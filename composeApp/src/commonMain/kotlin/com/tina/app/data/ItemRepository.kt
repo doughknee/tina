@@ -33,14 +33,13 @@ class ItemRepository(
 
     fun observeInbox(): Flow<List<Item>> = dao.observeInbox()
 
-    /** Everything Sort lists, grouped. Today and the stale cutoff are fixed when the flow starts. */
+    /** Everything Sort lists, grouped. Today is fixed when the flow starts. */
     fun observeDecisions(): Flow<Decisions> {
         val now = clock.now()
         val today = now.toLocalDateTime(TimeZone.currentSystemDefault()).date.toEpochDays().toInt()
-        val cutoff = now.toEpochMilliseconds() - STALE_AFTER_DAYS * 24L * 60 * 60 * 1000
         return kotlinx.coroutines.flow.combine(
-            dao.observeInbox(), dao.observeOverdue(today), dao.observeSnoozed(), dao.observeStale(cutoff),
-        ) { new, overdue, snoozed, stale -> Decisions(new, overdue, snoozed, stale) }
+            dao.observeInbox(), dao.observeOverdue(today), dao.observeSnoozed(), dao.observeSomeday(),
+        ) { new, overdue, snoozed, someday -> Decisions(new, overdue, snoozed, someday) }
     }
 
     fun observeDecisionCount(): Flow<Int> = observeDecisions().map { it.total }
@@ -293,15 +292,15 @@ fun itemFromCapture(
 @OptIn(kotlin.uuid.ExperimentalUuidApi::class)
 fun newUuid(): String = kotlin.uuid.Uuid.random().toHexString()
 
-/** Days a someday item can sit untouched before Sort asks whether it still matters. */
+/** Days a someday item can sit untouched before Sort labels it as such. */
 const val STALE_AFTER_DAYS = 30
 
 data class Decisions(
     val new: List<Item> = emptyList(),
     val overdue: List<Item> = emptyList(),
     val snoozed: List<Item> = emptyList(),
-    val stale: List<Item> = emptyList(),
+    val someday: List<Item> = emptyList(),
 ) {
-    val total: Int get() = new.size + overdue.size + snoozed.size + stale.size
+    val total: Int get() = new.size + overdue.size + snoozed.size + someday.size
     val isEmpty: Boolean get() = total == 0
 }

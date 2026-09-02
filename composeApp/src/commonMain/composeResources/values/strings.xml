@@ -86,9 +86,9 @@
     <string name="sort_new">New</string>
     <string name="sort_overdue">Overdue</string>
     <string name="sort_snoozed">Snoozed</string>
-    <string name="sort_stale">Still relevant?</string>
+    <string name="sort_someday">Someday</string>
     <string name="sort_empty">Nothing to decide</string>
-    <string name="sort_empty_sub">New captures, overdue tasks, snoozes and old somedays show up here</string>
+    <string name="sort_empty_sub">New captures, overdue tasks, snoozes and somedays show up here</string>
     <string name="sort_due">due %1$s</string>
     <string name="sort_snoozed_until">snoozed until %1$s</string>
     <string name="sort_untouched">untouched %1$d days</string>

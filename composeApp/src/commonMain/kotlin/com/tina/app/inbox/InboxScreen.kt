@@ -52,7 +52,7 @@ import com.tina.app.resources.sort_new
 import com.tina.app.resources.sort_overdue
 import com.tina.app.resources.sort_snoozed
 import com.tina.app.resources.sort_snoozed_until
-import com.tina.app.resources.sort_stale
+import com.tina.app.resources.sort_someday
 import com.tina.app.resources.sort_untouched
 import com.tina.app.resources.sorted
 import com.tina.app.resources.tab_sort
@@ -86,7 +86,7 @@ private enum class Group(val title: StringResource) {
     NEW(Res.string.sort_new),
     OVERDUE(Res.string.sort_overdue),
     SNOOZED(Res.string.sort_snoozed),
-    STALE(Res.string.sort_stale),
+    SOMEDAY(Res.string.sort_someday),
 }
 
 /** The chips a group offers, in order; the first two double as the swipes. */
@@ -110,10 +110,10 @@ private fun chipsFor(group: Group): List<Pair<TriageAction, StringResource>> = w
         TriageAction.KEEP to Res.string.triage_keep,
         TriageAction.TOMORROW to Res.string.date_tomorrow,
     )
-    Group.STALE -> listOf(
-        TriageAction.KEEP to Res.string.triage_keep,
+    Group.SOMEDAY -> listOf(
+        TriageAction.TODAY to Res.string.date_today,
         TriageAction.THIS_WEEK to Res.string.triage_this_week,
-        TriageAction.SOMEDAY to Res.string.triage_someday,
+        TriageAction.TOMORROW to Res.string.date_tomorrow,
     )
 }
 
@@ -188,7 +188,7 @@ fun InboxScreen(
             Group.NEW to decisions.new,
             Group.OVERDUE to decisions.overdue,
             Group.SNOOZED to decisions.snoozed,
-            Group.STALE to decisions.stale,
+            Group.SOMEDAY to decisions.someday,
         ).filter { it.second.isNotEmpty() }
 
         LazyColumn(
@@ -208,10 +208,11 @@ fun InboxScreen(
                             Res.string.sort_snoozed_until,
                             item.snoozedUntil?.let { timeLabel(Instant.fromEpochMilliseconds(it).toLocalDateTime(tz).time, use24h) } ?: "",
                         )
-                        Group.STALE -> stringResource(
-                            Res.string.sort_untouched,
-                            ((nowMillis - item.updatedAt) / (24L * 60 * 60 * 1000)).toInt().coerceAtLeast(STALE_AFTER_DAYS),
-                        )
+                        Group.SOMEDAY -> {
+                            val days = ((nowMillis - item.updatedAt) / (24L * 60 * 60 * 1000)).toInt()
+                            if (days >= STALE_AFTER_DAYS) stringResource(Res.string.sort_untouched, days)
+                            else stringResource(Res.string.inbox_captured, relativeAge(nowMillis - item.createdAt))
+                        }
                     }
                     val (rightAction, rightLabel) = chips[0]
                     val (leftAction, leftLabel) = chips[1]
@@ -245,7 +246,7 @@ fun InboxScreen(
                                             label = { Text(stringResource(label), style = MaterialTheme.typography.labelMedium) },
                                         )
                                     }
-                                    if (group == Group.STALE) {
+                                    if (group == Group.SOMEDAY) {
                                         item {
                                             SuggestionChip(
                                                 onClick = { withUndo(deletedText, { viewModel.delete(item) }, viewModel::undoDelete) },
