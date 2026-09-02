@@ -960,9 +960,10 @@ private fun InboxEntryRow(count: Int, onClick: () -> Unit, modifier: Modifier = 
 
 @Composable
 private fun EmptyRange(range: AgendaRange, selected: LocalDate, today: LocalDate) {
-    // centred in the space under the calendar, the way Sort and Ideas centre theirs
+    // centred like Sort and Ideas; the bottom padding is half the calendar strip, so the block
+    // lands on the same line across the three tabs instead of lower on this one
     Column(
-        Modifier.fillMaxSize(),
+        Modifier.fillMaxSize().padding(bottom = 80.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
