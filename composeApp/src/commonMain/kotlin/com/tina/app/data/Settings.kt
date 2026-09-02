@@ -138,6 +138,7 @@ private val KEY_AUTO_BACKUP = booleanPreferencesKey("autoBackup")
 private val KEY_TRASH_RETENTION = stringPreferencesKey("trashRetention")
 private val KEY_LAUNCH_AT_LOGIN = booleanPreferencesKey("launchAtLogin")
 private val KEY_CLOSE_TO_TRAY = booleanPreferencesKey("closeToTray")
+private val KEY_ONBOARDING_SEEN = booleanPreferencesKey("onboardingSeen")
 
 class SettingsRepository(
     private val store: DataStore<Preferences>,
@@ -256,6 +257,10 @@ class SettingsRepository(
     suspend fun setTrashRetention(value: TrashRetention) = store.edit { it[KEY_TRASH_RETENTION] = value.name }
     suspend fun setLaunchAtLogin(enabled: Boolean) = store.edit { it[KEY_LAUNCH_AT_LOGIN] = enabled }
     suspend fun setCloseToTray(enabled: Boolean) = store.edit { it[KEY_CLOSE_TO_TRAY] = enabled }
+
+    /** True once the first-run cards were seen or skipped. Not part of [settings]: it is not a preference. */
+    val onboardingSeen: Flow<Boolean> = store.data.map { it[KEY_ONBOARDING_SEEN] ?: false }
+    suspend fun setOnboardingSeen() = store.edit { it[KEY_ONBOARDING_SEEN] = true }
 
     /** One atomic write restoring a backed-up settings block. */
     suspend fun applyBackup(s: BackupSettings) = store.edit { p ->

@@ -22,6 +22,7 @@ class TinaApp : Application(), KoinComponent {
 
     override fun onCreate() {
         super.onCreate()
+        registerActivityLifecycleCallbacks(ForegroundActivity)
         initKoin(androidModule) { androidContext(this@TinaApp) }
         ensureReminderChannel(this)
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

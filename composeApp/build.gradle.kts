@@ -62,6 +62,7 @@ kotlin {
             implementation(libs.androidx.work.runtime)
             implementation(libs.androidx.glance.appwidget)
             implementation(libs.androidx.billing)
+            implementation(libs.play.review)
             // sideloaded APKs never get Play's install-time compile: this installs the merged
             // Compose baseline profiles on first launch so the JIT is not cold on every sheet
             implementation(libs.androidx.profileinstaller)
@@ -85,8 +86,8 @@ android {
         applicationId = "com.peggy.app"
         minSdk = 31
         targetSdk = 36
-        versionCode = 9
-        versionName = "1.7.0"
+        versionCode = 10
+        versionName = "1.7.1"
         // the maintainer's own builds are Pro without a purchase: tina.proOverride=true in local.properties
         val local = Properties().apply {
             rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -157,7 +158,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Msi)
             packageName = "Peggy"
-            packageVersion = "1.7.0"
+            packageVersion = "1.7.1"
         }
     }
 }

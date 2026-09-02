@@ -43,7 +43,7 @@ val commonModule = module {
     viewModelOf(::TrashViewModel)
     viewModelOf(::TagManagerViewModel)
     single { CaptureRefiner(get(), get(), get(), get()) }
-    viewModelOf(::CaptureViewModel)
+    viewModel { CaptureViewModel(get(), get(), get(), get()) }
     viewModelOf(::SettingsViewModel)
     viewModelOf(::AgendaViewModel)
     viewModelOf(::InboxViewModel)

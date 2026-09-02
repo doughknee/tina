@@ -1,8 +1,6 @@
 package com.tina.app.pro
 
-import android.app.Activity
 import android.app.Application
-import android.os.Bundle
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -23,7 +21,6 @@ import com.android.billingclient.api.acknowledgePurchase
 import com.android.billingclient.api.queryProductDetails
 import com.android.billingclient.api.queryPurchasesAsync
 import com.tina.app.BuildConfig
-import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -52,7 +49,6 @@ class PlayProStore(
     private val store: DataStore<Preferences>,
 ) : ProStore, PurchasesUpdatedListener {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var activity = WeakReference<Activity>(null)
     private var details: Map<String, ProductDetails> = emptyMap()
 
     override val available = MutableStateFlow(true)
@@ -67,16 +63,6 @@ class PlayProStore(
         .build()
 
     init {
-        // launchBillingFlow needs the foreground activity; the app is the only thing alive long enough to know it
-        app.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
-            override fun onActivityResumed(a: Activity) { activity = WeakReference(a) }
-            override fun onActivityCreated(a: Activity, savedInstanceState: Bundle?) {}
-            override fun onActivityStarted(a: Activity) {}
-            override fun onActivityPaused(a: Activity) {}
-            override fun onActivityStopped(a: Activity) {}
-            override fun onActivitySaveInstanceState(a: Activity, outState: Bundle) {}
-            override fun onActivityDestroyed(a: Activity) {}
-        })
         scope.launch {
             if (BuildConfig.PRO_OVERRIDE) {
                 entitlement.value = Entitlement.Pro(ProPlan.LIFETIME)
@@ -96,7 +82,7 @@ class PlayProStore(
     }
 
     override fun buy(plan: ProPlan) {
-        val host = activity.get() ?: return
+        val host = com.tina.app.ForegroundActivity.current ?: return
         val product = details[plan.productId] ?: return
         val params = BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(product)
         if (plan.subscription) bestOffer(product)?.offerToken?.let { params.setOfferToken(it) }

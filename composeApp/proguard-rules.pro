@@ -37,3 +37,6 @@
 # readable crash reports from Play vitals
 -keepattributes SourceFile, LineNumberTable
 -renamesourcefileattribute SourceFile
+
+# play review ktx references a gms annotation that is not on the classpath
+-dontwarn com.google.android.gms.common.annotation.NoNullnessRewrite

@@ -388,3 +388,10 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - A new applicationId is a new app on a device: existing installs keep their data under tina and move it with Export → Import. Backups are byte-for-byte compatible.
 - Pro product ids are `peggy_pro_monthly`, `peggy_pro_yearly`, `peggy_pro_lifetime`; nothing was created in Play Console under the old ids.
 
+### First-run cards and the review prompt (v1.7.1)
+
+- Three cards over the shell on first launch, gated by an `onboardingSeen` flag that is read as "seen" until DataStore answers, so an upgrade never flashes them. Not part of `Settings` or backups: it is state, not a preference.
+- The review prompt fires on the twentieth capture, once, through Play's in-app review. A DataStore counter, not a database count, so a restored backup does not trigger it on day one.
+- `ForegroundActivity` replaces the per-class activity tracking that billing had; review needs the same thing.
+- Once the phone runs the Play build it is signed by Google's key; sideloading upload-key APKs over it fails. Phone updates now go through internal testing, which is what the versionCode bump is for.
+

@@ -33,6 +33,9 @@ val androidModule = module {
     single<com.tina.app.data.SecretCipher> { com.tina.app.data.KeystoreSecretCipher() }
     single<Notifier> { PlatformNotifier(androidContext()) }
     // eager: the entitlement refreshes from Play at launch, not when Settings first opens
+    single<com.tina.app.ui.ReviewPrompter> {
+        com.tina.app.ui.PlayReviewPrompter(androidContext().applicationContext as android.app.Application, get())
+    }
     single<com.tina.app.pro.ProStore>(createdAtStart = true) {
         com.tina.app.pro.PlayProStore(androidContext().applicationContext as android.app.Application, get())
     }

@@ -2,7 +2,12 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## v1.7 "Trust" (unreleased; version bumped, not yet tagged)
+## v1.7.1 (internal testing)
+
+- First-run cards: capture, sort, reminders (with the notification permission), skippable in one tap.
+- Peggy asks for a Play rating once, after the twentieth capture, never before.
+
+## v1.7 "Trust" (1.7.0, first Play internal build)
 
 ### Reminders
 - Repeating tasks ring for every occurrence, not just the first.

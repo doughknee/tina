@@ -27,6 +27,7 @@ class CaptureViewModel(
     private val repository: ItemRepository,
     settingsRepository: SettingsRepository,
     private val refiner: com.tina.app.ai.CaptureRefiner,
+    private val review: com.tina.app.ui.ReviewPrompter = com.tina.app.ui.NoReviewPrompter,
 ) : ViewModel() {
     private val settings = settingsRepository.settings
         .stateIn(viewModelScope, SharingStarted.Eagerly, Settings())
@@ -170,6 +171,7 @@ class CaptureViewModel(
             typeOverride = null
             saveCount++
             onSaved()
+            review.onCapture()
         }
     }
 

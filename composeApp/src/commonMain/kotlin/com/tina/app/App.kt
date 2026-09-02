@@ -36,6 +36,7 @@ import com.tina.app.notes.NoteEditorScreen
 import com.tina.app.ui.LocalSharedTransitionScope
 import com.tina.app.ui.Shell
 import com.tina.app.ui.rememberAppMotion
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 data object SettingsRoute
@@ -95,6 +96,9 @@ fun App() {
                 repository.get(id)?.let(::openItem)
             }
             androidx.compose.runtime.LaunchedEffect(pagesVisible) { com.tina.app.ui.KeyBus.pageOpen = pagesVisible }
+            // assume seen until the store answers, so an existing user never sees the cards flash
+            val onboardingSeen by settingsRepository.onboardingSeen.collectAsState(initial = true)
+            val appScope = androidx.compose.runtime.rememberCoroutineScope()
             val motion = rememberAppMotion()
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                 // shared-element rows need an animated scope; a still AnimatedContent provides one
@@ -113,6 +117,11 @@ fun App() {
                 }
                 // after the shell, so it takes back presses first
                 BackHandler(enabled = pagesVisible && pages.size == 1) { pagesVisible = false }
+                if (!onboardingSeen) {
+                    com.tina.app.ui.onboarding.OnboardingScreen(
+                        onDone = { appScope.launch { settingsRepository.setOnboardingSeen() } },
+                    )
+                }
                 AnimatedVisibility(
                     visible = pagesVisible,
                     enter = motion.push().targetContentEnter,
