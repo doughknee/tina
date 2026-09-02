@@ -406,6 +406,8 @@
 
     <string name="date_today">Today</string>
     <string name="date_tomorrow">Tomorrow</string>
+    <string name="date_yesterday">Yesterday</string>
+    <string name="week_last">Last week</string>
 
     <string name="time_am">AM</string>
     <string name="time_pm">PM</string>

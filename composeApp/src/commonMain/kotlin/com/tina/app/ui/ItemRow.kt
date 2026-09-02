@@ -85,6 +85,20 @@ import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.stringResource
 
+/** What a swipe on a row does on a given page, and how its backdrop looks. */
+data class SwipeAction(val icon: ImageVector, val tone: SwipeTone, val onAction: () -> Unit)
+
+enum class SwipeTone {
+    PRIMARY, TERTIARY, ERROR;
+
+    @Composable
+    fun container(): Color = when (this) {
+        PRIMARY -> MaterialTheme.colorScheme.primaryContainer
+        TERTIARY -> MaterialTheme.colorScheme.tertiaryContainer
+        ERROR -> MaterialTheme.colorScheme.errorContainer
+    }
+}
+
 /**
  * The one list row used everywhere. Tap = inline title edit, swipe right =
  * complete, swipe left = delete, date chip = quick reschedule, chevron = detail.
@@ -113,6 +127,9 @@ fun ItemRow(
     /** Replaces the chevron / date chip on the trailing edge. */
     trailing: (@Composable () -> Unit)? = null,
     extraContent: (@Composable () -> Unit)? = null,
+    /** Overrides for the two swipes; null keeps complete (right) and delete (left). */
+    swipeRight: SwipeAction? = null,
+    swipeLeft: SwipeAction? = null,
 )
 {
     val haptic = LocalHapticFeedback.current
@@ -120,15 +137,16 @@ fun ItemRow(
     LaunchedEffect(dismissState.settledValue) {
         when (dismissState.settledValue) {
             SwipeToDismissBoxValue.StartToEnd -> {
-                if (onToggleComplete != null) {
+                val action = swipeRight?.onAction ?: onToggleComplete
+                if (action != null) {
                     haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                    onToggleComplete()
+                    action()
                 }
                 dismissState.snapTo(SwipeToDismissBoxValue.Settled)
             }
             SwipeToDismissBoxValue.EndToStart -> {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onDelete()
+                (swipeLeft?.onAction ?: onDelete)()
                 dismissState.snapTo(SwipeToDismissBoxValue.Settled)
             }
             SwipeToDismissBoxValue.Settled -> Unit
@@ -138,19 +156,19 @@ fun ItemRow(
     SwipeToDismissBox(
         state = dismissState,
         modifier = modifier,
-        enableDismissFromStartToEnd = onToggleComplete != null,
+        enableDismissFromStartToEnd = swipeRight != null || onToggleComplete != null,
         backgroundContent = {
             // rows are transparent now; draw nothing until a swipe is actually underway
             if (dismissState.dismissDirection == SwipeToDismissBoxValue.Settled) return@SwipeToDismissBox
             val (color, icon, alignment) = when (dismissState.dismissDirection) {
                 SwipeToDismissBoxValue.StartToEnd -> Triple(
-                    MaterialTheme.colorScheme.primaryContainer,
-                    Icons.Outlined.Check,
+                    swipeRight?.tone?.container() ?: MaterialTheme.colorScheme.primaryContainer,
+                    swipeRight?.icon ?: Icons.Outlined.Check,
                     Alignment.CenterStart,
                 )
                 else -> Triple(
-                    MaterialTheme.colorScheme.errorContainer,
-                    Icons.Outlined.Delete,
+                    swipeLeft?.tone?.container() ?: MaterialTheme.colorScheme.errorContainer,
+                    swipeLeft?.icon ?: Icons.Outlined.Delete,
                     Alignment.CenterEnd,
                 )
             }

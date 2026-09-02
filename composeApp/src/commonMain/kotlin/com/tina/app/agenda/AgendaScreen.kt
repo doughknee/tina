@@ -96,6 +96,12 @@ import com.tina.app.data.Item
 import com.tina.app.data.ItemType
 import com.tina.app.resources.Res
 import com.tina.app.resources.agenda_everything
+import com.tina.app.resources.date_tomorrow
+import com.tina.app.resources.date_next_week
+import com.tina.app.resources.date_yesterday
+import com.tina.app.resources.triage_this_week
+import com.tina.app.resources.week_last
+import com.tina.app.resources.weekdays_full
 import com.tina.app.resources.calendar_jump_today
 import com.tina.app.resources.calendar_nothing
 import com.tina.app.resources.calendar_choose
@@ -160,6 +166,7 @@ import kotlin.time.Clock
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.number
@@ -279,16 +286,54 @@ fun AgendaScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    val title = when (granularity) {
-                        Granularity.ALL -> stringResource(Res.string.agenda_everything)
-                        Granularity.WEEK -> weekTitle(selectedDate, monthNames)
-                        else -> {
-                            val visibleMonth = if (gridShown) monthState.firstVisibleMonth.yearMonth.month
-                            else weekState.firstVisibleWeek.days[3].date.month
-                            monthNames[visibleMonth.number - 1]
+                    // the title names what you are looking at: the day, the week or the month,
+                    // relative when it can be (Today, This week), with the calendar date under it
+                    val weekdays = stringArrayResource(Res.array.weekdays_full)
+                    val visibleMonth = if (gridShown) monthState.firstVisibleMonth.yearMonth
+                    else weekState.firstVisibleWeek.days[3].date.let { YearMonth(it.year, it.month) }
+                    val (primary, secondary) = when (granularity) {
+                        Granularity.ALL -> stringResource(Res.string.agenda_everything) to null
+                        Granularity.MONTH -> monthNames[visibleMonth.month.number - 1] to visibleMonth.year.toString()
+                        Granularity.WEEK -> {
+                            val range = weekTitle(selectedDate, monthNames)
+                            when (today.daysUntil(selectedDate)) {
+                                0 -> stringResource(Res.string.triage_this_week) to range
+                                7 -> stringResource(Res.string.date_next_week) to range
+                                -7 -> stringResource(Res.string.week_last) to range
+                                else -> range to selectedDate.year.toString()
+                            }
+                        }
+                        Granularity.DAY -> {
+                            val weekday = weekdays[selectedDate.dayOfWeek.isoDayNumber - 1]
+                            val month = monthNames[selectedDate.month.number - 1]
+                            val date = if (selectedDate.year == today.year) "$month ${selectedDate.day}"
+                            else "$month ${selectedDate.day}, ${selectedDate.year}"
+                            val relative = when (today.daysUntil(selectedDate)) {
+                                0 -> stringResource(Res.string.date_today)
+                                1 -> stringResource(Res.string.date_tomorrow)
+                                -1 -> stringResource(Res.string.date_yesterday)
+                                else -> null
+                            }
+                            when {
+                                // the grid scrolls through months: say which one is showing
+                                gridShown -> (relative ?: weekday) to
+                                    "${monthNames[visibleMonth.month.number - 1]} ${visibleMonth.year}"
+                                relative != null -> relative to "$weekday, $date"
+                                else -> weekday to date
+                            }
                         }
                     }
-                    Text(title, style = MaterialTheme.typography.titleLargeEmphasized)
+                    Column {
+                        Text(primary, style = MaterialTheme.typography.titleLargeEmphasized, maxLines = 1)
+                        if (secondary != null) {
+                            Text(
+                                secondary,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                            )
+                        }
+                    }
                 },
                 actions = {
                     AnimatedVisibility(visible = selectedDate != today && granularity != Granularity.ALL) {

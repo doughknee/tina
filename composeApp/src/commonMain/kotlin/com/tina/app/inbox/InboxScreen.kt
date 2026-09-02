@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Snooze
+import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,6 +50,8 @@ import com.tina.app.resources.triage_this_week
 import com.tina.app.resources.undo
 import com.tina.app.ui.ItemRow
 import com.tina.app.ui.SectionCardItem
+import com.tina.app.ui.SwipeAction
+import com.tina.app.ui.SwipeTone
 import com.tina.app.ui.relativeAge
 import com.tina.app.ui.rememberUndoWindow
 import com.tina.app.ui.showUndo
@@ -136,6 +140,14 @@ fun InboxScreen(
                         onDelete = { withUndo(deletedText, { viewModel.delete(item) }, viewModel::undoDelete) },
                         onRename = { viewModel.rename(item, it) },
                         onOpen = { onOpenItem(item) },
+                        // the two-second rule: a swipe sorts without hunting for a chip. Delete
+                        // stays on the row menu; both swipes are undoable
+                        swipeRight = SwipeAction(Icons.Outlined.Today, SwipeTone.PRIMARY) {
+                            withUndo(sortedText, { viewModel.triage(item, TriageAction.TODAY) }, viewModel::undoTriage)
+                        },
+                        swipeLeft = SwipeAction(Icons.Outlined.Snooze, SwipeTone.TERTIARY) {
+                            withUndo(sortedText, { viewModel.triage(item, TriageAction.SOMEDAY) }, viewModel::undoTriage)
+                        },
                         extraContent = {
                             val chips = listOf(
                                 TriageAction.TODAY to Res.string.date_today,
