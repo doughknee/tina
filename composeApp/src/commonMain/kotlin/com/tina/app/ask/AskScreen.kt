@@ -62,7 +62,11 @@ import com.tina.app.resources.Res
 import com.tina.app.resources.ask_applied
 import com.tina.app.resources.ask_chat_deleted
 import com.tina.app.resources.ask_copied
+import com.tina.app.resources.ask_apply
 import com.tina.app.resources.ask_error
+import com.tina.app.resources.ask_not_now
+import com.tina.app.resources.ask_pending
+import com.tina.app.resources.ask_pending_deletes
 import com.tina.app.resources.ask_hint
 import com.tina.app.resources.ask_history
 import com.tina.app.resources.ask_history_empty
@@ -248,6 +252,29 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        }
+                    }
+                }
+                if (viewModel.pendingActions.isNotEmpty()) {
+                    item {
+                        val pending = viewModel.pendingActions
+                        val deletes = pending.count { it.op == "delete" }
+                        androidx.compose.material3.Surface(
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = MaterialTheme.shapes.large,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    if (deletes > 0) stringResource(Res.string.ask_pending_deletes, pending.size, deletes)
+                                    else stringResource(Res.string.ask_pending, pending.size),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    androidx.compose.material3.Button(onClick = viewModel::applyPending) { Text(stringResource(Res.string.ask_apply)) }
+                                    OutlinedButton(onClick = viewModel::dismissPending) { Text(stringResource(Res.string.ask_not_now)) }
+                                }
+                            }
                         }
                     }
                 }

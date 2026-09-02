@@ -44,4 +44,10 @@ class AskActionsTest {
         assertTrue(actions.isEmpty())
         assertEquals(reply, text)
     }
+
+    @Test fun smallEditBatchesApplyDeletionsAndBigBatchesWait() {
+        assertEquals(false, needsConfirmation(listOf(AskAction(op = "complete", id = 1), AskAction(op = "rename", id = 2, title = "x"))))
+        assertEquals(true, needsConfirmation(listOf(AskAction(op = "delete", id = 1))))
+        assertEquals(true, needsConfirmation(List(4) { AskAction(op = "complete", id = it.toLong()) }))
+    }
 }

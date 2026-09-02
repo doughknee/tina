@@ -17,6 +17,8 @@ import com.tina.app.ai.applyImprovePatch
 import com.tina.app.ai.buildAskContext
 import com.tina.app.ai.buildAskSystemPrompt
 import com.tina.app.ai.extractAskActions
+import com.tina.app.ai.MAX_ASK_ACTIONS
+import com.tina.app.ai.needsConfirmation
 import com.tina.app.capture.ParsedCapture
 import com.tina.app.data.ChatDao
 import com.tina.app.data.ChatEntity
@@ -65,6 +67,11 @@ class AskViewModel(
         private set
     var reasoning by mutableStateOf(ReasoningLevel.BALANCED)
         private set
+
+    /** A batch that needs a tap before it runs (deletions, or more than a few changes). */
+    var pendingActions by mutableStateOf<List<AskAction>>(emptyList())
+        private set
+    private var pendingReminder = 0
 
     /** Bumps once per applied batch; the screen shows the undo snackbar off it. */
     var appliedNonce by mutableStateOf(0)
@@ -143,6 +150,8 @@ class AskViewModel(
     }
 
     fun send(text: String) {
+        // a second send while one is in flight would land in the transcript with no reply
+        if (sending) return
         messages += ChatMessage(ChatRole.USER, text)
         viewModelScope.launch {
             val id = ensureChat(text)
@@ -157,11 +166,22 @@ class AskViewModel(
         viewModelScope.launch { askInternal() }
     }
 
+    fun applyPending() {
+        val batch = pendingActions
+        pendingActions = emptyList()
+        viewModelScope.launch { applyActions(batch, TimeZone.currentSystemDefault(), pendingReminder) }
+    }
+
+    fun dismissPending() {
+        pendingActions = emptyList()
+    }
+
     fun undoLastBatch() {
         val batch = undoBatch
         undoBatch = emptyList()
         viewModelScope.launch {
-            batch.forEach { step ->
+            // last change first, so two edits to one item land back on the original
+            batch.asReversed().forEach { step ->
                 when (step) {
                     is UndoStep.Restore ->
                         if (step.wasDeleted) repository.restore(step.item)
@@ -211,11 +231,12 @@ class AskViewModel(
         if (reply == null) {
             lastFailed = true
         } else {
-            val (visible, actions) = if (writeEnabled) {
+            val (visible, rawActions) = if (writeEnabled) {
                 extractAskActions(reply)
             } else {
                 reply.trim() to emptyList()
             }
+            val actions = rawActions.take(MAX_ASK_ACTIONS)
             val shown = when {
                 visible.isNotBlank() -> visible
                 // model sent only actions: the applied-changes snackbar is the reply
@@ -231,7 +252,14 @@ class AskViewModel(
                 }
                 chatDao.chat(id)?.let { chatDao.updateChat(it.copy(updatedAt = now())) }
             }
-            if (actions.isNotEmpty()) applyActions(actions, tz, settings.defaultReminderMinutes)
+            if (actions.isNotEmpty()) {
+                if (needsConfirmation(actions)) {
+                    pendingReminder = settings.defaultReminderMinutes
+                    pendingActions = actions
+                } else {
+                    applyActions(actions, tz, settings.defaultReminderMinutes)
+                }
+            }
         }
         sending = false
     }
@@ -293,9 +321,11 @@ class AskViewModel(
                     applied++
                 }
                 "reschedule" -> {
-                    steps += UndoStep.Restore(item, wasDeleted = false)
                     val date = action.date?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
                     val time = action.time?.let { runCatching { LocalTime.parse(it) }.getOrNull() }
+                    // a date the model garbled must not turn into "clear the schedule"
+                    if (action.date != null && date == null) return@forEach
+                    steps += UndoStep.Restore(item, wasDeleted = false)
                     val updated = if (date == null) {
                         item.copy(dueDate = null, dueTime = null, startAt = null, endAt = null)
                     } else {

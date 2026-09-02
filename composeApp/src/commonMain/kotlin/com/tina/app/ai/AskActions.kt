@@ -21,6 +21,17 @@ data class AskAction(
 @Serializable
 private data class AskActionsBlock(val actions: List<AskAction> = emptyList())
 
+/** More than this in one reply is a runaway model, not a request. */
+const val MAX_ASK_ACTIONS = 10
+
+/**
+ * Small edits apply as they always have (undo covers them). Deletions and anything bigger
+ * than a handful wait for the user's tap: a note pasted from the web must never be able to
+ * talk the model into clearing the database.
+ */
+fun needsConfirmation(actions: List<AskAction>): Boolean =
+    actions.size > 3 || actions.any { it.op == "delete" }
+
 /**
  * Pulls the trailing {"actions":[...]} block out of a model reply.
  * Returns the reply with the block removed, plus the parsed actions.
