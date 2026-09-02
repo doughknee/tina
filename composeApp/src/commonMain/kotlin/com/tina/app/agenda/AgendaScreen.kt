@@ -31,14 +31,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Celebration
-import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.ViewWeek
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -97,7 +99,6 @@ import com.tina.app.resources.agenda_everything
 import com.tina.app.resources.calendar_jump_today
 import com.tina.app.resources.calendar_nothing
 import com.tina.app.resources.calendar_choose
-import com.tina.app.resources.calendar_hidden
 import com.tina.app.resources.date_today
 import com.tina.app.resources.deleted
 import com.tina.app.resources.dup_keep
@@ -194,7 +195,6 @@ fun AgendaScreen(
     val expandedGroups by viewModel.expandedGroups.collectAsState()
     val expandedSeries by viewModel.expandedSeries.collectAsState()
     val calendar by viewModel.calendar.collectAsState()
-    var calendarMenu by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
@@ -288,45 +288,7 @@ fun AgendaScreen(
                             monthNames[visibleMonth.number - 1]
                         }
                     }
-                    // the title opens the calendar choice: none, a week strip, or the month grid
-                    Box {
-                        Row(
-                            Modifier.combinedClickable(onClick = { calendarMenu = true }),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(title, style = MaterialTheme.typography.titleLargeEmphasized)
-                            Icon(
-                                Icons.Outlined.ExpandMore,
-                                stringResource(Res.string.calendar_choose),
-                                Modifier.padding(start = 4.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        DropdownMenu(expanded = calendarMenu, onDismissRequest = { calendarMenu = false }) {
-                            AgendaCalendar.entries.forEach { option ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            stringResource(
-                                                when (option) {
-                                                    AgendaCalendar.HIDDEN -> Res.string.calendar_hidden
-                                                    AgendaCalendar.WEEK -> Res.string.range_week
-                                                    AgendaCalendar.MONTH -> Res.string.range_month
-                                                },
-                                            ),
-                                        )
-                                    },
-                                    trailingIcon = if (option == calendar) {
-                                        { Icon(Icons.Outlined.Check, contentDescription = null) }
-                                    } else null,
-                                    onClick = {
-                                        viewModel.setCalendar(option)
-                                        calendarMenu = false
-                                    },
-                                )
-                            }
-                        }
-                    }
+                    Text(title, style = MaterialTheme.typography.titleLargeEmphasized)
                 },
                 actions = {
                     AnimatedVisibility(visible = selectedDate != today && granularity != Granularity.ALL) {
@@ -334,6 +296,20 @@ fun AgendaScreen(
                             onClick = { jumpTo(today) },
                             label = { Text(stringResource(Res.string.calendar_jump_today)) },
                             modifier = Modifier.padding(end = 4.dp),
+                        )
+                    }
+                    // one tap rotates none -> week -> month; the icon shows what is up now
+                    IconButton(onClick = {
+                        val next = AgendaCalendar.entries[(calendar.ordinal + 1) % AgendaCalendar.entries.size]
+                        viewModel.setCalendar(next)
+                    }) {
+                        Icon(
+                            when (calendar) {
+                                AgendaCalendar.HIDDEN -> Icons.Outlined.CalendarToday
+                                AgendaCalendar.WEEK -> Icons.Outlined.ViewWeek
+                                AgendaCalendar.MONTH -> Icons.Outlined.CalendarMonth
+                            },
+                            stringResource(Res.string.calendar_choose),
                         )
                     }
                     IconButton(onClick = onOpenSearch) {

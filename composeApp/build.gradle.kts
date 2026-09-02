@@ -61,6 +61,9 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.androidx.work.runtime)
             implementation(libs.androidx.glance.appwidget)
+            // sideloaded APKs never get Play's install-time compile: this installs the merged
+            // Compose baseline profiles on first launch so the JIT is not cold on every sheet
+            implementation(libs.androidx.profileinstaller)
             implementation(libs.ktor.client.okhttp)
         }
         val desktopMain by getting {

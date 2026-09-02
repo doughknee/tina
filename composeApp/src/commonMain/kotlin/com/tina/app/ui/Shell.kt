@@ -121,6 +121,9 @@ fun Shell(
     val selectedTab = TinaTab.entries.firstOrNull { it.name == selectedName } ?: TinaTab.AGENDA
     // deliberately not saveable: the bar always comes back in capture mode
     var askOpen by remember { mutableStateOf(false) }
+    // the Ask overlay; closing it (back, scrim, drag) leaves the bar in ask mode, so back
+    // walks keyboard -> overlay -> page the same way it does for capture
+    var askSheetOpen by remember { mutableStateOf(false) }
     var searchOpen by remember { mutableStateOf(false) }
     var captureFocused by remember { mutableStateOf(false) }
     // opened when the field takes focus, closed only by scrim / handle / back — putting the
@@ -141,16 +144,23 @@ fun Shell(
     // starters when empty, parse chips while typing, and it survives the keyboard going away
     val hasDraft = captureViewModel.text.isNotBlank()
     val suggestionsOpen = !askOpen && !searchOpen && (captureSheetOpen || hasDraft)
+    val askVisible = askOpen && askSheetOpen
     var discardPrompt by remember { mutableStateOf(false) }
 
-    // closing Ask also drops focus: a focused field in capture mode would raise the capture sheet
+    // closes the overlay only; the pill stays on Ask until it is tapped back to Plan
     fun closeAsk() {
-        askOpen = false
+        askSheetOpen = false
         focusManager.clearFocus()
+    }
+
+    fun setAskMode(on: Boolean) {
+        askOpen = on && askAvailable
+        askSheetOpen = askOpen
     }
 
     fun openSearch() {
         askOpen = false
+        askSheetOpen = false
         focusManager.clearFocus()
         searchOpen = true
     }
@@ -174,6 +184,7 @@ fun Shell(
     fun showTab(tab: TinaTab) {
         selectedName = tab.name
         askOpen = false
+        askSheetOpen = false
         searchOpen = false
         captureSheetOpen = false
         focusManager.clearFocus()
@@ -183,6 +194,7 @@ fun Shell(
     LaunchedEffect(focusRequested) {
         if (!focusRequested) return@LaunchedEffect
         askOpen = false
+        askSheetOpen = false
         searchOpen = false
         captureFocus.requestFocus()
         CaptureFocus.clear()
@@ -201,7 +213,7 @@ fun Shell(
     }
 
     BackHandler(enabled = searchOpen) { closeSearch() }
-    BackHandler(enabled = askOpen) { closeAsk() }
+    BackHandler(enabled = askVisible && !captureFocused) { closeAsk() }
     // the keyboard takes the first back itself; the next one, with a draft still up, asks
     BackHandler(enabled = !askOpen && !searchOpen && suggestionsOpen && !captureFocused) { dismissCaptureSheet() }
 
@@ -232,7 +244,7 @@ fun Shell(
         modifier = Modifier.imePadding(),
         navigationSuiteItems = {
             TinaTab.entries.forEach { tab ->
-                val selected = selectedTab == tab && !askOpen && !searchOpen
+                val selected = selectedTab == tab && !askVisible && !searchOpen
                 item(
                     selected = selected,
                     onClick = { showTab(tab) },
@@ -260,17 +272,22 @@ fun Shell(
                 if (!searchOpen) {
                     CaptureBar(
                         askMode = askOpen,
-                        onAskModeChange = { askOpen = it && askAvailable },
+                        onAskModeChange = ::setAskMode,
                         askAvailable = askAvailable,
-                        onAskSend = askViewModel::send,
+                        onAskSend = {
+                            askSheetOpen = true
+                            askViewModel.send(it)
+                        },
                         askBusy = askViewModel.sending,
                         snackbarHostState = snackbarHostState,
                         focusRequester = captureFocus,
                         onFocusChanged = {
                             captureFocused = it
-                            if (it) captureSheetOpen = true
+                            if (it) {
+                                if (askOpen) askSheetOpen = true else captureSheetOpen = true
+                            }
                         },
-                        blendWithSheet = suggestionsOpen || askOpen,
+                        blendWithSheet = suggestionsOpen || askVisible,
                         viewModel = captureViewModel,
                     )
                 }
@@ -332,7 +349,7 @@ fun Shell(
 
                 // Ask: a sheet over the page, with the bar still visible under it in ask mode
                 ShellSheet(
-                    visible = askOpen,
+                    visible = askVisible,
                     onDismiss = ::closeAsk,
                     modifier = Modifier.align(Alignment.BottomCenter).fillMaxHeight(0.72f),
                 ) {

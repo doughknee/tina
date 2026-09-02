@@ -306,3 +306,9 @@ Running log of choices made without asking, newest last.
 - **One calendar for every range.** `agendaCalendar` (HIDDEN / WEEK / MONTH) is a persisted setting chosen from the title's dropdown and applied on Day, Week, Month and All alike. The pilled-week header and the per-range special cases are gone.
 - **Idea mode replaces note parsing.** The parser never returns NOTE any more (long prose is a task like any other short text). In Idea mode the field is the title and the sheet shows a body field; parser-token starters are hidden. Type cycling skips NOTE. ponytail: tags are still pulled from the title in Idea mode, nothing else is.
 - **Settings transition.** NavDisplay is painted with the theme background so the pop/push slide never shows the window behind it, and predictive back uses the same pop spec as a completed back.
+
+## Ask keeps its mode, one calendar button, baseline profiles
+
+- **Ask mode vs Ask overlay.** `askOpen` is the pill; `askSheetOpen` is the overlay. Back, scrim and drag close the overlay only, so back walks keyboard -> overlay -> page exactly as it does for capture, and the bar stays on Ask until the pill is tapped. Focusing the field in ask mode brings the overlay back.
+- **Calendar cycles from the top bar.** The title dropdown was two taps in the far corner; now one icon button next to search rotates none -> week -> month and shows the current view.
+- **Sideloaded builds got no compile step.** Play compiles an app against its baseline profile at install; `adb install` and GitHub-release APKs never do, so every first pass through a sheet ran cold in the JIT (the "sometimes buttery, sometimes choppy" report). `androidx.profileinstaller` now ships the merged Compose profiles in the APK and installs them on first launch; ART picks them up on its next background dexopt. After an adb install, `cmd package compile -m speed-profile -f com.tina.app` applies them immediately.
