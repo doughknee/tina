@@ -2,6 +2,10 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
+## v1.7.3 (closed testing)
+
+- All-day events stay on their date when you change time zone. They used to slide a day.
+
 ## v1.7.2 (internal testing)
 
 - New icon: a pin with the check inside, on the brand blue. Themed (monochrome) icon, splash, Play icon, feature graphic and the website use the same glyph.

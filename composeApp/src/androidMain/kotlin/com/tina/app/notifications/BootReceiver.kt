@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.tina.app.data.ItemRepository
+import com.tina.app.data.syncTimeZone
 import com.tina.app.data.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,7 @@ class BootReceiver : BroadcastReceiver(), KoinComponent {
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
+                if (intent.action == Intent.ACTION_TIMEZONE_CHANGED) repository.syncTimeZone(settingsRepository)
                 repository.rescheduleAllReminders()
                 DigestScheduler.sync(context, settingsRepository.settings.first())
             } finally {

@@ -2,6 +2,7 @@ package com.tina.app
 
 import android.app.Application
 import com.tina.app.data.ItemRepository
+import com.tina.app.data.syncTimeZone
 import com.tina.app.di.androidModule
 import com.tina.app.di.initKoin
 import com.tina.app.notifications.ensureReminderChannel
@@ -27,6 +28,8 @@ class TinaApp : Application(), KoinComponent {
         ensureReminderChannel(this)
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         scope.launch {
+            // a zone change while the app was dead: put all-day events back on their date first
+            repository.syncTimeZone(settingsRepository)
             // Alarms drift across app updates and process death; re-arm on every cold start.
             repository.rescheduleAllReminders()
             // Trash retention is enforced here rather than by a scheduled job.

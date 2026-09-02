@@ -169,6 +169,21 @@ class ItemRepository(
     /** Re-arm every pending reminder (boot, app start). */
     suspend fun rescheduleAllReminders() = scheduler.rescheduleAll(dao.getRemindable())
 
+    /** Moves every all-day event's midnight from [from] to [to]; see [realignAllDay]. */
+    suspend fun realignAllDayEvents(from: kotlinx.datetime.TimeZone, to: kotlinx.datetime.TimeZone): Int {
+        val events = dao.allDayEvents()
+        for (item in events) {
+            dao.update(
+                item.copy(
+                    startAt = item.startAt?.let { realignAllDay(it, from, to) },
+                    endAt = item.endAt?.let { realignAllDay(it, from, to) },
+                ),
+            )
+        }
+        if (events.isNotEmpty()) rescheduleAllReminders()
+        return events.size
+    }
+
 
     fun search(query: String, includeTrashed: Boolean = false): Flow<List<Item>> =
         dao.search(query, includeTrashed)

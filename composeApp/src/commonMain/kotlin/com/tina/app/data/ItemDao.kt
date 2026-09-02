@@ -28,6 +28,9 @@ interface ItemDao {
     @Query("SELECT * FROM items")
     suspend fun getEverything(): List<Item>
 
+    @Query("SELECT * FROM items WHERE allDay = 1 AND deletedAt IS NULL")
+    suspend fun allDayEvents(): List<Item>
+
     @Query("SELECT uuid FROM items")
     suspend fun allUuids(): List<String>
 

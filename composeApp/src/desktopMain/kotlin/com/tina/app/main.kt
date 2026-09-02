@@ -25,6 +25,8 @@ import com.tina.app.data.Settings
 import com.tina.app.data.SettingsRepository
 import com.tina.app.di.desktopModule
 import com.tina.app.di.initKoin
+import com.tina.app.data.syncTimeZone
+import kotlinx.coroutines.launch
 import com.tina.app.notifications.DesktopTray
 import com.tina.app.ui.KeyBus
 import com.tina.app.ui.KeyCommand
@@ -34,6 +36,10 @@ import org.koin.core.context.GlobalContext
 
 fun main() {
     initKoin(desktopModule)
+    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+        val koin = org.koin.core.context.GlobalContext.get()
+        koin.get<com.tina.app.data.ItemRepository>().syncTimeZone(koin.get())
+    }
     val settingsRepository = GlobalContext.get().get<SettingsRepository>()
     LaunchAtLogin.apply(readLaunchAtLoginSetting(settingsRepository))
 

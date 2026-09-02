@@ -86,8 +86,8 @@ android {
         applicationId = "com.peggy.app"
         minSdk = 31
         targetSdk = 36
-        versionCode = 11
-        versionName = "1.7.2"
+        versionCode = 12
+        versionName = "1.7.3"
         // the maintainer's own builds are Pro without a purchase: tina.proOverride=true in local.properties
         val local = Properties().apply {
             rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -158,7 +158,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Msi)
             packageName = "Peggy"
-            packageVersion = "1.7.2"
+            packageVersion = "1.7.3"
         }
     }
 }

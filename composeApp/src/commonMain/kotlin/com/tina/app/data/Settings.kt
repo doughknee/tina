@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.isoDayNumber
@@ -139,6 +140,7 @@ private val KEY_TRASH_RETENTION = stringPreferencesKey("trashRetention")
 private val KEY_LAUNCH_AT_LOGIN = booleanPreferencesKey("launchAtLogin")
 private val KEY_CLOSE_TO_TRAY = booleanPreferencesKey("closeToTray")
 private val KEY_ONBOARDING_SEEN = booleanPreferencesKey("onboardingSeen")
+private val KEY_LAST_TIME_ZONE = androidx.datastore.preferences.core.stringPreferencesKey("lastTimeZone")
 
 class SettingsRepository(
     private val store: DataStore<Preferences>,
@@ -261,6 +263,10 @@ class SettingsRepository(
     /** True once the first-run cards were seen or skipped. Not part of [settings]: it is not a preference. */
     val onboardingSeen: Flow<Boolean> = store.data.map { it[KEY_ONBOARDING_SEEN] ?: false }
     suspend fun setOnboardingSeen() = store.edit { it[KEY_ONBOARDING_SEEN] = true }
+
+    /** The zone all-day events were last anchored in; see [syncTimeZone]. */
+    suspend fun lastTimeZoneId(): String? = store.data.first()[KEY_LAST_TIME_ZONE]
+    suspend fun setLastTimeZoneId(id: String) = store.edit { it[KEY_LAST_TIME_ZONE] = id }
 
     /** One atomic write restoring a backed-up settings block. */
     suspend fun applyBackup(s: BackupSettings) = store.edit { p ->

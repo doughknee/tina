@@ -400,3 +400,8 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - A pin with the check inside. The pushpin candidate read as a syringe or a capital H at launcher size; the pin keeps "peg it down" and carries the check the app already used, so the notification icon and the feature graphic stay coherent.
 - One geometry, defined in `docs/assets/icon.py`, drives the adaptive foreground, the monochrome layer (outline, since one colour cannot show a check on a filled pin), the Play icon, the feature graphic and the site SVG.
 
+### All-day events across time zones (v1.7.3)
+
+- Kept the local-midnight storage. Instead of epoch-day columns (a migration plus every reader of `startAt`), the app records the zone it last ran in and, when the zone differs, re-anchors every all-day event's midnight from the old zone to the new one, then re-arms reminders. Runs on launch, on the system zone broadcast, and on desktop start.
+- The first run in a zone only records it; nothing moves until a change is observed, so existing data is never touched on upgrade.
+
