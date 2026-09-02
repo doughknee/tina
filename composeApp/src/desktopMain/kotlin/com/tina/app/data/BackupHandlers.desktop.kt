@@ -18,9 +18,10 @@ import org.koin.compose.koinInject
 @Composable
 actual fun rememberBackupHandlers(
     onExported: () -> Unit,
-    onImported: (Int) -> Unit,
+    onImported: (ImportResult?) -> Unit,
 ): BackupHandlers {
     val repository = koinInject<ItemRepository>()
+    val backups = koinInject<BackupService>()
     val settingsRepository = koinInject<SettingsRepository>()
     val scope = rememberCoroutineScope()
 
@@ -38,7 +39,7 @@ actual fun rememberBackupHandlers(
                     scope.launch {
                         withContext(Dispatchers.IO) {
                             val settings = settingsRepository.settings.first().toBackupSettings()
-                            File(directory, fileName).writeText(repository.exportJson(settings))
+                            File(directory, fileName).writeText(backups.exportJson(settings))
                         }
                         onExported()
                     }
@@ -50,15 +51,10 @@ actual fun rememberBackupHandlers(
                 val fileName = dialog.file
                 if (directory != null && fileName != null) {
                     scope.launch {
-                        val count = withContext(Dispatchers.IO) {
-                            val text = File(directory, fileName).readText()
-                            val backup = decodeBackup(text)
-                            if (backup == null) -1 else {
-                                backup.settings?.let { settingsRepository.applyBackup(it) }
-                                repository.importJson(text)
-                            }
+                        val result = withContext(Dispatchers.IO) {
+                            backups.importJson(File(directory, fileName).readText())
                         }
-                        onImported(count)
+                        onImported(result)
                     }
                 }
             },

@@ -39,6 +39,9 @@ interface ChatDao {
     @Query("SELECT * FROM chat_messages WHERE chatId = :chatId ORDER BY createdAt, id")
     suspend fun messages(chatId: Long): List<ChatMessageEntity>
 
+    @Query("SELECT * FROM chats")
+    suspend fun allChats(): List<ChatEntity>
+
     @Insert
     suspend fun insertChat(chat: ChatEntity): Long
 

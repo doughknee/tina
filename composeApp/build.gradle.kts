@@ -108,7 +108,8 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            // unsigned on a machine without a keystore (CI pull requests); signed everywhere else
+            signingConfigs.getByName("release").takeIf { it.storeFile != null }?.let { signingConfig = it }
         }
     }
 }

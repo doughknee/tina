@@ -14,7 +14,7 @@ import kotlinx.coroutines.IO
 
 @Database(
     entities = [Item::class, ChatEntity::class, ChatMessageEntity::class, OccurrenceCompletion::class],
-    version = 5,
+    version = 6,
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -70,11 +70,20 @@ private val MIGRATION_4_5 = object : Migration(4, 5) {
     }
 }
 
+/** Additive: every item gets a uuid, backfilled at random for existing rows. Items are untouched otherwise. */
+private val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE `items` ADD COLUMN `uuid` TEXT NOT NULL DEFAULT ''")
+        connection.execSQL("UPDATE `items` SET `uuid` = lower(hex(randomblob(16))) WHERE `uuid` = ''")
+        connection.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_items_uuid` ON `items` (`uuid`)")
+    }
+}
+
 fun buildDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase =
     builder
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
-        .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+        .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
         // v1 was the pre-feature scaffold with an empty placeholder table; nothing worth migrating.
         // Only that path may drop tables: a forgotten migration must crash, never wipe the user
         .fallbackToDestructiveMigrationFrom(dropAllTables = true, 1)

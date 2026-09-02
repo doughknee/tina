@@ -35,6 +35,9 @@ interface OccurrenceDao {
     @Query("SELECT * FROM occurrence_completions")
     fun observeAll(): Flow<List<OccurrenceCompletion>>
 
+    @Query("SELECT * FROM occurrence_completions")
+    suspend fun all(): List<OccurrenceCompletion>
+
     @Query("SELECT COUNT(*) FROM occurrence_completions WHERE itemId = :itemId AND epochDay = :epochDay")
     suspend fun count(itemId: Long, epochDay: Int): Int
 

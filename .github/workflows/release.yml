@@ -1,0 +1,33 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore the upload keystore
+        run: echo "${{ secrets.TINA_KEYSTORE_BASE64 }}" | base64 -d > upload.keystore
+      - name: Tests and signed bundle + APK
+        env:
+          TINA_KEYSTORE_FILE: upload.keystore
+          TINA_KEYSTORE_PASSWORD: ${{ secrets.TINA_KEYSTORE_PASSWORD }}
+          TINA_KEY_ALIAS: ${{ secrets.TINA_KEY_ALIAS }}
+          TINA_KEY_PASSWORD: ${{ secrets.TINA_KEY_PASSWORD }}
+        run: ./gradlew :composeApp:desktopTest :composeApp:bundleRelease :composeApp:assembleRelease --no-daemon --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tina-${{ github.ref_name }}
+          path: |
+            composeApp/build/outputs/bundle/release/*.aab
+            composeApp/build/outputs/apk/release/*.apk

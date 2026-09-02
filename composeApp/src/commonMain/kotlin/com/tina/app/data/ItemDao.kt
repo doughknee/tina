@@ -15,7 +15,7 @@ interface ItemDao {
     suspend fun update(item: Item)
 
     /** Soft delete: the row stays until purged, so Trash can restore it. */
-    @Query("UPDATE items SET deletedAt = :at WHERE id = :id")
+    @Query("UPDATE items SET deletedAt = :at, updatedAt = :at WHERE id = :id")
     suspend fun softDelete(id: Long, at: Long)
 
     @Query("UPDATE items SET deletedAt = NULL, updatedAt = :at WHERE id = :id")
@@ -23,6 +23,25 @@ interface ItemDao {
 
     @Query("DELETE FROM items WHERE id = :id")
     suspend fun purge(id: Long)
+
+    /** Trash and everything else: what a backup must carry. */
+    @Query("SELECT * FROM items")
+    suspend fun getEverything(): List<Item>
+
+    @Query("SELECT uuid FROM items")
+    suspend fun allUuids(): List<String>
+
+    @Query("DELETE FROM occurrence_completions WHERE itemId = :id")
+    suspend fun purgeOccurrences(id: Long)
+
+    @Query("DELETE FROM occurrence_completions WHERE itemId IN (SELECT id FROM items WHERE deletedAt IS NOT NULL AND deletedAt < :cutoffMillis)")
+    suspend fun purgeOccurrencesOlderThan(cutoffMillis: Long)
+
+    @Query("DELETE FROM occurrence_completions WHERE itemId IN (SELECT id FROM items WHERE deletedAt IS NOT NULL)")
+    suspend fun purgeTrashOccurrences()
+
+    @Query("DELETE FROM occurrence_completions")
+    suspend fun deleteAllOccurrences()
 
     @Query("SELECT * FROM items WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC")
     fun observeTrash(): Flow<List<Item>>
@@ -104,8 +123,8 @@ interface ItemDao {
     @Query("UPDATE items SET dueDate = :epochDay, updatedAt = :at WHERE id = :id")
     suspend fun reschedule(id: Long, epochDay: Int?, at: Long)
 
-    @Query("UPDATE items SET sortOrder = :sortOrder WHERE id = :id")
-    suspend fun setSortOrder(id: Long, sortOrder: Long)
+    @Query("UPDATE items SET sortOrder = :sortOrder, updatedAt = :at WHERE id = :id")
+    suspend fun setSortOrder(id: Long, sortOrder: Long, at: Long)
 
     @Query("UPDATE items SET title = :title, updatedAt = :at WHERE id = :id")
     suspend fun rename(id: Long, title: String, at: Long)

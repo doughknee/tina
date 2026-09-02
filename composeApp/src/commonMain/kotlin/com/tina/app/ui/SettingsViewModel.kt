@@ -166,4 +166,8 @@ class SettingsViewModel(
             onResult(aiParser.testConnection(now, settings.value.firstDayOfWeek))
         }
     }
+
+    fun applyBackupSettings(settings: com.tina.app.data.BackupSettings) {
+        viewModelScope.launch { repository.applyBackup(settings) }
+    }
 }

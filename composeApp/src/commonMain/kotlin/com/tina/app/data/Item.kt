@@ -18,10 +18,12 @@ enum class Priority { NONE, LOW, MEDIUM, HIGH }
  * dueDate: epoch day (wall-clock date, timezone-independent).
  * dueTime: minute of day 0..1439.
  */
-@Entity(tableName = "items")
+@Entity(tableName = "items", indices = [androidx.room.Index(value = ["uuid"], unique = true)])
 @kotlinx.serialization.Serializable
 data class Item(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    /** Stable identity that survives export, import and (one day) sync; ids are device-local. */
+    @androidx.room.ColumnInfo(defaultValue = "") val uuid: String = "",
     val title: String,
     val body: String? = null,
     val type: ItemType = ItemType.INBOX,

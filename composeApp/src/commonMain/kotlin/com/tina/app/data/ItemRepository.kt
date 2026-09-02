@@ -71,6 +71,7 @@ class ItemRepository(
     /** Irreversible; only the hold-to-confirm control in Settings calls this. */
     suspend fun deleteEverything() {
         dao.getAll().forEach { scheduler.cancel(it.id) }
+        dao.deleteAllOccurrences()
         dao.deleteAll()
     }
     fun observeNotes(): Flow<List<Item>> = dao.observeNotes()
@@ -88,8 +89,9 @@ class ItemRepository(
         dao.observeTasksDueBetween(from.toEpochDays().toInt(), to.toEpochDays().toInt())
 
     suspend fun insert(item: Item): Long {
-        val id = dao.insert(item)
-        scheduler.schedule(item.copy(id = id))
+        val stamped = if (item.uuid.isBlank()) item.copy(uuid = newUuid()) else item
+        val id = dao.insert(stamped)
+        scheduler.schedule(stamped.copy(id = id))
         return id
     }
 
@@ -126,18 +128,22 @@ class ItemRepository(
     /** Permanent, single item. */
     suspend fun purge(id: Long) {
         scheduler.cancel(id)
+        dao.purgeOccurrences(id)
         dao.purge(id)
     }
 
     suspend fun emptyTrash() {
         dao.observeTrash().first().forEach { scheduler.cancel(it.id) }
+        dao.purgeTrashOccurrences()
         dao.emptyTrash()
     }
 
     /** Runs at launch; keeps the Trash inside its retention window. */
     suspend fun purgeExpiredTrash(retentionDays: Int?) {
         if (retentionDays == null) return
-        dao.purgeOlderThan(nowMillis() - retentionDays * 24L * 60 * 60 * 1000)
+        val cutoff = nowMillis() - retentionDays * 24L * 60 * 60 * 1000
+        dao.purgeOccurrencesOlderThan(cutoff)
+        dao.purgeOlderThan(cutoff)
     }
 
     suspend fun complete(id: Long) {
@@ -163,30 +169,11 @@ class ItemRepository(
     /** Re-arm every pending reminder (boot, app start). */
     suspend fun rescheduleAllReminders() = scheduler.rescheduleAll(dao.getRemindable())
 
-    suspend fun exportJson(settings: BackupSettings? = null): String =
-        encodeBackup(dao.getAll(), nowMillis(), settings)
-
-    /**
-     * Additive import: items get fresh ids; exact (title, createdAt) duplicates
-     * of existing rows are skipped. Returns how many were imported.
-     */
-    suspend fun importJson(text: String): Int {
-        val backup = decodeBackup(text) ?: return 0
-        val existing = dao.getAll().map { it.title to it.createdAt }.toHashSet()
-        var imported = 0
-        backup.items.forEach { item ->
-            if ((item.title to item.createdAt) !in existing) {
-                insert(item.copy(id = 0))
-                imported++
-            }
-        }
-        return imported
-    }
 
     fun search(query: String, includeTrashed: Boolean = false): Flow<List<Item>> =
         dao.search(query, includeTrashed)
 
-    suspend fun setSortOrder(id: Long, sortOrder: Long) = dao.setSortOrder(id, sortOrder)
+    suspend fun setSortOrder(id: Long, sortOrder: Long) = dao.setSortOrder(id, sortOrder, nowMillis())
 
     suspend fun rename(id: Long, title: String) = dao.rename(id, title, nowMillis())
 
@@ -268,3 +255,6 @@ fun itemFromCapture(
         else -> base
     }
 }
+
+@OptIn(kotlin.uuid.ExperimentalUuidApi::class)
+fun newUuid(): String = kotlin.uuid.Uuid.random().toHexString()

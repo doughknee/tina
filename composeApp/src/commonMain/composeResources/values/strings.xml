@@ -148,6 +148,7 @@
     <string name="export_data">Export backup</string>
     <string name="import_data">Import backup</string>
     <string name="export_done">Backup saved</string>
+    <string name="import_restore_settings">Restore settings</string>
     <string name="import_done">%1$d items imported</string>
     <string name="import_failed">Not a tina backup</string>
 

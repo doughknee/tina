@@ -31,7 +31,7 @@ class AutoBackupWorker(
     context: Context,
     params: WorkerParameters,
 ) : CoroutineWorker(context, params), KoinComponent {
-    private val repository: ItemRepository by inject()
+    private val backups: BackupService by inject()
     private val settingsRepository: SettingsRepository by inject()
 
     override suspend fun doWork(): Result {
@@ -42,10 +42,14 @@ class AutoBackupWorker(
             val today = kotlin.time.Clock.System.now()
                 .toLocalDateTime(TimeZone.currentSystemDefault()).date
             val dir = autoBackupDir(applicationContext)
-            File(dir, "tina-auto-$today.json")
-                .writeText(repository.exportJson(settings.toBackupSettings()))
+            // temp file then rename: a crash mid-write must never leave a truncated backup in the set
+            val target = File(dir, "tina-auto-$today.json")
+            val temp = File(dir, "tina-auto-$today.json.tmp")
+            temp.writeText(backups.exportJson(settings.toBackupSettings()))
+            if (!temp.renameTo(target)) { target.delete(); temp.renameTo(target) }
 
             dir.listFiles()
+                ?.filter { it.extension == "json" }
                 ?.sortedByDescending { it.lastModified() }
                 ?.drop(KEEP_BACKUPS)
                 ?.forEach { it.delete() }
@@ -72,7 +76,8 @@ object AutoBackupScheduler {
             .build()
         manager.enqueueUniquePeriodicWork(
             AUTO_BACKUP_WORK,
-            ExistingPeriodicWorkPolicy.KEEP,
+            // UPDATE so a changed period or constraint reaches installs that already enqueued the job
+            ExistingPeriodicWorkPolicy.UPDATE,
             request,
         )
     }

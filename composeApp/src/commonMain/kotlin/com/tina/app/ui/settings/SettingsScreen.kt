@@ -136,6 +136,7 @@ import com.tina.app.resources.export_data
 import com.tina.app.resources.export_done
 import com.tina.app.resources.import_data
 import com.tina.app.resources.import_done
+import com.tina.app.resources.import_restore_settings
 import com.tina.app.resources.import_failed
 import com.tina.app.resources.ok
 import com.tina.app.resources.open_to_capture
@@ -313,11 +314,25 @@ fun SettingsScreen(
     val importFailedText = stringResource(Res.string.import_failed)
     val backupHandlers = rememberBackupHandlers(
         onExported = { scope.launch { snackbarHostState.showSnackbar(exportDoneText) } },
-        onImported = { count ->
+        onImported = { result ->
             scope.launch {
-                snackbarHostState.showSnackbar(
-                    if (count < 0) importFailedText else getString(Res.string.import_done, count),
-                )
+                if (result == null) {
+                    snackbarHostState.showSnackbar(importFailedText)
+                    return@launch
+                }
+                val message = getString(Res.string.import_done, result.items)
+                val settings = result.settings
+                // settings ride along as an offer, never as a side effect of restoring items
+                if (settings == null) {
+                    snackbarHostState.showSnackbar(message)
+                } else {
+                    val choice = snackbarHostState.showSnackbar(
+                        message,
+                        actionLabel = getString(Res.string.import_restore_settings),
+                        duration = androidx.compose.material3.SnackbarDuration.Long,
+                    )
+                    if (choice == androidx.compose.material3.SnackbarResult.ActionPerformed) viewModel.applyBackupSettings(settings)
+                }
             }
         },
     )

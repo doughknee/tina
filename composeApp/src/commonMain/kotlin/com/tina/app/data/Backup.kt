@@ -96,12 +96,36 @@ fun Settings.toBackupSettings(): BackupSettings = BackupSettings(
 )
 
 @Serializable
+data class BackupOccurrence(val itemUuid: String, val epochDay: Int, val skipped: Boolean, val completedAt: Long)
+
+@Serializable
+data class BackupMessage(val role: String, val content: String, val createdAt: Long)
+
+@Serializable
+data class BackupChat(
+    val title: String,
+    val model: String? = null,
+    val reasoning: String = "BALANCED",
+    val createdAt: Long,
+    val updatedAt: Long,
+    val messages: List<BackupMessage> = emptyList(),
+)
+
+const val BACKUP_VERSION = 2
+
+/**
+ * v1 carried items and settings. v2 adds trashed items (in [items], with deletedAt set), per-occurrence
+ * completions keyed by item uuid, and Ask chats. A v1 file still imports; a file newer than this build refuses.
+ */
+@Serializable
 data class Backup(
-    val version: Int = 1,
+    val version: Int = BACKUP_VERSION,
     val exportedAt: Long,
     val items: List<Item>,
     // absent in v1.0 backups; import tolerates both directions
     val settings: BackupSettings? = null,
+    val occurrences: List<BackupOccurrence> = emptyList(),
+    val chats: List<BackupChat> = emptyList(),
 )
 
 private val json = Json {
@@ -110,8 +134,15 @@ private val json = Json {
     encodeDefaults = true
 }
 
-fun encodeBackup(items: List<Item>, exportedAt: Long, settings: BackupSettings? = null): String =
-    json.encodeToString(Backup(exportedAt = exportedAt, items = items, settings = settings))
+fun encodeBackup(
+    items: List<Item>,
+    exportedAt: Long,
+    settings: BackupSettings? = null,
+    occurrences: List<BackupOccurrence> = emptyList(),
+    chats: List<BackupChat> = emptyList(),
+): String =
+    json.encodeToString(Backup(exportedAt = exportedAt, items = items, settings = settings, occurrences = occurrences, chats = chats))
 
-/** Returns null if the file isn't a tina backup. */
-fun decodeBackup(text: String): Backup? = runCatching { json.decodeFromString<Backup>(text) }.getOrNull()
+/** Returns null if the file isn't a tina backup, or was written by a newer tina than this one. */
+fun decodeBackup(text: String): Backup? =
+    runCatching { json.decodeFromString<Backup>(text) }.getOrNull()?.takeIf { it.version <= BACKUP_VERSION }

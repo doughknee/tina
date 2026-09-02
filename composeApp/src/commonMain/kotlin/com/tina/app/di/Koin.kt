@@ -29,6 +29,10 @@ val commonModule = module {
     single { buildDatabase(get()) }
     single { get<AppDatabase>().itemDao() }
     single { ItemRepository(get(), get()) }
+    single {
+        val db = get<AppDatabase>()
+        com.tina.app.data.BackupService(db, db.itemDao(), db.occurrenceDao(), db.chatDao(), get())
+    }
     single { SettingsRepository(get(), get()) }
     single { AiCaptureParser(get(), get(), get()) }
     single { com.tina.app.ai.AiImprover(get(), get()) }
