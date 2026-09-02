@@ -156,6 +156,7 @@ class AiChat(
                 else -> return null
             }
         }.trimEnd('/')
+        if (!isAllowedAiEndpoint(baseUrl)) return null
         val body = buildJsonObject {
             put("model", model)
             put("messages", buildJsonArray {

@@ -29,7 +29,7 @@ class BackupTest {
         val settings = Settings(
             themeMode = ThemeMode.DARK,
             aiProvider = AiProvider.ANTHROPIC,
-            aiModel = "claude-haiku-4-5-20251001",
+            aiModel = "claude-haiku-4-5",
             aiApiKey = "sk-test",
             appLock = true,
             undoWindowSeconds = 10,
@@ -38,6 +38,8 @@ class BackupTest {
         ).toBackupSettings()
         val decoded = decodeBackup(encodeBackup(emptyList(), exportedAt = 1, settings = settings))
         assertEquals(settings, decoded?.settings)
+        // the key must never be in a backup file
+        assertEquals(false, encodeBackup(emptyList(), exportedAt = 1, settings = settings).contains("sk-test"))
         assertEquals("DARK", decoded?.settings?.themeMode)
         assertEquals(true, decoded?.settings?.appLock)
         assertEquals(10, decoded?.settings?.undoWindowSeconds)
@@ -46,8 +48,8 @@ class BackupTest {
 
     @Test fun settingsRoundTrip() {
         val settings = BackupSettings(
-            themeMode = "DARK", aiProvider = "ANTHROPIC", aiModel = "claude-haiku-4-5-20251001",
-            aiApiKey = "sk-test", aiInstructions = "lunch is always noon",
+            themeMode = "DARK", aiProvider = "ANTHROPIC", aiModel = "claude-haiku-4-5",
+            aiInstructions = "lunch is always noon",
         )
         val decoded = decodeBackup(encodeBackup(emptyList(), exportedAt = 1, settings = settings))
         assertEquals(settings, decoded?.settings)

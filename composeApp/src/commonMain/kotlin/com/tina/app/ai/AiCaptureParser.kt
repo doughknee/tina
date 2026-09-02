@@ -42,7 +42,7 @@ val ANTHROPIC_MODELS = listOf(
     AnthropicModel("claude-opus-5", "Claude Opus 5"),
     AnthropicModel("claude-fable-5", "Claude Fable 5"),
     AnthropicModel("claude-sonnet-5", "Claude Sonnet 5"),
-    AnthropicModel("claude-haiku-4-5-20251001", "Claude Haiku 4.5"),
+    AnthropicModel("claude-haiku-4-5", "Claude Haiku 4.5"),
 )
 const val OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434/v1"
 const val OPENAI_DEFAULT_BASE_URL = "https://api.openai.com/v1"
@@ -191,6 +191,7 @@ class AiCaptureParser(
                 else -> return null
             }
         }.trimEnd('/')
+        if (!isAllowedAiEndpoint(baseUrl)) error("insecure endpoint: use https or a LAN address")
         val body = buildJsonObject {
             put("model", settings.aiModel)
             put("temperature", 0)

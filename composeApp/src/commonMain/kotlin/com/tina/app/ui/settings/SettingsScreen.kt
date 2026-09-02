@@ -269,7 +269,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /** Bumped with each release; About reads it. */
-const val APP_VERSION = "1.4.0"
 
 private val REMINDER_OPTIONS = listOf(0, 5, 10, 15, 30, 60)
 private val FIRST_DAY_OPTIONS = listOf(DayOfWeek.MONDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
@@ -1119,7 +1118,7 @@ private fun rememberSettingsSections(
             SettingsRow.Value(
                 id = "version",
                 title = stringResource(Res.string.set_version),
-                supporting = APP_VERSION,
+                supporting = appVersionName(),
                 keywords = listOf("build", "release"),
             ),
             SettingsRow.Navigation(

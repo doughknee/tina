@@ -29,6 +29,7 @@ val desktopModule = module {
                 .absolutePath
         }
     }
+    single<com.tina.app.data.SecretCipher> { com.tina.app.data.PlainSecretCipher }
     single<Notifier> { PlatformNotifier() }
     single<ReminderScheduler> { NoopReminderScheduler }
     single<com.tina.app.data.NetworkStatus> { com.tina.app.data.DesktopNetworkStatus() }

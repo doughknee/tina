@@ -47,19 +47,7 @@ Desktop shortcuts: `Ctrl+N` focus capture · `N` new item on the current tab · 
 
 APK: `composeApp\build\outputs\apk\release\composeApp-release.apk` — install with `adb install -r <apk>`.
 
-Signing uses the self-signed keystore referenced by `keystore.properties` (both gitignored). On a fresh clone, regenerate them:
-
-```
-keytool -genkeypair -v -keystore release.keystore -alias tina -keyalg RSA -keysize 2048 -validity 10000 -storepass tina-local-release -keypass tina-local-release -dname "CN=tina"
-```
-
-```
-keystore.properties:
-storeFile=release.keystore
-storePassword=tina-local-release
-keyAlias=tina
-keyPassword=tina-local-release
-```
+Signing reads `keystore.properties` (gitignored) or the `TINA_KEYSTORE_FILE`, `TINA_KEYSTORE_PASSWORD`, `TINA_KEY_ALIAS`, `TINA_KEY_PASSWORD` environment variables (CI). On a fresh clone generate a keystore with `keytool -genkeypair` and write the four properties; never commit them. Under Play App Signing this is the upload key only.
 
 Sideload updates must be signed with the same keystore — back `release.keystore` up if you distribute anything.
 

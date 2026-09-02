@@ -9,3 +9,6 @@ expect object Platform {
     val isAndroid: Boolean
     val isDesktop: Boolean
 }
+
+/** The build's version name; never a constant that drifts from Gradle. */
+expect fun appVersionName(): String

@@ -30,6 +30,7 @@ val androidModule = module {
             androidContext().filesDir.resolve("settings.preferences_pb").absolutePath
         }
     }
+    single<com.tina.app.data.SecretCipher> { com.tina.app.data.KeystoreSecretCipher() }
     single<Notifier> { PlatformNotifier(androidContext()) }
     single<ReminderScheduler> { AndroidReminderScheduler(androidContext()) }
     single<com.tina.app.data.NetworkStatus> { com.tina.app.data.AndroidNetworkStatus(androidContext()) }

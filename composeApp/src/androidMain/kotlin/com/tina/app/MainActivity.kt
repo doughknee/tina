@@ -6,6 +6,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.room.useWriterConnection
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
     private val settingsRepository: SettingsRepository by inject()
+    private val database: com.tina.app.data.AppDatabase by inject()
 
     /** When the app last went to the background; drives the app-lock grace period. */
     private var backgroundedAt = 0L
@@ -106,6 +108,14 @@ class MainActivity : ComponentActivity() {
         backgroundedAt = System.currentTimeMillis()
         // keep the home-screen widget in sync with whatever changed in-app
         lifecycleScope.launch { TodayWidget().updateAll(applicationContext) }
+        // Android Auto Backup copies the database file as-is; fold the WAL in so a restore is consistent
+        lifecycleScope.launch {
+            runCatching {
+                database.useWriterConnection { transactor ->
+                    transactor.usePrepared("PRAGMA wal_checkpoint(TRUNCATE)") { statement -> statement.step() }
+                }
+            }
+        }
     }
 
     /**

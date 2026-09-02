@@ -75,6 +75,7 @@ fun buildDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase =
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
         .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
-        // v1 was the pre-feature scaffold with an empty placeholder table; nothing worth migrating
-        .fallbackToDestructiveMigration(dropAllTables = true)
+        // v1 was the pre-feature scaffold with an empty placeholder table; nothing worth migrating.
+        // Only that path may drop tables: a forgotten migration must crash, never wipe the user
+        .fallbackToDestructiveMigrationFrom(dropAllTables = true, 1)
         .build()

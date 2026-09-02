@@ -66,7 +66,7 @@
     <string name="section_evening">Evening</string>
     <string name="section_anytime">Anytime</string>
     <string name="today_empty">Nothing planned</string>
-    <string name="plan_empty_hint">Type below. “Call Sam tomorrow at 3” becomes a task on Thursday.</string>
+    <string name="plan_empty_hint">Type below. “Call Sam tomorrow at 3” becomes a task for tomorrow at 3 PM.</string>
     <string name="plan_empty_first">Your plans will collect here. Type anything below to start.</string>
     <string name="date_next_week">Next week</string>
     <string name="date_none">No date</string>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and earlier cloud backup: keep the database and auto-backups, never the settings
+     file (it can hold an AI key) -->
+<full-backup-content>
+    <exclude domain="file" path="settings.preferences_pb" />
+</full-backup-content>

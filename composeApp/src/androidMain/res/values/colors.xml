@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- brand seed; Theme.kt derives the palette from the same value -->
+    <color name="ic_launcher_background">#4F5FD6</color>
+    <color name="window_light">#FCF8FF</color>
+    <color name="window_dark">#101014</color>
+</resources>

@@ -139,7 +139,10 @@ private val KEY_TRASH_RETENTION = stringPreferencesKey("trashRetention")
 private val KEY_LAUNCH_AT_LOGIN = booleanPreferencesKey("launchAtLogin")
 private val KEY_CLOSE_TO_TRAY = booleanPreferencesKey("closeToTray")
 
-class SettingsRepository(private val store: DataStore<Preferences>) {
+class SettingsRepository(
+    private val store: DataStore<Preferences>,
+    private val cipher: SecretCipher = PlainSecretCipher,
+) {
     val settings: Flow<Settings> = store.data.map { p ->
         Settings(
             themeMode = p[KEY_THEME]?.let { value -> ThemeMode.entries.firstOrNull { it.name == value } }
@@ -153,7 +156,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
             } ?: AiProvider.OFF,
             aiBaseUrl = p[KEY_AI_BASE_URL] ?: "",
             aiModel = p[KEY_AI_MODEL] ?: "",
-            aiApiKey = p[KEY_AI_API_KEY] ?: "",
+            aiApiKey = cipher.decrypt(p[KEY_AI_API_KEY] ?: ""),
             aiWorkspaceId = p[KEY_AI_WORKSPACE_ID] ?: "",
             aiRefineMode = p[KEY_AI_REFINE_MODE]?.let { value ->
                 AiRefineMode.entries.firstOrNull { it.name == value }
@@ -216,7 +219,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
         }
     suspend fun setAiBaseUrl(url: String) = store.edit { it[KEY_AI_BASE_URL] = url.trim() }
     suspend fun setAiModel(model: String) = store.edit { it[KEY_AI_MODEL] = model.trim() }
-    suspend fun setAiApiKey(key: String) = store.edit { it[KEY_AI_API_KEY] = key.trim() }
+    suspend fun setAiApiKey(key: String) = store.edit { it[KEY_AI_API_KEY] = cipher.encrypt(key.trim()) }
     suspend fun setAiWorkspaceId(id: String) = store.edit { it[KEY_AI_WORKSPACE_ID] = id.trim() }
     suspend fun setAiRefineMode(mode: AiRefineMode) = store.edit { it[KEY_AI_REFINE_MODE] = mode.name }
     suspend fun setAiInstructions(text: String) = store.edit { it[KEY_AI_INSTRUCTIONS] = text }
@@ -264,7 +267,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
         p[KEY_AI_PROVIDER] = s.aiProvider
         p[KEY_AI_BASE_URL] = s.aiBaseUrl
         p[KEY_AI_MODEL] = s.aiModel
-        p[KEY_AI_API_KEY] = s.aiApiKey
+        // the API key is deliberately not part of a backup; it stays where it was
         p[KEY_AI_WORKSPACE_ID] = s.aiWorkspaceId
         p[KEY_AI_REFINE_MODE] = s.aiRefineMode
         p[KEY_AI_INSTRUCTIONS] = s.aiInstructions

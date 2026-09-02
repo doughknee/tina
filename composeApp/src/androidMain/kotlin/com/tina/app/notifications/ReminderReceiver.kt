@@ -104,7 +104,7 @@ fun showReminderNotification(context: Context, item: Item) {
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
     val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
-        .setSmallIcon(R.drawable.ic_capture)
+        .setSmallIcon(R.drawable.ic_notification)
         .setContentTitle(item.title)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .setCategory(NotificationCompat.CATEGORY_REMINDER)

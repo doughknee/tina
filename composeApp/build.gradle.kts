@@ -92,14 +92,18 @@ android {
         create("release") {
             val props = Properties()
             val propsFile = rootProject.file("keystore.properties")
-            if (propsFile.exists()) {
-                propsFile.inputStream().use { props.load(it) }
-                storeFile = rootProject.file(props.getProperty("storeFile"))
-                storePassword = props.getProperty("storePassword")
-                keyAlias = props.getProperty("keyAlias")
-                keyPassword = props.getProperty("keyPassword")
-            }
+            if (propsFile.exists()) propsFile.inputStream().use { props.load(it) }
+            // CI signs from secrets; a developer machine from the gitignored properties file
+            fun secret(name: String, env: String) = System.getenv(env) ?: props.getProperty(name)
+            secret("storeFile", "TINA_KEYSTORE_FILE")?.let { storeFile = rootProject.file(it) }
+            storePassword = secret("storePassword", "TINA_KEYSTORE_PASSWORD")
+            keyAlias = secret("keyAlias", "TINA_KEY_ALIAS")
+            keyPassword = secret("keyPassword", "TINA_KEY_PASSWORD")
         }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
