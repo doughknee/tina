@@ -324,3 +324,9 @@ Running log of choices made without asking, newest last.
 - **Modelled on the system settings page.** The main page is a search pill and one card per category (tinted circle icon, title, the first three row titles as the summary), grouped the way Android groups them: everyday first, About last. Each category opens its own page with the rows it already had. The section data (`rememberSettingsSections`) is unchanged; the hub and section pages are two renderings of it, chosen by `sectionId`.
 - **Search lands on the row.** A result opens the category page with that row highlighted (`SettingsSectionRoute(sectionId, highlight)`), instead of scrolling one long page.
 - **Summaries are derived**, not written: the first three distinct row titles. ponytail: a hand-written summary per category if a derived one ever reads badly.
+
+## Why the app kept dropping to 60 Hz
+
+- **Cause.** Android 15+ "frame rate power savings": the View toolkit votes a refresh rate per invalidation and trims to 60 Hz when redraws look small. A Compose app is one View, so a caret blink or a chip toggle voted 60 and SurfaceFlinger pinned tina's uid there (`frameRateOverride {uid=… 60}` in `dumpsys display`); the next big animation then ran at half rate until the override aged out. Targeting SDK 35+ opts the app in.
+- **What did not work.** Voting `REQUESTED_FRAME_RATE_CATEGORY_HIGH` from the Compose view: on this Pixel "high" maps to 90 Hz (`frameRateCategoryRate {normal=60, high=90}`) and the recordings got *worse* (17–25 ms frames).
+- **Fix.** `window.isFrameRatePowerSavingsBalanced = false` in `MainActivity.onCreate` (API 35+). After it the override no longer appears at all and page transitions record at a steady 8 ms; the keyboard rise is 8 ms with the odd 16 ms frame from the IME itself.

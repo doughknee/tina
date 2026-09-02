@@ -47,6 +47,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        // Android 15+ trims the refresh rate for windows whose redraws look small (a caret, a
+        // chip), and a Compose app is one big View, so tina kept getting pinned to 60 Hz mid-use
+        // ("frameRateOverride uid=... 60" in dumpsys display). Opt out: the panel picks its rate.
+        if (android.os.Build.VERSION.SDK_INT >= 35) window.isFrameRatePowerSavingsBalanced = false
         handleFocusCapture(intent)
 
         // "Hide in app switcher" — FLAG_SECURE also blanks the recents thumbnail
