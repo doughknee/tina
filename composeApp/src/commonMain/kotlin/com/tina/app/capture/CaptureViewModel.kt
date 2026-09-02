@@ -86,7 +86,8 @@ class CaptureViewModel(
     var saveCount by mutableStateOf(0)
         private set
 
-    private var lastSavedId: Long? = null
+    var lastSavedId: Long? = null
+        private set
     private val tz get() = TimeZone.currentSystemDefault()
 
     val parsed: ParsedCapture

@@ -396,6 +396,8 @@
     <string name="time_hr_ago">%1$s h ago</string>
     <string name="time_day_ago">%1$s d ago</string>
     <string name="captured">Captured</string>
+    <string name="idea_saved">Idea saved</string>
+    <string name="action_open">Open</string>
     <string name="undo">Undo</string>
     <string name="chip_remove">Remove</string>
 

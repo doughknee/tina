@@ -295,6 +295,7 @@ fun Shell(
                             }
                         },
                         blendWithSheet = suggestionsOpen || askVisible,
+                        onOpenNote = onOpenNote,
                         viewModel = captureViewModel,
                     )
                 }

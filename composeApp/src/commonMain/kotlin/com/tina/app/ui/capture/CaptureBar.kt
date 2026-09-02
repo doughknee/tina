@@ -53,7 +53,9 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.toShape
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -118,7 +120,9 @@ import com.tina.app.resources.starter_at_9
 import com.tina.app.resources.capture_save
 import com.tina.app.resources.capture_type_state
 import com.tina.app.resources.capture_voice
+import com.tina.app.resources.action_open
 import com.tina.app.resources.captured
+import com.tina.app.resources.idea_saved
 import com.tina.app.resources.chip_remove
 import com.tina.app.resources.mode_ask
 import com.tina.app.resources.mode_capture
@@ -161,6 +165,8 @@ fun CaptureBar(
     focusRequester: FocusRequester,
     /** The shell shows the suggestions sheet while the empty field has focus. */
     onFocusChanged: (Boolean) -> Unit,
+    /** An idea's snackbar offers Open: the note continues in the editor. */
+    onOpenNote: (Long) -> Unit = {},
     /** True while a sheet is up: the bar paints the sheet's surface so the two read as one panel. */
     blendWithSheet: Boolean,
     viewModel: CaptureViewModel,
@@ -172,6 +178,8 @@ fun CaptureBar(
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val capturedText = stringResource(Res.string.captured)
+    val ideaSavedText = stringResource(Res.string.idea_saved)
+    val openText = stringResource(Res.string.action_open)
     val undoText = stringResource(Res.string.undo)
     val refinedText = stringResource(Res.string.ai_refined)
 
@@ -217,6 +225,7 @@ fun CaptureBar(
             onAskSend(question)
             return
         }
+        val savedIdea = viewModel.ideaMode
         viewModel.save {
             haptic.performHapticFeedback(HapticFeedbackType.Confirm)
             if (!settings.keepKeyboardUp) {
@@ -224,7 +233,14 @@ fun CaptureBar(
                 keyboard?.hide()
             }
             scope.launch {
-                if (snackbarHostState.showUndo(capturedText, undoText, undoWindow)) viewModel.undoLastSave()
+                val id = viewModel.lastSavedId
+                if (savedIdea && id != null) {
+                    // an idea is usually the start of something: one tap continues it in the editor
+                    val result = snackbarHostState.showSnackbar(ideaSavedText, actionLabel = openText, duration = SnackbarDuration.Short)
+                    if (result == SnackbarResult.ActionPerformed) onOpenNote(id)
+                } else if (snackbarHostState.showUndo(capturedText, undoText, undoWindow)) {
+                    viewModel.undoLastSave()
+                }
             }
         }
     }

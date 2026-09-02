@@ -341,3 +341,7 @@ Running log of choices made without asking, newest last.
 
 - **Swipes are per page, on the one row.** `ItemRow` already owned swipe (right = complete, left = delete). Rather than nest a second `SwipeToDismissBox`, it takes optional `swipeRight` / `swipeLeft` overrides (`SwipeAction`: icon, tone, action). Sort passes Today (right) and Someday (left), both through the same undo path as the chips; delete stays on the row menu there. Everywhere else the defaults are unchanged.
 - **Title = day / week / month, relative when it can be.** Day: "Today" over "Wednesday, September 2" (or the weekday over the date); with the month grid up the second line names the month being scrolled. Week: "This week" / "Next week" / "Last week" over the range, else the range over the year. Month: month over year. All: "Everything".
+
+## An idea's snackbar offers Open
+
+- Saving in Idea mode shows "Idea saved · Open" instead of "Captured · Undo": an idea is usually the start of something, so one tap continues it in the note editor. The editor has delete for the rare wrong save; Plan-mode captures keep Undo.
