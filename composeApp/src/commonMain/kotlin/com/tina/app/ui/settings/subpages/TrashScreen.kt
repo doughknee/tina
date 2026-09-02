@@ -148,7 +148,7 @@ fun TrashScreen(onBack: () -> Unit, viewModel: TrashViewModel = koinViewModel())
         topBar = {
             TopAppBar(
                 title = {
-                    Text(stringResource(Res.string.trash_title), style = MaterialTheme.typography.headlineSmall)
+                    Text(stringResource(Res.string.trash_title), style = MaterialTheme.typography.headlineSmallEmphasized)
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

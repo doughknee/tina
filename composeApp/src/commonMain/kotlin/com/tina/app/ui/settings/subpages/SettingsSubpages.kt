@@ -35,7 +35,7 @@ fun SettingsSubpageScaffold(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(title, style = MaterialTheme.typography.headlineSmall) },
+                title = { Text(title, style = MaterialTheme.typography.headlineSmallEmphasized) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(Res.string.back))

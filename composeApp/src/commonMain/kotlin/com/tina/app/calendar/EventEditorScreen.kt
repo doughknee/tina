@@ -214,7 +214,7 @@ private fun EventEditorContent(item: Item, viewModel: EventEditorViewModel, modi
                 if (it.isNotBlank()) viewModel.setTitle(it.trim())
             },
             modifier = Modifier.fillMaxWidth(),
-            textStyle = MaterialTheme.typography.titleLarge,
+            textStyle = MaterialTheme.typography.titleLargeEmphasized,
         )
 
         Row(
@@ -229,7 +229,7 @@ private fun EventEditorContent(item: Item, viewModel: EventEditorViewModel, modi
         ) {
             Text(
                 stringResource(Res.string.event_all_day),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 modifier = Modifier.weight(1f),
             )
             Switch(checked = item.allDay, onCheckedChange = null)
@@ -539,7 +539,7 @@ private fun CustomRepeatDialog(
                     IconButton(onClick = { if (interval > 1) interval-- }) {
                         Icon(Icons.Outlined.Remove, contentDescription = null)
                     }
-                    Text(interval.toString(), style = MaterialTheme.typography.titleMedium)
+                    Text(interval.toString(), style = MaterialTheme.typography.titleMediumEmphasized)
                     IconButton(onClick = { interval++ }) {
                         Icon(Icons.Outlined.Add, contentDescription = null)
                     }

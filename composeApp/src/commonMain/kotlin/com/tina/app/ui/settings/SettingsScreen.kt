@@ -427,7 +427,7 @@ fun SettingsScreen(
 private fun SettingsSearchField(query: String, onQueryChange: (String) -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shape = RoundedCornerShape(28.dp),
+        shape = MaterialTheme.shapes.extraLarge,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).height(56.dp),
     ) {
         TextField(
@@ -1292,7 +1292,7 @@ private fun DeleteEverythingCard(viewModel: SettingsViewModel, snackbarHostState
 
     Surface(
         color = MaterialTheme.colorScheme.errorContainer,
-        shape = RoundedCornerShape(20.dp),
+        shape = MaterialTheme.shapes.largeIncreased,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(Modifier.padding(16.dp)) {

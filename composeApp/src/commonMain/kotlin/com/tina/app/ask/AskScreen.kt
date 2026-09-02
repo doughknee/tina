@@ -274,7 +274,7 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
             Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)) {
                 Text(
                     stringResource(Res.string.ask_history),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
                 if (historyChats.isEmpty()) {

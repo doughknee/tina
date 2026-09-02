@@ -397,7 +397,7 @@ fun PlaceholderRow(row: SettingsRow) {
         trailingContent = {
             Surface(
                 color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                shape = RoundedCornerShape(8.dp),
+                shape = MaterialTheme.shapes.small,
             ) {
                 Text(
                     stringResource(Res.string.set_soon),

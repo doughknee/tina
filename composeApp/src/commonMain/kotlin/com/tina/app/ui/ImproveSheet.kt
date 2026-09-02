@@ -126,7 +126,7 @@ fun ImproveSheet(
             Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(stringResource(Res.string.improve_title), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(Res.string.improve_title), style = MaterialTheme.typography.titleMediumEmphasized)
 
             when {
                 loading -> Row(

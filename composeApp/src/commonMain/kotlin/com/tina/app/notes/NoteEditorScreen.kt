@@ -179,9 +179,9 @@ fun NoteEditorScreen(
                 value = titleText,
                 onValueChange = { titleText = it },
                 modifier = Modifier.fillMaxWidth(),
-                textStyle = MaterialTheme.typography.headlineSmall,
+                textStyle = MaterialTheme.typography.headlineSmallEmphasized,
                 placeholder = {
-                    Text(stringResource(Res.string.note_untitled), style = MaterialTheme.typography.headlineSmall)
+                    Text(stringResource(Res.string.note_untitled), style = MaterialTheme.typography.headlineSmallEmphasized)
                 },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,

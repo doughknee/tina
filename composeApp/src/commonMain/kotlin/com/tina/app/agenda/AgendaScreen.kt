@@ -291,7 +291,7 @@ fun AgendaScreen(
                         Modifier.combinedClickable(enabled = toggleable, onClick = { monthMode = !monthMode }),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(title, style = MaterialTheme.typography.titleLarge)
+                        Text(title, style = MaterialTheme.typography.titleLargeEmphasized)
                         if (toggleable) {
                             Icon(
                                 if (monthMode) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
@@ -785,7 +785,7 @@ private fun DuplicateSheet(
         Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)) {
             Text(
                 stringResource(Res.string.dup_title, all.size),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 modifier = Modifier.padding(bottom = 8.dp),
             )
             all.forEach { copy ->
@@ -874,7 +874,7 @@ private fun InboxEntryRow(count: Int, onClick: () -> Unit, modifier: Modifier = 
     Surface(
         onClick = onClick,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
-        shape = RoundedCornerShape(12.dp),
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
         Row(
@@ -950,7 +950,7 @@ private fun PilledWeek(
     val names = stringArrayResource(Res.array.weekdays_full)
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shape = RoundedCornerShape(20.dp),
+        shape = MaterialTheme.shapes.largeIncreased,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
         Column(Modifier.padding(vertical = 4.dp)) {

@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -47,7 +46,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.InputChip
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.toShape
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Surface
@@ -218,7 +219,7 @@ fun CaptureBar(
     Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            shape = RoundedCornerShape(26.dp),
+            shape = MaterialTheme.shapes.extraLarge,
             modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
         ) {
             Row(Modifier.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -482,7 +483,7 @@ fun CaptureChips(viewModel: CaptureViewModel, modifier: Modifier = Modifier) {
     }
 }
 
-/** Big check-in-a-circle that springs in and fades out after every save. */
+/** A soft burst that springs in with a quarter-turn and fades out after every save. */
 @Composable
 fun SaveBurst(trigger: Int, modifier: Modifier = Modifier) {
     val scale = remember { Animatable(0f) }
@@ -509,9 +510,11 @@ fun SaveBurst(trigger: Int, modifier: Modifier = Modifier) {
                 .graphicsLayer {
                     scaleX = scale.value
                     scaleY = scale.value
+                    // settles from a quarter-turn as it grows, so the points read as motion
+                    rotationZ = (1f - scale.value) * 90f
                     this.alpha = alpha.value
                 }
-                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                .background(MaterialTheme.colorScheme.primaryContainer, MaterialShapes.SoftBurst.toShape()),
             contentAlignment = Alignment.Center,
         ) {
             Icon(

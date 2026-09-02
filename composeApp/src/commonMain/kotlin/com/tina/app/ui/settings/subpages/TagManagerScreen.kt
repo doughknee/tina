@@ -121,7 +121,7 @@ fun TagManagerScreen(onBack: () -> Unit, viewModel: TagManagerViewModel = koinVi
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.tags_title), style = MaterialTheme.typography.headlineSmall) },
+                title = { Text(stringResource(Res.string.tags_title), style = MaterialTheme.typography.headlineSmallEmphasized) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(Res.string.back))

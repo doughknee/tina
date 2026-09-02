@@ -194,7 +194,7 @@ private fun DetailContent(
                 if (it.isNotBlank()) viewModel.setTitle(it.trim())
             },
             modifier = Modifier.fillMaxWidth().sharedItemTitle(item.id),
-            textStyle = MaterialTheme.typography.titleLarge,
+            textStyle = MaterialTheme.typography.titleLargeEmphasized,
         )
 
         ConnectedButtonGroup(
