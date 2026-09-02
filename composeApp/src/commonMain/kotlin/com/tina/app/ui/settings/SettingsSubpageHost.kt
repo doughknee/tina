@@ -90,6 +90,12 @@ fun SettingsSubpageHost(
             title = stringResource(Res.string.whats_new_title),
             onBack = onBack,
             entries = listOf(
+                "1.7 — Trust" to
+                    "Repeating reminders ring every time, backups carry everything, your AI key is " +
+                        "encrypted, Ask asks before big changes, tina Pro groundwork, and a real icon.",
+                "1.6 — Swipe to sort" to
+                    "Swipe triage on Sort, the settings hub, series editing, empty states and a " +
+                        "quick-settings tile for ideas.",
                 "1.5 — Plan, Sort, Ideas" to
                     "Pages named for what you do there, Idea mode for notes, one calendar for every " +
                         "zoom level, search as a sheet, and a smoother keyboard.",

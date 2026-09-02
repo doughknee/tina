@@ -2,7 +2,7 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## Unreleased (v1.7 "Trust", in progress)
+## v1.7 "Trust" (unreleased; version bumped, not yet tagged)
 
 ### Reminders
 - Repeating tasks ring for every occurrence, not just the first.
@@ -22,6 +22,9 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 - Release builds are 6× smaller (11.7 MB from 69 MB).
 - Shared text is capped at 5,000 characters; AI endpoints over plain http are limited to your own network.
 - Version shown in About is the build's version.
+
+### Ask
+- Failures say what went wrong and where to fix it (AI off, no model, key rejected, model not found, rate limit, Wi-Fi only, provider error) instead of one generic line.
 - Continuous integration builds and tests every push; tags build a signed bundle.
 
 ### tina Pro (groundwork)

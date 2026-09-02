@@ -382,7 +382,16 @@
     <string name="ask_placeholder">Ask about your stuff…</string>
     <string name="ask_hint">The model can see everything you’ve captured. Ask away.</string>
     <string name="ask_thinking">Thinking…</string>
-    <string name="ask_error">Couldn’t reach the model</string>
+    <string name="ask_error">Couldn’t reach the model. Check the connection and the endpoint.</string>
+    <string name="ask_error_off">AI is off. Turn it on in Settings → Parsing &amp; AI.</string>
+    <string name="ask_error_no_model">No model set. Pick one in Settings → Parsing &amp; AI.</string>
+    <string name="ask_error_metered">Waiting for Wi-Fi: “Wi-Fi only” is on.</string>
+    <string name="ask_error_insecure">Plain-http endpoints only work on your own network. Use https.</string>
+    <string name="ask_error_unauthorized">The API key was rejected. Check it in Settings → Parsing &amp; AI.</string>
+    <string name="ask_error_not_found">The model or endpoint wasn’t found. Check the model name and URL.</string>
+    <string name="ask_error_rate_limited">The provider is rate-limiting. Try again in a minute.</string>
+    <string name="ask_error_server">The provider had an error. Try again.</string>
+    <string name="ask_error_bad_reply">The model answered in a shape tina couldn’t read. Try again.</string>
     <string name="ask_retry">Retry</string>
     <string name="ask_pending">Apply %1$d proposed change(s)?</string>
     <string name="ask_pending_deletes">Apply %1$d proposed change(s)? %2$d would delete items (recoverable from Trash).</string>

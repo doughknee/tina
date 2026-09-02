@@ -63,7 +63,8 @@ class AskViewModel(
         private set
     var sending by mutableStateOf(false)
         private set
-    var lastFailed by mutableStateOf(false)
+    /** Why the last question failed, or null; the screen turns it into a sentence. */
+    var lastError by mutableStateOf<com.tina.app.ai.AiError?>(null)
         private set
     var reasoning by mutableStateOf(ReasoningLevel.BALANCED)
         private set
@@ -108,7 +109,7 @@ class AskViewModel(
     fun newChat() {
         currentChatId = null
         messages.clear()
-        lastFailed = false
+        lastError = null
     }
 
     fun openChat(id: Long) {
@@ -118,7 +119,7 @@ class AskViewModel(
             reasoning = ReasoningLevel.entries.firstOrNull { it.name == entity.reasoning }
                 ?: ReasoningLevel.BALANCED
             modelOverride = entity.model
-            lastFailed = false
+            lastError = null
             messages.clear()
             messages += chatDao.messages(id).map {
                 ChatMessage(
@@ -219,7 +220,7 @@ class AskViewModel(
     private suspend fun askInternal() {
         if (sending) return
         sending = true
-        lastFailed = false
+        lastError = null
         val settings = settingsRepository.settings.first()
         val tz = TimeZone.currentSystemDefault()
         val nowLocal = Clock.System.now().toLocalDateTime(tz)
@@ -227,9 +228,13 @@ class AskViewModel(
         // fresh context per question so answers always reflect current data
         val context = buildAskContext(repository.allItems(), tz)
         val system = buildAskSystemPrompt(context, nowLocal, reasoning, writeEnabled)
-        val reply = chat.chat(system, messages.toList(), modelOverride)
+        val reply = try {
+            chat.chat(system, messages.toList(), modelOverride)
+        } catch (e: com.tina.app.ai.AiException) {
+            null.also { lastError = e.error }
+        }
         if (reply == null) {
-            lastFailed = true
+            // lastError is set above
         } else {
             val (visible, rawActions) = if (writeEnabled) {
                 extractAskActions(reply)

@@ -127,24 +127,33 @@ class AiChat(
     private val settingsRepository: SettingsRepository,
     private val network: com.tina.app.data.NetworkStatus,
 ) {
-    /** Null on failure; error text is intentionally not surfaced beyond a retry affordance. */
+    /** The reply text; throws [AiException] with the reason the user can act on. */
     suspend fun chat(
         system: String,
         messages: List<ChatMessage>,
         modelOverride: String? = null,
-    ): String? {
+    ): String {
         val settings = settingsRepository.settings.first()
-        if (settings.aiProvider == AiProvider.OFF) return null
+        if (settings.aiProvider == AiProvider.OFF) throw AiException(AiError.OFF)
         val model = modelOverride ?: settings.aiModel
-        if (model.isBlank()) return null
+        if (model.isBlank()) throw AiException(AiError.NO_MODEL)
         // Wi-Fi only: hold cloud chat off metered connections
-        if (settings.aiWifiOnly && settings.aiProvider != AiProvider.OLLAMA && !network.isUnmetered) return null
-        return runCatching {
+        if (settings.aiWifiOnly && settings.aiProvider != AiProvider.OLLAMA && !network.isUnmetered) throw AiException(AiError.METERED)
+        val text = try {
             when (settings.aiProvider) {
                 AiProvider.ANTHROPIC -> anthropic(settings, model, system, messages)
                 else -> openAi(settings, model, system, messages)
             }
-        }.getOrNull()
+        } catch (e: AiException) {
+            throw e
+        } catch (e: kotlinx.serialization.SerializationException) {
+            throw AiException(AiError.BAD_REPLY, e.message)
+        } catch (e: IllegalArgumentException) {
+            throw AiException(AiError.BAD_REPLY, e.message)
+        } catch (e: Exception) {
+            throw AiException(AiError.NETWORK, e.message)
+        }
+        return text ?: throw AiException(AiError.BAD_REPLY)
     }
 
     private suspend fun openAi(
@@ -157,10 +166,10 @@ class AiChat(
             when (settings.aiProvider) {
                 AiProvider.OLLAMA -> OLLAMA_DEFAULT_BASE_URL
                 AiProvider.OPENAI -> OPENAI_DEFAULT_BASE_URL
-                else -> return null
+                else -> throw AiException(AiError.NO_MODEL)
             }
         }.trimEnd('/')
-        if (!isAllowedAiEndpoint(baseUrl)) return null
+        if (!isAllowedAiEndpoint(baseUrl)) throw AiException(AiError.INSECURE_ENDPOINT)
         val body = buildJsonObject {
             put("model", model)
             put("messages", buildJsonArray {
@@ -179,7 +188,7 @@ class AiChat(
             if (key.isNotEmpty()) header("Authorization", "Bearer $key")
             setBody(body.toString())
         }
-        if (!response.status.isSuccess()) return null
+        if (!response.status.isSuccess()) throw AiException(aiErrorFor(response.status.value), response.bodyAsText().take(200))
         return chatJson.parseToJsonElement(response.bodyAsText())
             .jsonObject["choices"]?.jsonArray?.firstOrNull()
             ?.jsonObject?.get("message")?.jsonObject?.get("content")?.jsonPrimitive?.content
@@ -214,7 +223,7 @@ class AiChat(
             }
             setBody(body.toString())
         }
-        if (!response.status.isSuccess()) return null
+        if (!response.status.isSuccess()) throw AiException(aiErrorFor(response.status.value), response.bodyAsText().take(200))
         val payload = chatJson.parseToJsonElement(response.bodyAsText()).jsonObject
         return payload["content"]?.jsonArray
             ?.firstOrNull { it.jsonObject["type"]?.jsonPrimitive?.content == "text" }

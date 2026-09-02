@@ -64,6 +64,15 @@ import com.tina.app.resources.ask_chat_deleted
 import com.tina.app.resources.ask_copied
 import com.tina.app.resources.ask_apply
 import com.tina.app.resources.ask_error
+import com.tina.app.resources.ask_error_bad_reply
+import com.tina.app.resources.ask_error_insecure
+import com.tina.app.resources.ask_error_metered
+import com.tina.app.resources.ask_error_no_model
+import com.tina.app.resources.ask_error_not_found
+import com.tina.app.resources.ask_error_off
+import com.tina.app.resources.ask_error_rate_limited
+import com.tina.app.resources.ask_error_server
+import com.tina.app.resources.ask_error_unauthorized
 import com.tina.app.resources.ask_not_now
 import com.tina.app.resources.ask_pending
 import com.tina.app.resources.ask_pending_deletes
@@ -278,11 +287,24 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
                         }
                     }
                 }
-                if (viewModel.lastFailed) {
+                viewModel.lastError?.let { error ->
                     item {
                         Column {
                             Text(
-                                stringResource(Res.string.ask_error),
+                                stringResource(
+                                    when (error) {
+                                        com.tina.app.ai.AiError.OFF -> Res.string.ask_error_off
+                                        com.tina.app.ai.AiError.NO_MODEL -> Res.string.ask_error_no_model
+                                        com.tina.app.ai.AiError.METERED -> Res.string.ask_error_metered
+                                        com.tina.app.ai.AiError.INSECURE_ENDPOINT -> Res.string.ask_error_insecure
+                                        com.tina.app.ai.AiError.UNAUTHORIZED -> Res.string.ask_error_unauthorized
+                                        com.tina.app.ai.AiError.NOT_FOUND -> Res.string.ask_error_not_found
+                                        com.tina.app.ai.AiError.RATE_LIMITED -> Res.string.ask_error_rate_limited
+                                        com.tina.app.ai.AiError.SERVER -> Res.string.ask_error_server
+                                        com.tina.app.ai.AiError.NETWORK -> Res.string.ask_error
+                                        com.tina.app.ai.AiError.BAD_REPLY -> Res.string.ask_error_bad_reply
+                                    },
+                                ),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.error,
                             )

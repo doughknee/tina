@@ -85,8 +85,8 @@ android {
         applicationId = "com.tina.app"
         minSdk = 31
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.6.0"
+        versionCode = 9
+        versionName = "1.7.0"
         // the maintainer's own builds are Pro without a purchase: tina.proOverride=true in local.properties
         val local = Properties().apply {
             rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -157,7 +157,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Msi)
             packageName = "tina"
-            packageVersion = "1.6.0"
+            packageVersion = "1.7.0"
         }
     }
 }
