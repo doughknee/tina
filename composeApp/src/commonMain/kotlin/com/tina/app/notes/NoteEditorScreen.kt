@@ -194,8 +194,8 @@ fun NoteEditorScreen(
 
             AnimatedVisibility(
                 visible = showColors,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut(),
+                enter = com.tina.app.ui.expandEnter(),
+                exit = com.tina.app.ui.expandExit(),
             ) {
                 Row(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                     ColorSwatchRow(selected = item?.color, onSelect = viewModel::setColor)

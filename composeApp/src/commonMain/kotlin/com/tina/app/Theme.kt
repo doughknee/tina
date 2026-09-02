@@ -2,7 +2,7 @@ package com.tina.app
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -72,6 +72,8 @@ fun AppTheme(settings: Settings, content: @Composable () -> Unit) {
     }
 
     CompositionLocalProvider(LocalReduceMotion provides reduceMotion) {
-        MaterialTheme(colorScheme = scheme, content = content)
+        // expressive: the spring MotionScheme every AppMotion transition reads, plus the
+        // expressive component defaults now that material3 1.12 ships them
+        MaterialExpressiveTheme(colorScheme = scheme, content = content)
     }
 }

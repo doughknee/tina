@@ -1095,7 +1095,10 @@ private fun AiConfigCollapse(
     var showWorkspace by remember { mutableStateOf(settings.aiWorkspaceId.isNotBlank()) }
     var modelMenu by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val rotation by animateFloatAsState(if (expanded) 180f else 0f)
+    val rotation by animateFloatAsState(
+        if (expanded) 180f else 0f,
+        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+    )
 
     var baseUrl by remember(settings.aiProvider) { mutableStateOf(settings.aiBaseUrl) }
     var model by remember(settings.aiProvider) { mutableStateOf(settings.aiModel) }

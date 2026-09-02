@@ -150,6 +150,7 @@ import com.tina.app.ui.dateLabel
 import com.tina.app.ui.expandEnter
 import com.tina.app.ui.expandExit
 import com.tina.app.ui.recurrenceLabel
+import com.tina.app.ui.rememberAppMotion
 import com.tina.app.ui.relativeAge
 import com.tina.app.ui.rememberUndoWindow
 import com.tina.app.ui.showUndo
@@ -203,6 +204,7 @@ fun AgendaScreen(
     val undoText = stringResource(Res.string.undo)
     val monthNames = stringArrayResource(Res.array.months_full)
     val today = state?.today ?: selectedDate
+    val motion = rememberAppMotion()
     var duplicateSheet by remember { mutableStateOf<AgendaRow.Duplicate?>(null) }
 
     val startMonth = remember { today.ym.minusMonths(60) }
@@ -331,7 +333,7 @@ fun AgendaScreen(
                     granularity == Granularity.WEEK -> HeaderKind.PILLED_WEEK
                     else -> HeaderKind.STRIP
                 },
-                transitionSpec = { (fadeIn() togetherWith fadeOut()).using(SizeTransform(clip = false)) },
+                transitionSpec = { motion.fadeSwap().using(SizeTransform(clip = false)) },
                 label = "date-header",
             ) { kind ->
                 when (kind) {

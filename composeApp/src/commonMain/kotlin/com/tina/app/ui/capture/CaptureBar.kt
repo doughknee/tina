@@ -2,14 +2,10 @@ package com.tina.app.ui.capture
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -125,6 +121,7 @@ import com.tina.app.ui.dateLabel
 import com.tina.app.ui.durationLabel
 import com.tina.app.ui.recurrenceLabel
 import com.tina.app.ui.relativeAge
+import com.tina.app.ui.rememberAppMotion
 import com.tina.app.ui.rememberUndoWindow
 import com.tina.app.ui.showUndo
 import com.tina.app.ui.timeLabel
@@ -169,6 +166,7 @@ fun CaptureBar(
     var focused by remember { mutableStateOf(false) }
     val text = if (askMode) askInput else viewModel.text
     val field = if (askMode) askField else viewModel.fieldValue
+    val motion = rememberAppMotion()
 
     // "Keyboard on open": the only automatic focus; widgets and shortcuts go through CaptureFocus
     LaunchedEffect(Unit) {
@@ -293,8 +291,8 @@ fun CaptureBar(
                 }
                 AnimatedVisibility(
                     visible = text.isNotBlank(),
-                    enter = scaleIn() + fadeIn(),
-                    exit = scaleOut() + fadeOut(),
+                    enter = motion.popIn(),
+                    exit = motion.popOut(),
                 ) {
                     FilledIconButton(
                         onClick = ::send,
@@ -489,19 +487,19 @@ fun CaptureChips(viewModel: CaptureViewModel, modifier: Modifier = Modifier) {
 fun SaveBurst(trigger: Int, modifier: Modifier = Modifier) {
     val scale = remember { Animatable(0f) }
     val alpha = remember { Animatable(0f) }
+    // the burst is the one place the bouncy fast spatial spring is exactly right
+    val pop = MaterialTheme.motionScheme.fastSpatialSpec<Float>()
+    val settle = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
     LaunchedEffect(trigger) {
         if (trigger == 0) return@LaunchedEffect
         alpha.snapTo(1f)
         scale.snapTo(0f)
         launch {
-            scale.animateTo(
-                1f,
-                spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMediumLow),
-            )
+            scale.animateTo(1f, pop)
         }
         launch {
             kotlinx.coroutines.delay(450)
-            alpha.animateTo(0f, tween(350))
+            alpha.animateTo(0f, settle)
         }
     }
     if (alpha.value > 0f) {

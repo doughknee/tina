@@ -4,8 +4,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -301,7 +299,7 @@ fun Shell(
                 ) {
                     AnimatedContent(
                         targetState = captureViewModel.text.isBlank(),
-                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        transitionSpec = { motion.fadeSwap() },
                         label = "capture-sheet",
                     ) { empty ->
                         if (empty) {
@@ -339,6 +337,8 @@ private fun ShellSheet(
 ) {
     val dismissDistance = with(LocalDensity.current) { 80.dp.toPx() }
     val scope = rememberCoroutineScope()
+    val motion = rememberAppMotion()
+    val settle = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
     // the dragged offset survives a dismiss so the exit slide continues from where the
     // finger left it; resetting it on close made the sheet jump back up first
     val drag = remember { Animatable(0f) }
@@ -348,7 +348,7 @@ private fun ShellSheet(
     val currentVisible by rememberUpdatedState(visible)
     LaunchedEffect(visible) { if (visible) drag.snapTo(0f) }
     Box(Modifier.fillMaxSize()) {
-        AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut()) {
+        AnimatedVisibility(visible = visible, enter = motion.fadeEnter(), exit = motion.fadeExit()) {
             Box(
                 Modifier
                     .fillMaxSize()
@@ -363,8 +363,8 @@ private fun ShellSheet(
         AnimatedVisibility(
             visible = visible,
             modifier = modifier,
-            enter = slideInVertically { it } + fadeIn(),
-            exit = slideOutVertically { it } + fadeOut(),
+            enter = motion.sheetEnter(),
+            exit = motion.sheetExit(),
         ) {
             Surface(
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -388,13 +388,13 @@ private fun ShellSheet(
                                             // a dismiss that only opened a prompt leaves the sheet up: settle it
                                             scope.launch {
                                                 withFrameNanos { }
-                                                if (currentVisible) drag.animateTo(0f)
+                                                if (currentVisible) drag.animateTo(0f, settle)
                                             }
                                         } else {
-                                            scope.launch { drag.animateTo(0f) }
+                                            scope.launch { drag.animateTo(0f, settle) }
                                         }
                                     },
-                                    onDragCancel = { scope.launch { drag.animateTo(0f) } },
+                                    onDragCancel = { scope.launch { drag.animateTo(0f, settle) } },
                                 ) { _, dy ->
                                     scope.launch { drag.snapTo((drag.value + dy).coerceAtLeast(0f)) }
                                 }

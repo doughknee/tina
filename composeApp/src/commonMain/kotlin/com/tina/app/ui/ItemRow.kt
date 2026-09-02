@@ -156,6 +156,7 @@ fun ItemRow(
             }
             val bg by animateColorAsState(
                 if (dismissState.targetValue == SwipeToDismissBoxValue.Settled) Color.Transparent else color,
+                animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
             )
             Box(Modifier.fillMaxSize().background(bg).padding(horizontal = 24.dp), contentAlignment = alignment) {
                 Icon(icon, contentDescription = null)
@@ -397,9 +398,10 @@ private fun RescheduleChip(label: String, today: LocalDate, onReschedule: (Local
         AssistChip(
             onClick = { open = true },
             label = {
+                val fade = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
                 AnimatedContent(
                     targetState = label,
-                    transitionSpec = { fadeIn(tween(150)) togetherWith fadeOut(tween(150)) },
+                    transitionSpec = { fadeIn(fade) togetherWith fadeOut(fade) },
                 ) { Text(it) }
             },
         )

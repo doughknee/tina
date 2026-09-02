@@ -98,7 +98,7 @@ fun SettingsRowSurface(
     val container by animateColorAsState(
         if (highlighted) MaterialTheme.colorScheme.primaryContainer
         else MaterialTheme.colorScheme.surfaceContainerLow,
-        animationSpec = tween(300),
+        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
     )
     Surface(color = container, shape = shapeFor(index, count), modifier = modifier.fillMaxWidth()) {
         content()
