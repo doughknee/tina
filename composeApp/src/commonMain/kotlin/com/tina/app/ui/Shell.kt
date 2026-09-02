@@ -9,11 +9,13 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -52,6 +54,9 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -297,7 +302,7 @@ fun Shell(
             Box(Modifier.fillMaxSize().padding(padding)) {
                 AnimatedContent(
                     targetState = selectedTab,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.keepHeightUnderKeyboard().fillMaxSize(),
                     transitionSpec = { motion.lateral(targetState.ordinal > initialState.ordinal) },
                 ) { tab ->
                     when (tab) {
@@ -391,6 +396,8 @@ private fun ShellSheet(
     content: @Composable () -> Unit,
 ) {
     val dismissDistance = with(LocalDensity.current) { 80.dp.toPx() }
+    // the sheet overshoots on its spring; a tail tucked behind the bar keeps the join closed
+    val tailPx = with(LocalDensity.current) { SHEET_TAIL.roundToPx() }
     val scope = rememberCoroutineScope()
     val motion = rememberAppMotion()
     val settle = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
@@ -424,7 +431,7 @@ private fun ShellSheet(
             Surface(
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
                 shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                modifier = Modifier.fillMaxWidth().offset { IntOffset(0, drag.value.roundToInt()) },
+                modifier = Modifier.fillMaxWidth().offset { IntOffset(0, drag.value.roundToInt() + tailPx) },
             ) {
                 Column(Modifier.fillMaxWidth()) {
                     Box(
@@ -468,8 +475,28 @@ private fun ShellSheet(
                         )
                     }
                     content()
+                    Spacer(Modifier.height(SHEET_TAIL))
                 }
             }
         }
+    }
+}
+
+private val SHEET_TAIL = 32.dp
+
+/**
+ * The keyboard shrinks the shell on every frame of its animation, and a page that is
+ * re-measured 120 times a second (app bar, calendar, lazy list) is what dropped frames.
+ * The page is measured against the keyboard-free height instead, so its constraints never
+ * change and Compose skips the measure; the bar, nav and sheet simply cover its bottom.
+ */
+private fun Modifier.keepHeightUnderKeyboard(): Modifier = composed {
+    val ime = WindowInsets.ime
+    val density = LocalDensity.current
+    clipToBounds().layout { measurable, constraints ->
+        // read in layout, not composition: only this node re-lays out per frame
+        val hidden = ime.getBottom(density)
+        val placeable = measurable.measure(constraints.copy(maxHeight = constraints.maxHeight + hidden))
+        layout(constraints.maxWidth, constraints.maxHeight) { placeable.place(0, 0) }
     }
 }
