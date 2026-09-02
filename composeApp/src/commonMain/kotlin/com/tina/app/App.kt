@@ -1,6 +1,12 @@
 package com.tina.app
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
@@ -9,8 +15,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import com.tina.app.calendar.EventEditorScreen
 import com.tina.app.data.Item
@@ -25,8 +37,6 @@ import com.tina.app.ui.LocalSharedTransitionScope
 import com.tina.app.ui.Shell
 import com.tina.app.ui.rememberAppMotion
 import org.koin.compose.koinInject
-
-data object ShellRoute
 
 data object SettingsRoute
 
@@ -43,7 +53,7 @@ data class NoteRoute(val id: Long)
 
 data class TagRoute(val tag: String)
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun App() {
     val settingsRepository = koinInject<SettingsRepository>()
@@ -55,9 +65,20 @@ fun App() {
             LocalSettings provides settings,
             LocalSharedTransitionScope provides this@SharedTransitionLayout,
         ) {
-            val backStack = remember { mutableStateListOf<Any>(ShellRoute) }
+            // Pages sit on top of the shell; the shell itself is never popped out of composition.
+            // Re-composing it (calendar, bar, sheets, rows) cost a 120 ms frame on every return.
+            val pages = remember { mutableStateListOf<Any>() }
+            var pagesVisible by remember { mutableStateOf(false) }
+            fun push(route: Any) {
+                if (!pagesVisible) pages.clear()
+                pages.add(route)
+                pagesVisible = true
+            }
+            fun popLast() {
+                if (pages.size > 1) pages.removeLastOrNull() else pagesVisible = false
+            }
             fun openItem(item: Item) {
-                backStack.add(
+                push(
                     when (item.type) {
                         ItemType.EVENT -> EventEditRoute(item.id)
                         ItemType.NOTE -> NoteRoute(item.id)
@@ -66,66 +87,84 @@ fun App() {
                 )
             }
             val motion = rememberAppMotion()
-            NavDisplay(
-                backStack = backStack,
-                // the slides expose the container beside a page; paint it in the theme, not window white
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
-                onBack = { backStack.removeLastOrNull() },
-                transitionSpec = { motion.push() },
-                popTransitionSpec = { motion.pop() },
-                // one direction for every pop, whichever edge the swipe started on: mirroring read as wrong
-                predictivePopTransitionSpec = { _ -> motion.pop() },
-                entryProvider = entryProvider {
-                    entry<ShellRoute> {
+            Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+                // shared-element rows need an animated scope; a still AnimatedContent provides one
+                AnimatedContent(
+                    targetState = Unit,
+                    transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+                    label = "shell",
+                ) {
+                    CompositionLocalProvider(LocalNavAnimatedContentScope provides this) {
                         Shell(
-                            onOpenSettings = { backStack.add(SettingsRoute) },
+                            onOpenSettings = { push(SettingsRoute) },
                             onOpenItem = ::openItem,
-                            onOpenNote = { id -> backStack.add(NoteRoute(id)) },
+                            onOpenNote = { id -> push(NoteRoute(id)) },
                         )
                     }
-                    entry<SettingsRoute> {
-                        com.tina.app.ui.settings.SettingsScreen(
-                            onBack = { backStack.removeLastOrNull() },
-                            onNavigate = { backStack.add(SettingsSubRoute(it.name)) },
-                            onOpenSection = { id, row -> backStack.add(SettingsSectionRoute(id, row)) },
-                        )
-                    }
-                    entry<SettingsSectionRoute> { route ->
-                        com.tina.app.ui.settings.SettingsScreen(
-                            onBack = { backStack.removeLastOrNull() },
-                            onNavigate = { backStack.add(SettingsSubRoute(it.name)) },
-                            sectionId = route.sectionId,
-                            highlightRowId = route.highlight,
-                        )
-                    }
-                    entry<SettingsSubRoute> { route ->
-                        com.tina.app.ui.settings.SettingsSubpageHost(
-                            destination = com.tina.app.ui.settings.SettingsDestination.valueOf(route.destination),
-                            onBack = { backStack.removeLastOrNull() },
-                        )
-                    }
-                    entry<DetailRoute> { route ->
-                        DetailScreen(
-                            itemId = route.id,
-                            onBack = { backStack.removeLastOrNull() },
-                            onOpenTag = { tag -> backStack.add(TagRoute(tag)) },
-                        )
-                    }
-                    entry<EventEditRoute> { route ->
-                        EventEditorScreen(itemId = route.id, onBack = { backStack.removeLastOrNull() })
-                    }
-                    entry<NoteRoute> { route ->
-                        NoteEditorScreen(noteId = route.id, onBack = { backStack.removeLastOrNull() })
-                    }
-                    entry<TagRoute> { route ->
-                        com.tina.app.search.TagScreen(
-                            tag = route.tag,
-                            onBack = { backStack.removeLastOrNull() },
-                            onOpenItem = ::openItem,
-                        )
-                    }
-                },
-            )
+                }
+                // after the shell, so it takes back presses first
+                BackHandler(enabled = pagesVisible && pages.size == 1) { pagesVisible = false }
+                AnimatedVisibility(
+                    visible = pagesVisible,
+                    enter = motion.push().targetContentEnter,
+                    exit = motion.pop().initialContentExit,
+                ) {
+                    // pages are cleared only once the exit has finished and this leaves composition
+                    DisposableEffect(Unit) { onDispose { pages.clear() } }
+                    NavDisplay(
+                        backStack = pages,
+                        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+                        onBack = ::popLast,
+                        transitionSpec = { motion.push() },
+                        popTransitionSpec = { motion.pop() },
+                        // one direction for every pop, whichever edge the swipe started on
+                        predictivePopTransitionSpec = { _ -> motion.pop() },
+                        entryProvider = entryProvider {
+                            entry<SettingsRoute> {
+                                com.tina.app.ui.settings.SettingsScreen(
+                                    onBack = ::popLast,
+                                    onNavigate = { push(SettingsSubRoute(it.name)) },
+                                    onOpenSection = { id, row -> push(SettingsSectionRoute(id, row)) },
+                                )
+                            }
+                            entry<SettingsSectionRoute> { route ->
+                                com.tina.app.ui.settings.SettingsScreen(
+                                    onBack = ::popLast,
+                                    onNavigate = { push(SettingsSubRoute(it.name)) },
+                                    sectionId = route.sectionId,
+                                    highlightRowId = route.highlight,
+                                )
+                            }
+                            entry<SettingsSubRoute> { route ->
+                                com.tina.app.ui.settings.SettingsSubpageHost(
+                                    destination = com.tina.app.ui.settings.SettingsDestination.valueOf(route.destination),
+                                    onBack = ::popLast,
+                                )
+                            }
+                            entry<DetailRoute> { route ->
+                                DetailScreen(
+                                    itemId = route.id,
+                                    onBack = ::popLast,
+                                    onOpenTag = { tag -> push(TagRoute(tag)) },
+                                )
+                            }
+                            entry<EventEditRoute> { route ->
+                                EventEditorScreen(itemId = route.id, onBack = ::popLast)
+                            }
+                            entry<NoteRoute> { route ->
+                                NoteEditorScreen(noteId = route.id, onBack = ::popLast)
+                            }
+                            entry<TagRoute> { route ->
+                                com.tina.app.search.TagScreen(
+                                    tag = route.tag,
+                                    onBack = ::popLast,
+                                    onOpenItem = ::openItem,
+                                )
+                            }
+                        },
+                    )
+                }
+            }
         }
         }
     }

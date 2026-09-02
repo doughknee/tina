@@ -349,3 +349,10 @@ Running log of choices made without asking, newest last.
 ## Series edit in place
 
 - The repeat editor (rail + custom dialog) moved out of the event editor into `ui/RepeatEditor.kt` and the task page uses the same one, so a recurring task's rule is edited where its other fields are. The series row's long-press menu gained "Edit series", which opens that page. Editing the rule keeps per-occurrence completions (they are keyed by item and day, not by rule).
+
+## The shell never leaves composition
+
+- Pages (Settings, item, note, tag) used to be NavDisplay entries above `ShellRoute`, so every return re-composed the shell from scratch: calendar state, bar, sheets, rows, ~120 ms in one frame. Now the shell is composed once in `App` and pages live in their own NavDisplay inside an `AnimatedVisibility` on top. Returning is the pop exit and nothing else (99th percentile 25 ms, was 150). A still `AnimatedContent` gives the shell the animated scope its shared-element rows need.
+- **Capture sheet toggle at the bottom.** Plan | Idea sits right above the field: the sheet is bottom-anchored, so that is the one spot that does not move with the number of recents.
+- **Empty pages teach the bar.** Plan and Ideas empty states carry one line about what to type below; the first-run Plan (All range, nothing at all) says plans collect here.
+- **Idea tile.** A second Quick Settings tile opens the bar in Idea mode via `EXTRA_FOCUS_IDEA`; `CaptureFocus.request(idea)` carries the mode. The Today widget shows Plan's second line (weekday, month day).

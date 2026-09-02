@@ -2,7 +2,8 @@
     <string name="app_name">tina</string>
     <string name="share_captured">Captured to tina</string>
     <string name="shortcut_capture">Capture</string>
-    <string name="tile_capture">Capture</string>
+    <string name="tile_capture">Plan</string>
+    <string name="tile_idea">Idea</string>
     <string name="widget_hint">Add to tina…</string>
     <string name="widget_description">One tap to capture a thought</string>
     <string name="reminder_channel_name">Reminders</string>

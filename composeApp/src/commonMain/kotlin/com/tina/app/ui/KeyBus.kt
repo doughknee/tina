@@ -26,6 +26,12 @@ object KeyBus {
 object CaptureFocus {
     private val _pending = MutableStateFlow(false)
     val pending: StateFlow<Boolean> = _pending
-    fun request() { _pending.value = true }
+    /** True when the request came from an Idea entry point (tile, shortcut): the bar opens in Idea mode. */
+    var idea: Boolean = false
+        private set
+    fun request(idea: Boolean = false) {
+        this.idea = idea
+        _pending.value = true
+    }
     fun clear() { _pending.value = false }
 }

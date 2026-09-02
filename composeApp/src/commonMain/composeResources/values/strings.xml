@@ -65,7 +65,9 @@
     <string name="section_afternoon">Afternoon</string>
     <string name="section_evening">Evening</string>
     <string name="section_anytime">Anytime</string>
-    <string name="today_empty">All clear for today</string>
+    <string name="today_empty">Nothing planned</string>
+    <string name="plan_empty_hint">Type below. “Call Sam tomorrow at 3” becomes a task on Thursday.</string>
+    <string name="plan_empty_first">Your plans will collect here. Type anything below to start.</string>
     <string name="date_next_week">Next week</string>
     <string name="date_none">No date</string>
 
@@ -149,7 +151,8 @@
     <string name="import_done">%1$d items imported</string>
     <string name="import_failed">Not a tina backup</string>
 
-    <string name="notes_empty">Thoughts land here</string>
+    <string name="notes_empty">No ideas yet</string>
+    <string name="ideas_empty_hint">Switch the bar below to Idea and write one. The first line is the title.</string>
     <string name="note_new">New note</string>
     <string name="note_untitled">Untitled</string>
     <string name="search">Search</string>

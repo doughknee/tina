@@ -143,6 +143,8 @@ import com.tina.app.resources.series_next
 import com.tina.app.resources.series_skip
 import com.tina.app.resources.settings
 import com.tina.app.resources.span_day_of
+import com.tina.app.resources.plan_empty_first
+import com.tina.app.resources.plan_empty_hint
 import com.tina.app.resources.today_empty
 import com.tina.app.resources.triage_someday
 import com.tina.app.resources.triage_this_week
@@ -961,9 +963,16 @@ private fun EmptyRange(range: AgendaRange, selected: LocalDate, today: LocalDate
             } else {
                 stringResource(Res.string.calendar_nothing, dateLabel(selected, today))
             },
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.titleMediumEmphasized,
             modifier = Modifier.padding(top = 16.dp),
+        )
+        // the empty page is the onboarding: it says what the bar below does
+        Text(
+            stringResource(if (range.granularity == Granularity.ALL) Res.string.plan_empty_first else Res.string.plan_empty_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 4.dp, start = 32.dp, end = 32.dp),
         )
     }
 }

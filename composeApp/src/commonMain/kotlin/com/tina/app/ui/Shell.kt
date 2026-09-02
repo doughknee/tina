@@ -200,6 +200,7 @@ fun Shell(
         if (!focusRequested) return@LaunchedEffect
         askOpen = false
         askSheetOpen = false
+        captureViewModel.switchIdeaMode(CaptureFocus.idea)
         searchOpen = false
         captureFocus.requestFocus()
         CaptureFocus.clear()
@@ -341,7 +342,6 @@ fun Shell(
                     modifier = Modifier.align(Alignment.BottomCenter),
                 ) {
                     Column {
-                        CaptureModeToggle(captureViewModel, Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp))
                         AnimatedContent(
                             targetState = captureViewModel.text.isBlank(),
                             transitionSpec = { motion.fadeSwap() },
@@ -354,6 +354,9 @@ fun Shell(
                                 else -> CaptureChips(captureViewModel, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
                             }
                         }
+                        // last, right above the field: the sheet is bottom-anchored, so this is the one
+                        // spot that stays put however many recents are above it
+                        CaptureModeToggle(captureViewModel, Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 8.dp))
                     }
                 }
 

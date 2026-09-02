@@ -119,7 +119,6 @@ private fun WidgetBody(context: Context, entries: List<WidgetEntry>) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = GlanceModifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
                 .clickable(actionStartActivity<MainActivity>()),
         ) {
             Text(
@@ -139,6 +138,12 @@ private fun WidgetBody(context: Context, entries: List<WidgetEntry>) {
                 )
             }
         }
+        // the same second line Plan shows under Today
+        Text(
+            java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("EEEE, MMMM d", java.util.Locale.getDefault())),
+            style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = 12.sp),
+            modifier = GlanceModifier.padding(bottom = 8.dp),
+        )
         if (entries.isEmpty()) {
             Text(
                 context.getString(R.string.widget_today_empty),

@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun handleFocusCapture(intent: android.content.Intent?) {
         if (intent?.getBooleanExtra(EXTRA_FOCUS_CAPTURE, false) == true) {
-            com.tina.app.ui.CaptureFocus.request()
+            com.tina.app.ui.CaptureFocus.request(idea = intent.getBooleanExtra(EXTRA_FOCUS_IDEA, false))
         }
     }
 
@@ -125,5 +125,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_FOCUS_CAPTURE = "com.tina.app.FOCUS_CAPTURE"
+        const val EXTRA_FOCUS_IDEA = "com.tina.app.FOCUS_IDEA"
     }
 }

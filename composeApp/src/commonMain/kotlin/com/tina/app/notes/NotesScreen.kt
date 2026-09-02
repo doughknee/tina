@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tina.app.data.Item
 import com.tina.app.resources.Res
@@ -52,6 +53,7 @@ import com.tina.app.resources.note_new
 import com.tina.app.resources.note_pin
 import com.tina.app.resources.note_unpin
 import com.tina.app.resources.note_untitled
+import com.tina.app.resources.ideas_empty_hint
 import com.tina.app.resources.notes_empty
 import com.tina.app.resources.search
 import com.tina.app.resources.search_close
@@ -143,9 +145,15 @@ fun NotesScreen(
                 )
                 Text(
                     stringResource(Res.string.notes_empty),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                     modifier = Modifier.padding(top = 16.dp),
+                )
+                Text(
+                    stringResource(Res.string.ideas_empty_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 4.dp, start = 32.dp, end = 32.dp),
                 )
             }
             return@Scaffold
