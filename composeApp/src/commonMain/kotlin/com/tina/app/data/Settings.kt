@@ -74,6 +74,9 @@ data class Settings(
     val dailyAgendaMinutes: Int = 7 * 60 + 30,
     val overdueNudge: Boolean = false,
     val overdueNudgeMinutes: Int = 18 * 60,
+    val quietHours: Boolean = false,
+    val quietStartMinutes: Int = 22 * 60,
+    val quietEndMinutes: Int = 7 * 60,
     val inboxReminder: Boolean = false,
     val inboxReminderDays: Int = 3,
     // Organisation
@@ -128,6 +131,9 @@ private val KEY_DAILY_AGENDA = booleanPreferencesKey("dailyAgenda")
 private val KEY_DAILY_AGENDA_MIN = intPreferencesKey("dailyAgendaMinutes")
 private val KEY_OVERDUE_NUDGE = booleanPreferencesKey("overdueNudge")
 private val KEY_OVERDUE_NUDGE_MIN = intPreferencesKey("overdueNudgeMinutes")
+private val KEY_QUIET = booleanPreferencesKey("quietHours")
+private val KEY_QUIET_START = intPreferencesKey("quietStartMinutes")
+private val KEY_QUIET_END = intPreferencesKey("quietEndMinutes")
 private val KEY_INBOX_REMINDER = booleanPreferencesKey("inboxReminder")
 private val KEY_INBOX_REMINDER_DAYS = intPreferencesKey("inboxReminderDays")
 private val KEY_SHOW_COMPLETED = booleanPreferencesKey("showCompletedInToday")
@@ -190,6 +196,9 @@ class SettingsRepository(
             dailyAgendaMinutes = p[KEY_DAILY_AGENDA_MIN] ?: (7 * 60 + 30),
             overdueNudge = p[KEY_OVERDUE_NUDGE] ?: false,
             overdueNudgeMinutes = p[KEY_OVERDUE_NUDGE_MIN] ?: (18 * 60),
+            quietHours = p[KEY_QUIET] ?: false,
+            quietStartMinutes = p[KEY_QUIET_START] ?: (22 * 60),
+            quietEndMinutes = p[KEY_QUIET_END] ?: (7 * 60),
             inboxReminder = p[KEY_INBOX_REMINDER] ?: false,
             inboxReminderDays = p[KEY_INBOX_REMINDER_DAYS] ?: 3,
             showCompletedInToday = p[KEY_SHOW_COMPLETED] ?: true,
@@ -248,6 +257,9 @@ class SettingsRepository(
     suspend fun setDailyAgendaMinutes(minutes: Int) = store.edit { it[KEY_DAILY_AGENDA_MIN] = minutes }
     suspend fun setOverdueNudge(enabled: Boolean) = store.edit { it[KEY_OVERDUE_NUDGE] = enabled }
     suspend fun setOverdueNudgeMinutes(minutes: Int) = store.edit { it[KEY_OVERDUE_NUDGE_MIN] = minutes }
+    suspend fun setQuietHours(enabled: Boolean) = store.edit { it[KEY_QUIET] = enabled }
+    suspend fun setQuietStartMinutes(minutes: Int) = store.edit { it[KEY_QUIET_START] = minutes }
+    suspend fun setQuietEndMinutes(minutes: Int) = store.edit { it[KEY_QUIET_END] = minutes }
     suspend fun setInboxReminder(enabled: Boolean) = store.edit { it[KEY_INBOX_REMINDER] = enabled }
     suspend fun setInboxReminderDays(days: Int) = store.edit { it[KEY_INBOX_REMINDER_DAYS] = days }
     suspend fun setShowCompletedInToday(enabled: Boolean) = store.edit { it[KEY_SHOW_COMPLETED] = enabled }

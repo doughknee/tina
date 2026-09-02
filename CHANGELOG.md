@@ -5,6 +5,7 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 ## v1.7.3 (closed testing)
 
 - All-day events stay on their date when you change time zone. They used to slide a day.
+- Quiet hours (Settings → Notifications): reminders due in the window ring when it ends. Digests keep the times you chose.
 
 ## v1.7.2 (internal testing)
 

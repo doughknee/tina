@@ -27,8 +27,12 @@ internal fun firePendingIntent(context: Context, itemId: Long): PendingIntent =
 class AndroidReminderScheduler(private val context: Context) : ReminderScheduler {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
+    /** Set from the settings flow by the app; schedule() is synchronous and cannot read DataStore. */
+    @Volatile var quietHours: QuietHours? = null
+
     override fun schedule(item: Item) {
-        val at = nextReminderTime(item, System.currentTimeMillis(), TimeZone.currentSystemDefault())
+        val tz = TimeZone.currentSystemDefault()
+        val at = nextReminderTime(item, System.currentTimeMillis(), tz)?.let { deferOutOfQuietHours(it, quietHours, tz) }
         val pendingIntent = firePendingIntent(context, item.id)
         if (at == null) {
             alarmManager.cancel(pendingIntent)

@@ -6,6 +6,8 @@ import com.tina.app.data.expandOccurrences
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.plus
 
 /** Platform alarm scheduling; the Android actual uses AlarmManager, desktop is a no-op for now. */
 interface ReminderScheduler {
@@ -20,6 +22,26 @@ object NoopReminderScheduler : ReminderScheduler {
 }
 
 private const val TWO_YEARS_MILLIS = 2 * 366L * 24 * 60 * 60 * 1000
+
+/** Minutes after local midnight; a window that ends before it starts wraps past midnight. */
+data class QuietHours(val startMinutes: Int, val endMinutes: Int)
+
+/**
+ * A reminder due inside quiet hours rings when they end instead. Digests are not touched:
+ * their times are chosen by the user directly.
+ */
+fun deferOutOfQuietHours(atMillis: Long, quiet: QuietHours?, tz: TimeZone): Long {
+    if (quiet == null || quiet.startMinutes == quiet.endMinutes) return atMillis
+    val local = kotlinx.datetime.Instant.fromEpochMilliseconds(atMillis).toLocalDateTime(tz)
+    val minute = local.hour * 60 + local.minute
+    val wraps = quiet.endMinutes < quiet.startMinutes
+    val inside = if (wraps) minute >= quiet.startMinutes || minute < quiet.endMinutes
+    else minute >= quiet.startMinutes && minute < quiet.endMinutes
+    if (!inside) return atMillis
+    // the end lands tomorrow when the window wraps and we are already past its start
+    val endDate = if (wraps && minute >= quiet.startMinutes) local.date.plus(1, kotlinx.datetime.DateTimeUnit.DAY) else local.date
+    return LocalDateTime(endDate, kotlinx.datetime.LocalTime(quiet.endMinutes / 60, quiet.endMinutes % 60)).toInstant(tz).toEpochMilliseconds()
+}
 
 /** First occurrence strictly after [afterMillis]: the one that just fired must not be picked again. */
 private fun nextOccurrence(start: Long, recurrence: String, afterMillis: Long, tz: TimeZone): Long? =

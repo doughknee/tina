@@ -212,6 +212,10 @@ import com.tina.app.resources.set_licenses
 import com.tina.app.resources.set_morning
 import com.tina.app.resources.set_open_app_to
 import com.tina.app.resources.set_overdue_nudge
+import com.tina.app.resources.set_quiet_end
+import com.tina.app.resources.set_quiet_hours
+import com.tina.app.resources.set_quiet_hours_sub
+import com.tina.app.resources.set_quiet_start
 import com.tina.app.resources.set_overdue_nudge_sub
 import com.tina.app.resources.set_provider
 import com.tina.app.resources.set_provider_sub
@@ -287,7 +291,7 @@ enum class SettingsDestination {
 }
 
 /** Which time a [SettingsRow.TimeRow] edits. */
-private enum class TimeTarget { MORNING, AFTERNOON, EVENING, DAILY_AGENDA, OVERDUE_NUDGE }
+private enum class TimeTarget { MORNING, AFTERNOON, EVENING, DAILY_AGENDA, OVERDUE_NUDGE, QUIET_START, QUIET_END }
 
 @Composable
 private fun minutesLabel(minutes: Int, use24h: Boolean): String =
@@ -373,6 +377,8 @@ fun SettingsScreen(
             TimeTarget.EVENING -> settings.eveningStartMinutes
             TimeTarget.DAILY_AGENDA -> settings.dailyAgendaMinutes
             TimeTarget.OVERDUE_NUDGE -> settings.overdueNudgeMinutes
+            TimeTarget.QUIET_START -> settings.quietStartMinutes
+            TimeTarget.QUIET_END -> settings.quietEndMinutes
         }
         SettingsTimePicker(
             initialMinutes = current,
@@ -385,6 +391,8 @@ fun SettingsScreen(
                     TimeTarget.EVENING -> viewModel.setEveningStart(minutes)
                     TimeTarget.DAILY_AGENDA -> viewModel.setDailyAgendaMinutes(minutes)
                     TimeTarget.OVERDUE_NUDGE -> viewModel.setOverdueNudgeMinutes(minutes)
+                    TimeTarget.QUIET_START -> viewModel.setQuietStartMinutes(minutes)
+                    TimeTarget.QUIET_END -> viewModel.setQuietEndMinutes(minutes)
                 }
                 timeTarget = null
             },
@@ -923,6 +931,30 @@ private fun rememberSettingsSections(
                 visible = settings.overdueNudge,
                 timeLabel = minutesLabel(settings.overdueNudgeMinutes, use24h),
                 onClick = { onPickTime(TimeTarget.OVERDUE_NUDGE) },
+            ),
+            SettingsRow.Switch(
+                id = "quietHours",
+                title = stringResource(Res.string.set_quiet_hours),
+                supporting = stringResource(Res.string.set_quiet_hours_sub),
+                keywords = listOf("night", "do not disturb", "sleep", "silence"),
+                checked = settings.quietHours,
+                onCheckedChange = viewModel::setQuietHours,
+            ),
+            SettingsRow.TimeRow(
+                id = "quietStart",
+                title = stringResource(Res.string.set_quiet_start),
+                keywords = listOf("quiet"),
+                visible = settings.quietHours,
+                timeLabel = minutesLabel(settings.quietStartMinutes, use24h),
+                onClick = { onPickTime(TimeTarget.QUIET_START) },
+            ),
+            SettingsRow.TimeRow(
+                id = "quietEnd",
+                title = stringResource(Res.string.set_quiet_end),
+                keywords = listOf("quiet"),
+                visible = settings.quietHours,
+                timeLabel = minutesLabel(settings.quietEndMinutes, use24h),
+                onClick = { onPickTime(TimeTarget.QUIET_END) },
             ),
             SettingsRow.Switch(
                 id = "inboxReminder",

@@ -405,3 +405,8 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - Kept the local-midnight storage. Instead of epoch-day columns (a migration plus every reader of `startAt`), the app records the zone it last ran in and, when the zone differs, re-anchors every all-day event's midnight from the old zone to the new one, then re-arms reminders. Runs on launch, on the system zone broadcast, and on desktop start.
 - The first run in a zone only records it; nothing moves until a change is observed, so existing data is never touched on upgrade.
 
+### Quiet hours (v1.7.3)
+
+- Applied at the one choke point every reminder passes through, `AndroidReminderScheduler.schedule`, as a deferral to the window's end. The scheduler is synchronous, so the app pushes the window into it from the settings flow and re-arms everything when it changes.
+- Digests are exempt: their times are the user's own choice. Quiet hours are not in backups yet (BackupSettings is versioned; add them with the next backup bump).
+

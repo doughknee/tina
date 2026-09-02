@@ -294,6 +294,10 @@
     <string name="set_daily_agenda_sub">One morning notification listing today</string>
     <string name="set_overdue_nudge">Overdue nudge</string>
     <string name="set_overdue_nudge_sub">One evening summary, never per item</string>
+    <string name="set_quiet_hours">Quiet hours</string>
+    <string name="set_quiet_hours_sub">Reminders due in this window ring when it ends</string>
+    <string name="set_quiet_start">Quiet from</string>
+    <string name="set_quiet_end">Quiet until</string>
     <string name="set_inbox_reminder">Inbox reminder</string>
     <string name="set_inbox_reminder_sub">After %1$d days untouched</string>
     <string name="set_sound">Sound &amp; vibration</string>

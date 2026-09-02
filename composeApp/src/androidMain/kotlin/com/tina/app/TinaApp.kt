@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
 
 class TinaApp : Application(), KoinComponent {
@@ -41,6 +42,17 @@ class TinaApp : Application(), KoinComponent {
                 .map { it.autoBackup }
                 .distinctUntilChanged()
                 .collect { com.tina.app.data.AutoBackupScheduler.sync(this@TinaApp, it) }
+        }
+        // quiet hours: the scheduler cannot read DataStore itself, so it is told, and everything is re-armed
+        scope.launch {
+            val scheduler = get<com.tina.app.notifications.ReminderScheduler>() as? com.tina.app.notifications.AndroidReminderScheduler
+            settingsRepository.settings
+                .map { if (it.quietHours) com.tina.app.notifications.QuietHours(it.quietStartMinutes, it.quietEndMinutes) else null }
+                .distinctUntilChanged()
+                .collect { quiet ->
+                    scheduler?.quietHours = quiet
+                    repository.rescheduleAllReminders()
+                }
         }
         // digest alarms follow the settings that describe them
         scope.launch {
