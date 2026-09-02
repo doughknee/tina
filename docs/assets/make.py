@@ -30,9 +30,9 @@ def feature_graphic():
     im = Image.new("RGB", (1024, 500), BRAND)
     d = ImageDraw.Draw(im)
     check_mark(d, 108, 200, 1.0)
-    d.text((362, 128), "Peggy", font=font(96), fill=WHITE)
-    d.text((362, 292), "Capture in two seconds.", font=font(40), fill=WHITE)
-    d.text((362, 346), "Plan, sort, remember. All on your device.", font=font(30), fill=MUTED)
+    d.text((362, 150), "Peggy", font=font(96), fill=WHITE)
+    d.text((362, 282), "Capture in two seconds.", font=font(40), fill=WHITE)
+    d.text((362, 334), "Plan, sort, remember. All on your device.", font=font(30), fill=MUTED)
     im.save(HERE / "feature-graphic-1024x500.png")
 
 
