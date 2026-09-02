@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tina.app.data.Decisions
 import com.tina.app.data.Item
@@ -172,13 +173,15 @@ fun InboxScreen(
                 Text(
                     stringResource(Res.string.sort_empty),
                     style = MaterialTheme.typography.titleMediumEmphasized,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 16.dp),
                 )
                 Text(
                     stringResource(Res.string.sort_empty_sub),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 4.dp, start = 32.dp, end = 32.dp),
                 )
             }
             return@Scaffold

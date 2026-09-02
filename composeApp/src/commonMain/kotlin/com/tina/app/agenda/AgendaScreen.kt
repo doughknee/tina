@@ -960,9 +960,11 @@ private fun InboxEntryRow(count: Int, onClick: () -> Unit, modifier: Modifier = 
 
 @Composable
 private fun EmptyRange(range: AgendaRange, selected: LocalDate, today: LocalDate) {
+    // centred in the space under the calendar, the way Sort and Ideas centre theirs
     Column(
-        Modifier.fillMaxWidth().padding(top = 48.dp),
+        Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
         Icon(
             Icons.Outlined.Celebration,
