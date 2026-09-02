@@ -43,7 +43,6 @@ actual fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorSchem
     return when {
         dynamicColor && darkTheme -> dynamicDarkColorScheme(context)
         dynamicColor -> dynamicLightColorScheme(context)
-        darkTheme -> darkColorScheme()
-        else -> lightColorScheme()
+        else -> brandColorScheme(darkTheme)
     }
 }

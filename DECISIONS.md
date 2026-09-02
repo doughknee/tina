@@ -410,3 +410,7 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - Applied at the one choke point every reminder passes through, `AndroidReminderScheduler.schedule`, as a deferral to the window's end. The scheduler is synchronous, so the app pushes the window into it from the settings flow and re-arms everything when it changes.
 - Digests are exempt: their times are the user's own choice. Quiet hours are not in backups yet (BackupSettings is versioned; add them with the next backup bump).
 
+### Brand palette (v1.7.3)
+
+- MaterialKolor generates the scheme from the launcher blue at runtime (it is Google's material-color-utilities ported to KMP). Hand-picking forty tonal roles would have been wrong in the ways that only show on a real screen, and the library also opens the door to real contrast tone sets later.
+

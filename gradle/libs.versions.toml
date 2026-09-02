@@ -56,6 +56,7 @@ compose-material-icons-extended = { module = "org.jetbrains.compose.material:mat
 jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version = "1.4.1" }
+material-kolor = { module = "com.materialkolor:material-kolor", version = "5.0.1" }
 play-review = { module = "com.google.android.play:review-ktx", version = "2.0.2" }
 androidx-billing = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
 androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }

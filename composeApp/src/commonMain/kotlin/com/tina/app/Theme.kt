@@ -17,6 +17,13 @@ import com.tina.app.ui.LocalReduceMotion
 /** Current user settings, available anywhere in the tree. */
 val LocalSettings = staticCompositionLocalOf { Settings() }
 
+/** The launcher blue; every non-dynamic scheme grows from it. */
+val BrandSeed = Color(0xFF4F5FD6)
+
+/** A full Material 3 tonal scheme from the brand seed, for phones without dynamic colour and for desktop. */
+fun brandColorScheme(dark: Boolean): ColorScheme =
+    com.materialkolor.dynamicColorScheme(seedColor = BrandSeed, isDark = dark, style = com.materialkolor.PaletteStyle.TonalSpot)
+
 @Composable
 expect fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorScheme
 

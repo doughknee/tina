@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 
 @Composable
 actual fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorScheme =
-    if (darkTheme) darkColorScheme() else lightColorScheme()
+    brandColorScheme(darkTheme)
 
 /** No system bars to colour on desktop. */
 @Composable

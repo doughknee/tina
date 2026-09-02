@@ -52,6 +52,7 @@ kotlin {
             implementation(libs.compose.material.icons.extended)
             implementation(libs.jetbrains.lifecycle.viewmodel.compose)
             implementation(libs.koin.compose.viewmodel)
+            implementation(libs.material.kolor)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

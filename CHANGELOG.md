@@ -6,6 +6,7 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 
 - All-day events stay on their date when you change time zone. They used to slide a day.
 - Quiet hours (Settings → Notifications): reminders due in the window ring when it ends. Digests keep the times you chose.
+- A proper Peggy palette when dynamic colour is off, and on desktop: the launcher blue as the seed of a full light and dark scheme instead of the Material defaults.
 
 ## v1.7.2 (internal testing)
 
