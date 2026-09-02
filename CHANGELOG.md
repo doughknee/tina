@@ -4,6 +4,12 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 
 ## v1.8.0 (dev)
 
+### Capture understands more
+- Repeats: every 3 days, every 2 weeks, every mon and wed, every weekend, every morning, every 15th, daily, weekly on friday.
+- Times: 2-4pm ranges (start plus length), 3 p.m., 5.30pm, in an hour, in half an hour, end of day, first thing, tomorrow night.
+- Dates: this friday, the 15th, 9/15/26, 2026-09-15, september 15th 2027, this weekend, day after tomorrow.
+- "urgent" and "asap" set high priority. A leading "the" stays in the title.
+
 ### Sort is now the decisions page
 - Everything that needs a call from you, grouped: new captures with no date, overdue tasks, snoozed reminders, and every someday item. Somedays live here until they get a date; Plan no longer shows them.
 - Each group has its own one-tap answers (Today, Done, Keep, Drop, and the rest); swipes stay, and everything is undoable.

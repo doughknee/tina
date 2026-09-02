@@ -420,3 +420,9 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - Same page, same swipe cards, different feeds; the alternative was deleting the tab and going to two, which threw away the one interaction testers liked.
 - Recurring tasks are never "overdue" here; they are judged per occurrence on the agenda.
 
+### Parser corpus (v1.8.0)
+
+- `CaptureCorpusTest` is the parser's spec: one real phrasing per line with what it must become. New phrasings go there first; the parser follows. It documents the deliberate trades too ("sunday roast recipe" loses its weekday to the date).
+- Time ranges are one clock plus a length, so "2-4pm" never trips the two-times ambiguity rule. A bare start ("10-6pm") flips to am when pm would put it after the end.
+- Frequency words ("daily", "weekly") only count when they end the phrase or are followed by a day; "the daily show" and "weekly report draft" stay titles.
+
