@@ -34,6 +34,12 @@ interface OccurrenceDao {
 
     @Query("SELECT * FROM occurrence_completions")
     fun observeAll(): Flow<List<OccurrenceCompletion>>
+
+    @Query("SELECT COUNT(*) FROM occurrence_completions WHERE itemId = :itemId AND epochDay = :epochDay")
+    suspend fun count(itemId: Long, epochDay: Int): Int
+
+    @Query("DELETE FROM occurrence_completions WHERE itemId = :itemId")
+    suspend fun deleteForItem(itemId: Long)
 }
 
 class OccurrenceRepository(private val dao: OccurrenceDao, private val clock: Clock = Clock.System) {
@@ -52,6 +58,9 @@ class OccurrenceRepository(private val dao: OccurrenceDao, private val clock: Cl
 
     /** Undo path for both complete and skip. */
     suspend fun clear(itemId: Long, date: LocalDate) = dao.delete(itemId, date.toEpochDays().toInt())
+
+    /** Done or skipped: either way this occurrence must not ring. */
+    suspend fun isHandled(itemId: Long, date: LocalDate): Boolean = dao.count(itemId, date.toEpochDays().toInt()) > 0
 
     private fun OccurrenceCompletion.key() = OccurrenceKey(itemId, epochDay)
 }

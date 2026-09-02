@@ -63,4 +63,20 @@ class NextReminderTimeTest {
         // now = Sep 2 10:00; today's 9:00 already passed, so tomorrow 8:50
         assertEquals(ms(2026, 9, 3, 8, 50), nextReminderTime(event, now, tz))
     }
+
+    @Test fun recurringTaskRingsForItsNextOccurrence() {
+        val item = task(LocalDate(2026, 9, 1), 9 * 60).copy(recurrence = "FREQ=DAILY")
+        // now = Sep 2 10:00; today's 9:00 has passed, so tomorrow at 8:50
+        assertEquals(ms(2026, 9, 3, 8, 50), nextReminderTime(item, now, tz))
+    }
+
+    @Test fun anOnTimeFireArmsTheFollowingOccurrenceNotItself() {
+        val event = Item(
+            title = "e", type = ItemType.EVENT, createdAt = 0, updatedAt = 0,
+            startAt = ms(2026, 9, 1, 9, 0), endAt = ms(2026, 9, 1, 10, 0),
+            recurrence = "FREQ=DAILY", reminderOffsetMinutes = 10,
+        )
+        // the alarm for Sep 3 fires at exactly 8:50; rescheduling then must land on Sep 4
+        assertEquals(ms(2026, 9, 4, 8, 50), nextReminderTime(event, ms(2026, 9, 3, 8, 50), tz))
+    }
 }

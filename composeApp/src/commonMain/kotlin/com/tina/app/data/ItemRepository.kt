@@ -6,6 +6,7 @@ import com.tina.app.notifications.ReminderScheduler
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -68,7 +69,10 @@ class ItemRepository(
     fun observeAll(): Flow<List<Item>> = dao.observeAll()
 
     /** Irreversible; only the hold-to-confirm control in Settings calls this. */
-    suspend fun deleteEverything() = dao.deleteAll()
+    suspend fun deleteEverything() {
+        dao.getAll().forEach { scheduler.cancel(it.id) }
+        dao.deleteAll()
+    }
     fun observeNotes(): Flow<List<Item>> = dao.observeNotes()
 
     fun observeTasksForDay(day: LocalDate, tz: TimeZone): Flow<List<Item>> {
@@ -120,9 +124,15 @@ class ItemRepository(
     fun observeTrashCount(): Flow<Int> = dao.observeTrashCount()
 
     /** Permanent, single item. */
-    suspend fun purge(id: Long) = dao.purge(id)
+    suspend fun purge(id: Long) {
+        scheduler.cancel(id)
+        dao.purge(id)
+    }
 
-    suspend fun emptyTrash() = dao.emptyTrash()
+    suspend fun emptyTrash() {
+        dao.observeTrash().first().forEach { scheduler.cancel(it.id) }
+        dao.emptyTrash()
+    }
 
     /** Runs at launch; keeps the Trash inside its retention window. */
     suspend fun purgeExpiredTrash(retentionDays: Int?) {

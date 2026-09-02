@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.tina.app.MainActivity
 import com.tina.app.data.Item
 import kotlinx.datetime.TimeZone
 
@@ -44,8 +45,12 @@ class AndroidReminderScheduler(private val context: Context) : ReminderScheduler
         if (alarmManager.canScheduleExactAlarms()) {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pendingIntent)
         } else {
-            // user has not granted exact alarms yet; inexact beats nothing
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pendingIntent)
+            // without the exact-alarm grant, an alarm-clock alarm still fires on time through Doze;
+            // the cost is an alarm icon in the status bar, which is honest for a reminder
+            val show = PendingIntent.getActivity(
+                context, 0, Intent(context, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+            alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(at, show), pendingIntent)
         }
     }
 }

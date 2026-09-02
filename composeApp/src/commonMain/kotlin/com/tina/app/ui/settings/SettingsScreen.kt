@@ -883,6 +883,14 @@ private fun rememberSettingsSections(
                 checked = settings.overdueNudge,
                 onCheckedChange = viewModel::setOverdueNudge,
             ),
+            SettingsRow.TimeRow(
+                id = "overdueNudgeTime",
+                title = stringResource(Res.string.set_overdue_nudge),
+                keywords = listOf("overdue time"),
+                visible = settings.overdueNudge,
+                timeLabel = minutesLabel(settings.overdueNudgeMinutes, use24h),
+                onClick = { onPickTime(TimeTarget.OVERDUE_NUDGE) },
+            ),
             SettingsRow.Switch(
                 id = "inboxReminder",
                                 title = stringResource(Res.string.set_inbox_reminder),

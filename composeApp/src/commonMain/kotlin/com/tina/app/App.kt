@@ -86,6 +86,14 @@ fun App() {
                     },
                 )
             }
+            // a reminder tap lands here with an id; open the item the way a row tap would
+            val repository = koinInject<com.tina.app.data.ItemRepository>()
+            val requestedItem by com.tina.app.ui.OpenItemRequests.pending.collectAsState()
+            androidx.compose.runtime.LaunchedEffect(requestedItem) {
+                val id = requestedItem ?: return@LaunchedEffect
+                com.tina.app.ui.OpenItemRequests.clear()
+                repository.get(id)?.let(::openItem)
+            }
             val motion = rememberAppMotion()
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                 // shared-element rows need an animated scope; a still AnimatedContent provides one

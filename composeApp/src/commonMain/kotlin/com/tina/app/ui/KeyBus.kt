@@ -23,6 +23,14 @@ object KeyBus {
  * the desktop focus shortcut. State, not an event, so a cold start can't miss it while
  * the UI is still composing; the shell drops ask mode and the capture bar clears it.
  */
+/** A notification tap asks the shell to open one item once it is composed. */
+object OpenItemRequests {
+    private val _pending = MutableStateFlow<Long?>(null)
+    val pending: StateFlow<Long?> = _pending
+    fun request(itemId: Long) { _pending.value = itemId }
+    fun clear() { _pending.value = null }
+}
+
 object CaptureFocus {
     private val _pending = MutableStateFlow(false)
     val pending: StateFlow<Boolean> = _pending

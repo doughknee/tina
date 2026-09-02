@@ -27,6 +27,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -121,7 +122,13 @@ class DigestReceiver : BroadcastReceiver(), KoinComponent {
                         val due = items.filter {
                             !it.completed && it.type == ItemType.TASK && it.dueDate == todayEpoch
                         }
-                        val events = items.filter { it.type == ItemType.EVENT && it.startAt != null }
+                        val dayStart = today.atStartOfDayIn(tz).toEpochMilliseconds()
+                        val dayEnd = today.plus(1, DateTimeUnit.DAY).atStartOfDayIn(tz).toEpochMilliseconds()
+                        // today's events only, recurring ones by their occurrence today
+                        val events = items.filter { e ->
+                            e.type == ItemType.EVENT && e.startAt != null && !e.completed &&
+                                com.tina.app.data.expandOccurrences(e.startAt!!, e.recurrence, dayStart, dayEnd, tz).any()
+                        }
                         val lines = (due.map { it.title } + events.map { it.title }).take(5)
                         if (lines.isNotEmpty()) {
                             notify(

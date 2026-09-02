@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.core.app.NotificationCompat
+import androidx.glance.appwidget.updateAll
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.tina.app.MainActivity
@@ -22,8 +23,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlinx.datetime.toLocalDateTime
 
 const val REMINDER_CHANNEL_ID = "reminders"
+private const val REMINDER_GROUP = "com.tina.app.REMINDERS"
+private const val REMINDER_SUMMARY_ID = 800_000
 
 fun ensureReminderChannel(context: Context) {
     val manager = context.getSystemService(NotificationManager::class.java)
@@ -39,6 +43,7 @@ fun ensureReminderChannel(context: Context) {
 class ReminderReceiver : BroadcastReceiver(), KoinComponent {
     private val repository: ItemRepository by inject()
     private val scheduler: ReminderScheduler by inject()
+    private val occurrences: com.tina.app.data.OccurrenceRepository by inject()
 
     override fun onReceive(context: Context, intent: Intent) {
         val itemId = intent.getLongExtra(EXTRA_ITEM_ID, -1L)
@@ -49,13 +54,18 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                 when (intent.action) {
                     ACTION_DONE -> {
                         repository.get(itemId)?.let { item ->
-                            if (item.type == ItemType.TASK) repository.complete(itemId)
+                            when {
+                                // a series is done for today only; the row itself stays
+                                item.recurrence != null -> occurrences.complete(itemId, todayDate())
+                                item.type == ItemType.TASK -> repository.complete(itemId)
+                            }
                         }
-                        NotificationManagerCompat.from(context).cancel(itemId.toInt())
+                        dismissReminder(context, itemId)
+                        com.tina.app.today.TodayWidget().updateAll(context)
                     }
                     ACTION_SNOOZE -> {
                         val minutes = intent.getIntExtra(EXTRA_SNOOZE_MINUTES, 10)
-                        NotificationManagerCompat.from(context).cancel(itemId.toInt())
+                        dismissReminder(context, itemId)
                         (scheduler as AndroidReminderScheduler).scheduleExactAt(
                             System.currentTimeMillis() + minutes * 60_000L,
                             firePendingIntent(context, itemId),
@@ -64,11 +74,13 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     else -> {
                         repository.get(itemId)?.let { item ->
                             val remindable = item.type == ItemType.TASK || item.type == ItemType.EVENT
-                            if (!item.completed && remindable && item.reminderOffsetMinutes != null) {
+                            // an occurrence already ticked or skipped from the agenda stays quiet
+                            val alreadyHandled = item.recurrence != null && occurrences.isHandled(itemId, todayDate())
+                            if (!item.completed && remindable && item.reminderOffsetMinutes != null && !alreadyHandled) {
                                 showReminderNotification(context, item)
                             }
-                            // recurring events arm their next occurrence
-                            if (item.type == ItemType.EVENT && item.recurrence != null) scheduler.schedule(item)
+                            // any series arms its next occurrence
+                            if (item.recurrence != null) scheduler.schedule(item)
                         }
                     }
                 }
@@ -100,7 +112,9 @@ fun showReminderNotification(context: Context, item: Item) {
     val contentIntent = PendingIntent.getActivity(
         context,
         item.id.toInt(),
-        Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        Intent(context, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            .putExtra(MainActivity.EXTRA_OPEN_ITEM, item.id),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
     val builder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
@@ -110,10 +124,12 @@ fun showReminderNotification(context: Context, item: Item) {
         .setCategory(NotificationCompat.CATEGORY_REMINDER)
         .setAutoCancel(true)
         .setContentIntent(contentIntent)
+        .setGroup(REMINDER_GROUP)
     item.body?.let { com.tina.app.notes.htmlPreview(it) }?.takeIf { it.isNotBlank() }?.let {
-        builder.setContentText(it.take(120))
+        builder.setContentText(it.take(120)).setStyle(NotificationCompat.BigTextStyle().bigText(it.take(600)))
     }
-    if (item.type == ItemType.TASK) {
+    // tasks complete; a repeating event can be ticked off for today
+    if (item.type == ItemType.TASK || item.recurrence != null) {
         builder.addAction(0, context.getString(R.string.action_done), actionIntent(context, item.id, ACTION_DONE, 1))
     }
     builder.addAction(
@@ -127,8 +143,30 @@ fun showReminderNotification(context: Context, item: Item) {
         actionIntent(context, item.id, ACTION_SNOOZE, 3, snoozeMinutes = 60),
     )
     try {
-        NotificationManagerCompat.from(context).notify(item.id.toInt(), builder.build())
+        val manager = NotificationManagerCompat.from(context)
+        manager.notify(item.id.toInt(), builder.build())
+        // several reminders at once collapse under one line instead of stacking
+        manager.notify(
+            REMINDER_SUMMARY_ID,
+            NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setGroup(REMINDER_GROUP)
+                .setGroupSummary(true)
+                .setAutoCancel(true)
+                .build(),
+        )
     } catch (_: SecurityException) {
         // permission revoked between check and notify; nothing to do
     }
 }
+
+/** Drops one reminder and, when it was the last, the group summary that held the stack. */
+private fun dismissReminder(context: Context, itemId: Long) {
+    val manager = NotificationManagerCompat.from(context)
+    manager.cancel(itemId.toInt())
+    val othersLeft = manager.activeNotifications.any { it.id != itemId.toInt() && it.id != REMINDER_SUMMARY_ID && it.notification.group == REMINDER_GROUP }
+    if (!othersLeft) manager.cancel(REMINDER_SUMMARY_ID)
+}
+
+private fun todayDate(): kotlinx.datetime.LocalDate =
+    kotlin.time.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
