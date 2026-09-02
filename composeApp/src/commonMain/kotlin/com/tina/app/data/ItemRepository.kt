@@ -251,6 +251,7 @@ fun itemFromCapture(
         ItemType.TASK -> base.copy(
             dueDate = parsed.date?.toEpochDays()?.toInt(),
             dueTime = parsed.time?.let { it.hour * 60 + it.minute },
+            recurrence = parsed.rrule,
             reminderOffsetMinutes = if (parsed.time != null) defaultReminderMinutes else null,
         )
 

@@ -172,7 +172,8 @@ class CaptureParserTest {
     @Test fun everyDay() {
         val p = parse("water plants every day")
         assertEquals("FREQ=DAILY", p.rrule)
-        assertEquals(ItemType.EVENT, p.type)
+        // a repeat with no clock time is a habit: a task, not an all-day event
+        assertEquals(ItemType.TASK, p.type)
         assertEquals(LocalDate(2026, 9, 2), p.date)
     }
 
@@ -191,6 +192,22 @@ class CaptureParserTest {
         assertEquals("FREQ=DAILY", p.rrule)
         assertEquals(LocalTime(9, 0), p.time)
         assertEquals("standup", p.title)
+        assertEquals(ItemType.EVENT, p.type)
+    }
+
+    @Test fun partOfDayWordInsideATitleIsNotATime() {
+        val p = parse("morning pages every day")
+        assertEquals("morning pages", p.title)
+        assertNull(p.time)
+        assertEquals(ItemType.TASK, p.type)
+        assertEquals("FREQ=DAILY", p.rrule)
+    }
+
+    @Test fun partOfDayWordAfterADayWordIsATime() {
+        assertEquals(LocalTime(9, 0), parse("call sam tomorrow morning").time)
+        assertEquals(LocalTime(19, 0), parse("gym in the evening").time)
+        assertEquals(LocalTime(14, 0), parse("dentist afternoon").time)
+        assertEquals("evening walk", parse("evening walk every day").title)
     }
 
     // --- notes ---

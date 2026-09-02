@@ -51,9 +51,11 @@ private val RE_TONIGHT = Regex("""\btonight\b""", RegexOption.IGNORE_CASE)
 private val TIME_WORDS = listOf(
     Regex("""\bnoon\b""", RegexOption.IGNORE_CASE) to LocalTime(12, 0),
     Regex("""\bmidnight\b""", RegexOption.IGNORE_CASE) to LocalTime(0, 0),
-    Regex("""\bmorning\b""", RegexOption.IGNORE_CASE) to LocalTime(9, 0),
-    Regex("""\bafternoon\b""", RegexOption.IGNORE_CASE) to LocalTime(14, 0),
-    Regex("""\bevening\b""", RegexOption.IGNORE_CASE) to LocalTime(19, 0),
+    // a part-of-day word is a time only after a day word or at the end of the phrase;
+    // otherwise it is part of the title ("morning pages", "evening walk")
+    Regex("""(?:(?<=\b(?:this|the|tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)\s)morning\b|\bmorning\s*$)""", RegexOption.IGNORE_CASE) to LocalTime(9, 0),
+    Regex("""(?:(?<=\b(?:this|the|tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)\s)afternoon\b|\bafternoon\s*$)""", RegexOption.IGNORE_CASE) to LocalTime(14, 0),
+    Regex("""(?:(?<=\b(?:this|the|tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)\s)evening\b|\bevening\s*$)""", RegexOption.IGNORE_CASE) to LocalTime(19, 0),
 )
 private val RE_TODAY = Regex("""\btoday\b""", RegexOption.IGNORE_CASE)
 private val RE_TOMORROW = Regex("""\btomorrow\b|\btmrw\b""", RegexOption.IGNORE_CASE)
@@ -321,8 +323,9 @@ fun parseCapture(
         date = rruleWeekday?.let { nextOccurrence(today, it, orSame = true) } ?: today
     }
 
+    // a clock time makes an event; a bare repeat ("every day") is a habit, so a task
     val type = when {
-        rrule != null || time != null -> ItemType.EVENT
+        time != null -> ItemType.EVENT
         else -> ItemType.TASK
     }
 

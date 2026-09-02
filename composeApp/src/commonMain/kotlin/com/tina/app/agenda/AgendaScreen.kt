@@ -575,19 +575,30 @@ private fun AgendaRowContent(
         is AgendaRow.Duplicate -> if (showTime) item.dueLocalTime?.let { timeLabel(it, use24h) } else null
         is AgendaRow.Series -> null
     }
+    // an occurrence of a repeat: the checkbox marks that day, never the whole series
+    val occurrence = (row as? AgendaRow.Single)?.takeIf { item.recurrence != null && it.date != null }
     ItemRow(
-        item = item,
+        item = if (occurrence != null) item.copy(completed = occurrence.done) else item,
         today = today,
         timeText = timeText,
         dateText = if (overdue) item.dueLocalDate?.let { dateLabel(it, today) } else null,
         badge = (row as? AgendaRow.Duplicate)?.let { "×${it.count}" },
         badgeDescription = (row as? AgendaRow.Duplicate)?.let { stringResource(Res.string.duplicate_copies, it.count) },
-        onToggleComplete = if (item.type == ItemType.TASK) {
-            { viewModel.toggleComplete(item) }
-        } else null,
+        onToggleComplete = when {
+            occurrence != null && item.type == ItemType.TASK -> {
+                {
+                    if (occurrence.done) viewModel.clearOccurrence(item.id, occurrence.date!!)
+                    else viewModel.completeOccurrence(item.id, occurrence.date!!)
+                }
+            }
+            item.type == ItemType.TASK -> {
+                { viewModel.toggleComplete(item) }
+            }
+            else -> null
+        },
         onDelete = { onDelete(item) },
         onRename = { viewModel.rename(item, it) },
-        onReschedule = if (item.type == ItemType.TASK) {
+        onReschedule = if (item.type == ItemType.TASK && occurrence == null) {
             { viewModel.reschedule(item, it) }
         } else null,
         onOpen = if (row is AgendaRow.Duplicate) {

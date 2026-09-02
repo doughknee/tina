@@ -68,7 +68,17 @@ sealed interface GroupKey {
 sealed interface AgendaRow {
     val item: Item
 
-    data class Single(override val item: Item, val time: LocalTime? = null) : AgendaRow
+    /**
+     * One row for one date. For a repeating item this is one *occurrence*: [date] says which,
+     * [done] whether that day is complete, and completing it must go through the occurrence
+     * table, not the item.
+     */
+    data class Single(
+        override val item: Item,
+        val time: LocalTime? = null,
+        val date: LocalDate? = null,
+        val done: Boolean = false,
+    ) : AgendaRow
 
     /**
      * One row standing in for many occurrences. [doneMask] is per-day and only filled for the
@@ -164,8 +174,9 @@ fun buildAgenda(
     }
 
     // Rule 4: overdue is positional — it appears here and never again in a day group.
+    // a repeat's due date is its anchor, not a deadline, so it is never overdue
     val overdue = candidates.filter {
-        it.type == ItemType.TASK && !it.completed && it.dueDate != null &&
+        it.type == ItemType.TASK && !it.completed && it.recurrence == null && it.dueDate != null &&
             it.dueDate!! < today.toEpochDays().toInt()
     }
     val overdueIds = overdue.map { it.id }.toSet()
@@ -183,7 +194,11 @@ fun buildAgenda(
             if (dates.isEmpty()) continue
             // Rule 1: a handful of occurrences reads better as real rows than as a summary.
             if (dates.size <= SERIES_BUDGET) {
-                dates.forEach { placements += Placement(item, it, timeOf(item, tz)) }
+                dates.forEach { date ->
+                    val done = OccurrenceKey(item.id, date.toEpochDays().toInt()) in completedOccurrences
+                    if (done && !settings.showCompleted) return@forEach
+                    placements += Placement(item, date, timeOf(item, tz), done = done)
+                }
             } else {
                 seriesRows += AgendaRow.Series(
                     item = item,
@@ -246,6 +261,7 @@ private data class Placement(
     val date: LocalDate,
     val time: LocalTime?,
     val span: Pair<LocalDate, LocalDate>? = null,
+    val done: Boolean = false,
 )
 
 /** A built row plus the date it files under — rows themselves don't all carry one. */
@@ -415,7 +431,7 @@ private fun mergeDuplicates(
                     dayCount = first.daysUntilInclusive(last),
                 )
             }
-            twins.isEmpty() -> AgendaRow.Single(placement.item, placement.time)
+            twins.isEmpty() -> AgendaRow.Single(placement.item, placement.time, placement.date, placement.done)
             else -> AgendaRow.Duplicate(placement.item, twins.map { it.value.item })
         }
         out += DatedRow(placement.date, row)

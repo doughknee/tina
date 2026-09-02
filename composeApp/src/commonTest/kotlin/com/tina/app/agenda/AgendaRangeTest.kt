@@ -26,6 +26,7 @@ private fun task(
     due: LocalDate? = TODAY,
     time: Int? = null,
     completed: Boolean = false,
+    rrule: String? = null,
 ) = Item(
     id = id,
     title = title,
@@ -35,6 +36,7 @@ private fun task(
     dueDate = due?.toEpochDays()?.toInt(),
     dueTime = time,
     completed = completed,
+    recurrence = rrule,
 )
 
 private fun event(
@@ -269,6 +271,29 @@ class AgendaRangeTest {
             settings = AgendaSettings(showCompleted = true),
         )
         assertEquals(1, rows(shown).size)
+    }
+
+    // ---- repeating tasks
+
+    @Test
+    fun aRepeatingTaskAnchoredInThePastIsNotOverdue() {
+        val habit = task(1, "Water plants", due = TODAY.minus(), rrule = "FREQ=DAILY")
+        val groups = buildAgenda(listOf(habit), AgendaRange.day(TODAY), TODAY, TZ)
+        assertNull(group(groups, GroupKey.Overdue))
+        val row = rows(groups).single() as AgendaRow.Single
+        assertEquals(TODAY, row.date)
+        assertEquals(false, row.done)
+    }
+
+    @Test
+    fun aRepeatingTaskOccurrenceCarriesItsDoneState() {
+        val habit = task(1, "Water plants", due = TODAY, rrule = "FREQ=DAILY")
+        val done = setOf(OccurrenceKey(1, TODAY.toEpochDays().toInt()))
+        val shown = rows(buildAgenda(listOf(habit), AgendaRange.day(TODAY), TODAY, TZ,
+            settings = AgendaSettings(showCompleted = true), completedOccurrences = done)).single() as AgendaRow.Single
+        assertEquals(true, shown.done)
+        // hidden entirely when completed rows are hidden
+        assertTrue(rows(buildAgenda(listOf(habit), AgendaRange.day(TODAY), TODAY, TZ, completedOccurrences = done)).isEmpty())
     }
 
     // ---- next occurrence skips done and skipped days
