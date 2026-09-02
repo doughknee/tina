@@ -963,7 +963,7 @@ private fun EmptyRange(range: AgendaRange, selected: LocalDate, today: LocalDate
     // centred like Sort and Ideas; the bottom padding is half the calendar strip, so the block
     // lands on the same line across the three tabs instead of lower on this one
     Column(
-        Modifier.fillMaxSize().padding(bottom = 80.dp),
+        Modifier.fillMaxSize().padding(bottom = 136.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
