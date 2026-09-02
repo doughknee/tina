@@ -289,3 +289,10 @@ Running log of choices made without asking, newest last.
 - **The save burst is `MaterialShapes.SoftBurst`**, settling from a quarter-turn on the fast spatial spring — the one animation in the app that is purely celebratory, so it gets the one purely decorative shape.
 - **The Library FAB stays a plain FAB.** It has one action; a `FloatingActionButtonMenu` for one item is a menu with nothing to choose.
 - **System bar icons follow the app's theme, not the phone's.** `enableEdgeToEdge` chooses icon colour from the system dark flag, so forcing tina light on a dark phone drew white status icons on a lavender bar. `SyncSystemBars(dark)` in `AppTheme` sets the appearance from the resolved theme on every change; desktop is a no-op.
+
+## Agenda · Inbox · Notes (Library retired)
+
+- **Library added nothing the Agenda's All range didn't.** It was the same rows behind a filter rail; its three real contributions — global search, inbox triage, a Done view — each got a better home. Search is a sheet over whatever page you're on (from the header magnifier or Ctrl+F); Done lives in search; Inbox is a destination again.
+- **The nav bar is the app's three verbs**: plan (Agenda), sort (Inbox), write (Notes). Inbox is the one split that isn't redundant with the home — untriaged captures are precisely what the Agenda does not list — and its badge is the natural "you have things to sort" signal for a capture-first app. Material's own guidance is 3–5 destinations; two looked like something was missing.
+- **Capture and Ask are modes, not destinations.** The bar's leading control is a labelled expressive `ToggleButton` pill (✎ Capture / ✦ Ask) that morphs shape on switch, so the current mode reads at a glance and the switch is an obvious button. With no AI provider the pill still names the mode but won't flip.
+- **The capture bar hides while the search sheet is up.** Search has its own field; two stacked fields would fight for the keyboard. Every other sheet keeps the bar.

@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -41,7 +43,8 @@ import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -143,6 +146,8 @@ import org.jetbrains.compose.resources.stringResource
 fun CaptureBar(
     askMode: Boolean,
     onAskModeChange: (Boolean) -> Unit,
+    /** False when no AI provider is configured: the pill still names the mode but won't flip. */
+    askAvailable: Boolean,
     onAskSend: (String) -> Unit,
     askBusy: Boolean,
     snackbarHostState: SnackbarHostState,
@@ -223,20 +228,25 @@ fun CaptureBar(
             modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
         ) {
             Row(Modifier.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                FilledIconToggleButton(
+                // the mode switch: a labelled pill that morphs shape between Capture and Ask,
+                // so the current mode is readable at a glance and the switch is an obvious button
+                ToggleButton(
                     checked = askMode,
                     onCheckedChange = onAskModeChange,
-                    modifier = Modifier.size(40.dp),
-                    colors = IconButtonDefaults.filledIconToggleButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        checkedContainerColor = MaterialTheme.colorScheme.primary,
-                        checkedContentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
+                    enabled = askAvailable,
+                    modifier = Modifier.height(40.dp),
+                    colors = ToggleButtonDefaults.tonalToggleButtonColors(),
+                    contentPadding = PaddingValues(horizontal = 12.dp),
                 ) {
                     Icon(
                         if (askMode) Icons.Outlined.AutoAwesome else Icons.Outlined.Edit,
+                        contentDescription = null,
+                        Modifier.size(18.dp),
+                    )
+                    Text(
                         stringResource(if (askMode) Res.string.mode_ask else Res.string.mode_capture),
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(start = 6.dp),
                     )
                 }
 

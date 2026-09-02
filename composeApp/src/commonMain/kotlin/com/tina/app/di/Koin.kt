@@ -13,7 +13,8 @@ import com.tina.app.data.ItemRepository
 import com.tina.app.data.SettingsRepository
 import com.tina.app.data.buildDatabase
 import com.tina.app.detail.DetailViewModel
-import com.tina.app.library.LibraryViewModel
+import com.tina.app.inbox.InboxViewModel
+import com.tina.app.search.SearchViewModel
 import com.tina.app.notes.NoteEditorViewModel
 import com.tina.app.notes.NotesViewModel
 import com.tina.app.ui.SettingsViewModel
@@ -41,7 +42,8 @@ val commonModule = module {
     viewModelOf(::CaptureViewModel)
     viewModelOf(::SettingsViewModel)
     viewModelOf(::AgendaViewModel)
-    viewModelOf(::LibraryViewModel)
+    viewModelOf(::InboxViewModel)
+    viewModelOf(::SearchViewModel)
     viewModel { (id: Long) -> DetailViewModel(id, get()) }
     viewModel { (id: Long) -> EventEditorViewModel(id, get()) }
     viewModelOf(::NotesViewModel)
