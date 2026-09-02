@@ -42,7 +42,8 @@ class ItemRepository(
         ) { new, overdue, snoozed, someday -> Decisions(new, overdue, snoozed, someday) }
     }
 
-    fun observeDecisionCount(): Flow<Int> = observeDecisions().map { it.total }
+    /** The badge: what is owed now. Someday is a section you scroll to, not a nag. */
+    fun observeDecisionCount(): Flow<Int> = observeDecisions().map { it.urgent }
 
     suspend fun snooze(id: Long, untilMillis: Long) = dao.setSnoozedUntil(id, untilMillis)
     suspend fun clearSnooze(id: Long) = dao.setSnoozedUntil(id, null)
@@ -302,5 +303,6 @@ data class Decisions(
     val someday: List<Item> = emptyList(),
 ) {
     val total: Int get() = new.size + overdue.size + snoozed.size + someday.size
+    val urgent: Int get() = new.size + overdue.size + snoozed.size
     val isEmpty: Boolean get() = total == 0
 }
