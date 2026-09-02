@@ -84,8 +84,8 @@ android {
         applicationId = "com.tina.app"
         minSdk = 31
         targetSdk = 36
-        versionCode = 7
-        versionName = "1.5.0"
+        versionCode = 8
+        versionName = "1.6.0"
     }
 
     signingConfigs {
@@ -143,7 +143,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Msi)
             packageName = "tina"
-            packageVersion = "1.5.0"
+            packageVersion = "1.6.0"
         }
     }
 }
