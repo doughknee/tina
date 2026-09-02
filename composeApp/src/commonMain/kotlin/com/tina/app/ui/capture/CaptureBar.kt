@@ -72,6 +72,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -316,6 +317,7 @@ fun CaptureBar(
                         .weight(1f)
                         .padding(horizontal = 12.dp, vertical = 12.dp)
                         .focusRequester(focusRequester)
+                        .semantics { contentDescription = placeholder }
                         .onFocusChanged {
                             focused = it.isFocused
                             onFocusChanged(it.isFocused)

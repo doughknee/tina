@@ -142,10 +142,10 @@ fun InboxScreen(
                         onOpen = { onOpenItem(item) },
                         // the two-second rule: a swipe sorts without hunting for a chip. Delete
                         // stays on the row menu; both swipes are undoable
-                        swipeRight = SwipeAction(Icons.Outlined.Today, SwipeTone.PRIMARY) {
+                        swipeRight = SwipeAction(Icons.Outlined.Today, SwipeTone.PRIMARY, stringResource(Res.string.date_today)) {
                             withUndo(sortedText, { viewModel.triage(item, TriageAction.TODAY) }, viewModel::undoTriage)
                         },
-                        swipeLeft = SwipeAction(Icons.Outlined.Snooze, SwipeTone.TERTIARY) {
+                        swipeLeft = SwipeAction(Icons.Outlined.Snooze, SwipeTone.TERTIARY, stringResource(Res.string.triage_someday)) {
                             withUndo(sortedText, { viewModel.triage(item, TriageAction.SOMEDAY) }, viewModel::undoTriage)
                         },
                         extraContent = {

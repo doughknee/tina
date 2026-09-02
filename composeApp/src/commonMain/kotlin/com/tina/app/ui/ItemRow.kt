@@ -59,6 +59,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
@@ -72,6 +74,8 @@ import com.tina.app.resources.date_none
 import com.tina.app.resources.date_today
 import com.tina.app.resources.date_tomorrow
 import com.tina.app.resources.delete
+import com.tina.app.resources.row_rename
+import com.tina.app.resources.row_open
 import com.tina.app.resources.ai_suggestion_pending
 import com.tina.app.resources.mark_done
 import com.tina.app.resources.open_details
@@ -86,7 +90,7 @@ import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.stringResource
 
 /** What a swipe on a row does on a given page, and how its backdrop looks. */
-data class SwipeAction(val icon: ImageVector, val tone: SwipeTone, val onAction: () -> Unit)
+data class SwipeAction(val icon: ImageVector, val tone: SwipeTone, val label: String? = null, val onAction: () -> Unit)
 
 enum class SwipeTone {
     PRIMARY, TERTIARY, ERROR;
@@ -153,6 +157,18 @@ fun ItemRow(
         }
     }
 
+    // swipes have no gesture for a screen reader: the same actions, as row actions
+    val completeLabel = stringResource(Res.string.mark_done)
+    val deleteLabel = stringResource(Res.string.delete)
+    val openLabel = stringResource(Res.string.row_open)
+    val accessibilityActions = listOfNotNull(
+        swipeRight?.let { s -> s.label?.let { l -> CustomAccessibilityAction(l) { s.onAction(); true } } }
+            ?: onToggleComplete?.let { CustomAccessibilityAction(completeLabel) { it(); true } },
+        swipeLeft?.let { s -> s.label?.let { l -> CustomAccessibilityAction(l) { s.onAction(); true } } }
+            ?: CustomAccessibilityAction(deleteLabel) { onDelete(); true },
+        onOpen?.let { CustomAccessibilityAction(openLabel) { it(); true } },
+    )
+
     SwipeToDismissBox(
         state = dismissState,
         modifier = modifier,
@@ -198,6 +214,7 @@ fun ItemRow(
             onLongClick = onLongClick,
             trailing = trailing,
             extraContent = extraContent,
+            accessibilityActions = accessibilityActions,
         )
     }
 }
@@ -221,6 +238,7 @@ private fun RowContent(
     onLongClick: (() -> Unit)?,
     trailing: (@Composable () -> Unit)?,
     extraContent: (@Composable () -> Unit)?,
+    accessibilityActions: List<CustomAccessibilityAction> = emptyList(),
 ) {
     val haptic = LocalHapticFeedback.current
     var editing by remember(item.id) { mutableStateOf(false) }
@@ -228,6 +246,7 @@ private fun RowContent(
     val focusRequester = remember { FocusRequester() }
 
     val twoLine = timeText != null || item.priority != Priority.NONE
+    val renameLabel = stringResource(Res.string.row_rename)
     Column(
         Modifier
             .fillMaxWidth()
@@ -236,13 +255,17 @@ private fun RowContent(
                 else Color.Transparent,
             )
             .combinedClickable(
+                onClickLabel = renameLabel,
                 onClick = {
                     editText = item.title
                     editing = true
                 },
                 onLongClick = onLongClick,
             )
-            .semantics(mergeDescendants = true) {}
+            // swipes have no gesture for a screen reader: expose them as actions on the row
+            .semantics(mergeDescendants = true) {
+                customActions = accessibilityActions
+            }
             .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
         Row(

@@ -85,6 +85,12 @@
     <string name="sorted">Sorted</string>
     <string name="delete">Delete</string>
     <string name="mark_done">Mark done</string>
+    <string name="row_rename">Rename</string>
+    <string name="row_open">Open</string>
+    <string name="day_has_items">has items</string>
+    <string name="day_capture_for">Capture for this day</string>
+    <string name="series_expand">Show occurrences</string>
+    <string name="series_collapse">Hide occurrences</string>
     <string name="open_details">Open details</string>
     <string name="details">Details</string>
     <string name="detail_notes">Notes</string>

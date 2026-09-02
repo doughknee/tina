@@ -71,6 +71,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -96,6 +100,10 @@ import com.tina.app.data.Item
 import com.tina.app.data.ItemType
 import com.tina.app.resources.Res
 import com.tina.app.resources.agenda_everything
+import com.tina.app.resources.series_expand
+import com.tina.app.resources.series_collapse
+import com.tina.app.resources.day_has_items
+import com.tina.app.resources.day_capture_for
 import com.tina.app.resources.date_tomorrow
 import com.tina.app.resources.date_next_week
 import com.tina.app.resources.date_yesterday
@@ -712,7 +720,7 @@ private fun SeriesRow(
                         IconButton(onClick = { viewModel.toggleSeries(item.id) }) {
                             Icon(
                                 if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                                contentDescription = null,
+                                contentDescription = stringResource(if (expanded) Res.string.series_collapse else Res.string.series_expand),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
@@ -911,7 +919,7 @@ private fun GroupHeader(group: AgendaGroup, granularity: Granularity, today: Loc
                 isToday -> MaterialTheme.colorScheme.onSurface
                 else -> MaterialTheme.colorScheme.onSurfaceVariant
             },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.semantics { heading() }.then(Modifier.weight(1f)),
         )
         if (hiddenOccurrences > 0) {
             Text(
@@ -1015,16 +1023,33 @@ private fun DayCell(
     onLongClick: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
+    val weekdays = stringArrayResource(Res.array.weekdays_full)
+    val months = stringArrayResource(Res.array.months_full)
+    val todayLabel = stringResource(Res.string.date_today)
+    val hasItemsLabel = stringResource(Res.string.day_has_items)
+    val captureLabel = stringResource(Res.string.day_capture_for)
+    // TalkBack hears "Wednesday, September 2, today, has items" instead of "2"
+    val description = listOfNotNull(
+        "${weekdays[date.dayOfWeek.isoDayNumber - 1]}, ${months[date.month.number - 1]} ${date.day}",
+        todayLabel.takeIf { isToday },
+        hasItemsLabel.takeIf { hasContent },
+    ).joinToString(", ")
     Column(
         Modifier
             .aspectRatio(1f)
             .combinedClickable(
                 onClick = onClick,
+                onLongClickLabel = captureLabel,
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onLongClick()
                 },
-            ),
+            )
+            .semantics(mergeDescendants = true) {
+                contentDescription = description
+                selected = isSelected
+                role = Role.Button
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
