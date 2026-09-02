@@ -24,7 +24,7 @@ a { color: var(--accent); }
 .hero { padding: 48px 0 24px; }
 .claim { font-size: 1.35rem; color: var(--muted); margin: 0 0 28px; }
 .btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 999px; font-weight: 600; }
-.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin: 32px 0; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 32px 0; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
 .card strong { display: block; margin-bottom: 4px; }
 footer { margin-top: 64px; font-size: 0.9rem; color: var(--muted); }
