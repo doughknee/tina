@@ -134,6 +134,7 @@
 
     <string name="search_everything">Search everything</string>
     <string name="search_no_results">No matches</string>
+    <string name="search_recent">Recent</string>
 
     <string name="settings_ai">AI parsing</string>
     <string name="ai_provider_off">Off</string>
@@ -212,6 +213,32 @@
     <string name="sec_data">Data</string>
     <string name="sec_desktop">Desktop</string>
     <string name="sec_about">About</string>
+    <string name="sec_pro">tina Pro</string>
+    <string name="pro_title">tina Pro</string>
+    <string name="pro_plan_free">Free plan</string>
+    <string name="pro_plan_active">Pro · %1$s</string>
+    <string name="pro_monthly">Monthly</string>
+    <string name="pro_yearly">Yearly</string>
+    <string name="pro_lifetime">Lifetime</string>
+    <string name="pro_pitch_ai">Ask and parse with tina’s hosted AI, no key needed</string>
+    <string name="pro_pitch_themes">Themes, icons and extra widgets</string>
+    <string name="pro_pitch_history">Ask history kept beyond 30 days</string>
+    <string name="pro_pitch_export">Calendar export and encrypted backups</string>
+    <string name="pro_trial_note">%1$d-day free trial, then %2$s</string>
+    <string name="pro_yearly_note">Best value</string>
+    <string name="pro_lifetime_note">Pay once. Hosted AI capped at 50 Ask turns a month.</string>
+    <string name="pro_start_trial">Start %1$d-day free trial</string>
+    <string name="pro_buy">Continue</string>
+    <string name="pro_restore">Restore purchases</string>
+    <string name="pro_restored">Pro restored</string>
+    <string name="pro_restore_none">No purchase found for this Google account</string>
+    <string name="pro_manage">Manage subscription</string>
+    <string name="pro_active_title">You’re on tina Pro</string>
+    <string name="pro_unavailable">Google Play isn’t available on this device, so Pro can’t be bought here.</string>
+    <string name="pro_loading">Loading prices from Google Play…</string>
+    <string name="pro_none">Plans aren’t on sale yet. Check back after the next update.</string>
+    <string name="pro_pending">Your purchase is pending. Google Play will finish it shortly.</string>
+    <string name="pro_terms">Subscriptions renew automatically and can be cancelled any time in Google Play. Everything you capture stays free forever.</string>
     <!-- Settings: General -->
     <string name="set_open_app_to">Open app to</string>
     <string name="set_language">Language &amp; region</string>

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
@@ -448,7 +449,7 @@ private fun ShellSheet(
             Surface(
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
                 shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                modifier = Modifier.fillMaxWidth().offset { IntOffset(0, drag.value.roundToInt() + tailPx) },
+                modifier = Modifier.fillMaxWidth().widthIn(max = 640.dp).offset { IntOffset(0, drag.value.roundToInt() + tailPx) },
             ) {
                 Column(Modifier.fillMaxWidth()) {
                     Box(

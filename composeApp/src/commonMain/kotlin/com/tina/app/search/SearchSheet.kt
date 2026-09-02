@@ -60,6 +60,7 @@ import com.tina.app.resources.Res
 import com.tina.app.resources.search_close
 import com.tina.app.resources.search_everything
 import com.tina.app.resources.search_no_results
+import com.tina.app.resources.search_recent
 import com.tina.app.ui.dateLabel
 import com.tina.app.ui.timeLabel
 import kotlin.time.Clock
@@ -73,6 +74,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 
+private const val RECENT_COUNT = 8
+
 class SearchViewModel(
     repository: ItemRepository,
     settingsRepository: SettingsRepository,
@@ -82,9 +85,10 @@ class SearchViewModel(
     // ponytail: in-memory over the whole table; the LIKE query is gone with the Library
     val results: StateFlow<List<Item>> = combine(repository.observeAll(), query, settingsRepository.settings) { items, q, s ->
         val needle = q.trim()
-        if (needle.isEmpty()) return@combine emptyList()
-        items.filter { item ->
-            (s.searchCompleted || !item.completed) && (
+        val searchable = items.filter { s.searchCompleted || !it.completed }
+        if (needle.isEmpty()) return@combine searchable.sortedByDescending { it.updatedAt }.take(RECENT_COUNT)
+        searchable.filter { item ->
+            (
                 item.title.contains(needle, ignoreCase = true) ||
                     item.tags.any { it.contains(needle.removePrefix("#"), ignoreCase = true) } ||
                     (item.body?.let { htmlPreview(it).contains(needle, ignoreCase = true) } == true)
@@ -170,6 +174,16 @@ fun SearchSheet(viewModel: SearchViewModel, onOpenItem: (Item) -> Unit) {
         }
 
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 8.dp)) {
+            if (query.isBlank() && results.isNotEmpty()) {
+                item("recent") {
+                    Text(
+                        stringResource(Res.string.search_recent),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                    )
+                }
+            }
             items(results, key = { it.id }) { item ->
                 val supporting = listOfNotNull(
                     typeLabel(item.type),

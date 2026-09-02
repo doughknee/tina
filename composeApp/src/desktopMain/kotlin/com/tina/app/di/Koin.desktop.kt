@@ -31,6 +31,7 @@ val desktopModule = module {
     }
     single<com.tina.app.data.SecretCipher> { com.tina.app.data.PlainSecretCipher }
     single<Notifier> { PlatformNotifier() }
+    single<com.tina.app.pro.ProStore> { com.tina.app.pro.NoProStore }
     single<ReminderScheduler> { NoopReminderScheduler }
     single<com.tina.app.data.NetworkStatus> { com.tina.app.data.DesktopNetworkStatus() }
     single {

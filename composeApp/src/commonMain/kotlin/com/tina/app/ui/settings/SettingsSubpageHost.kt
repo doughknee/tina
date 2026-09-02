@@ -110,6 +110,7 @@ fun SettingsSubpageHost(
             ),
         )
         SettingsDestination.TAGS -> com.tina.app.ui.settings.subpages.TagManagerScreen(onBack = onBack)
+        SettingsDestination.PRO -> com.tina.app.pro.PaywallScreen(onBack = onBack)
         SettingsDestination.TRASH -> com.tina.app.ui.settings.subpages.TrashScreen(onBack = onBack)
         SettingsDestination.LICENSES -> InfoSubpage(
             title = stringResource(Res.string.licenses_title),

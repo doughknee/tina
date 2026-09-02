@@ -32,6 +32,9 @@ val androidModule = module {
     }
     single<com.tina.app.data.SecretCipher> { com.tina.app.data.KeystoreSecretCipher() }
     single<Notifier> { PlatformNotifier(androidContext()) }
+    single<com.tina.app.pro.ProStore> {
+        com.tina.app.pro.PlayProStore(androidContext().applicationContext as android.app.Application, get())
+    }
     single<ReminderScheduler> { AndroidReminderScheduler(androidContext()) }
     single<com.tina.app.data.NetworkStatus> { com.tina.app.data.AndroidNetworkStatus(androidContext()) }
     single {

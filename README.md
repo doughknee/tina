@@ -49,6 +49,8 @@ APK: `composeApp\build\outputs\apk\release\composeApp-release.apk` — install w
 
 Signing reads `keystore.properties` (gitignored) or the `TINA_KEYSTORE_FILE`, `TINA_KEYSTORE_PASSWORD`, `TINA_KEY_ALIAS`, `TINA_KEY_PASSWORD` environment variables (CI). On a fresh clone generate a keystore with `keytool -genkeypair` and write the four properties; never commit them. Under Play App Signing this is the upload key only.
 
+Pro: `tina.proOverride=true` in `local.properties` (gitignored) makes your own builds Pro without a purchase; CI builds never set it. Product ids and prices live in `docs/MONETIZATION.md`.
+
 Sideload updates must be signed with the same keystore — back `release.keystore` up if you distribute anything.
 
 **Desktop distributable (Windows):**

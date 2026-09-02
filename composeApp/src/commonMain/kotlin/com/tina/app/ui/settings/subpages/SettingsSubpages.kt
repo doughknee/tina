@@ -30,9 +30,11 @@ import org.jetbrains.compose.resources.stringResource
 fun SettingsSubpageScaffold(
     title: String,
     onBack: () -> Unit,
+    snackbarHost: @Composable () -> Unit = {},
     content: LazyListScope.() -> Unit,
 ) {
     Scaffold(
+        snackbarHost = snackbarHost,
         topBar = {
             TopAppBar(
                 title = { Text(title, style = MaterialTheme.typography.headlineSmallEmphasized) },

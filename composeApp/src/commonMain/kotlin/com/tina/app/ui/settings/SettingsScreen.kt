@@ -149,6 +149,13 @@ import com.tina.app.resources.reminder_at_time
 import com.tina.app.resources.reminder_hour_before
 import com.tina.app.resources.reminder_min_before
 import com.tina.app.resources.sec_about
+import com.tina.app.resources.sec_pro
+import com.tina.app.resources.pro_title
+import com.tina.app.resources.pro_plan_active
+import com.tina.app.resources.pro_plan_free
+import com.tina.app.pro.label
+import org.koin.compose.koinInject
+import androidx.compose.material.icons.outlined.WorkspacePremium
 import com.tina.app.resources.sec_ai
 import com.tina.app.resources.sec_appearance
 import com.tina.app.resources.sec_capture
@@ -276,7 +283,7 @@ private val FIRST_DAY_OPTIONS = listOf(DayOfWeek.MONDAY, DayOfWeek.SATURDAY, Day
 
 /** Chevron rows are real destinations; the host maps these to routes. */
 enum class SettingsDestination {
-    OPEN_APP_TO, UNDO_WINDOW, CONTRAST, WIDGETS, SHORTCUTS, WHATS_NEW, LICENSES, TRASH, TAGS
+    OPEN_APP_TO, UNDO_WINDOW, CONTRAST, WIDGETS, SHORTCUTS, WHATS_NEW, LICENSES, TRASH, TAGS, PRO
 }
 
 /** Which time a [SettingsRow.TimeRow] edits. */
@@ -427,7 +434,15 @@ fun SettingsScreen(
                 )
                 return@Column
             }
-            SettingsHub(sections = sections, listState = listState, onOpen = { onOpenSection(it.id, null) })
+            SettingsHub(
+                sections = sections,
+                listState = listState,
+                onOpen = { section ->
+                    // a section with one row is that row; a page listing it alone is a wasted tap
+                    val only = section.visibleRows.singleOrNull() as? SettingsRow.Navigation
+                    if (only != null) only.onClick() else onOpenSection(section.id, null)
+                },
+            )
         }
     }
 
@@ -445,7 +460,7 @@ private val HUB_GROUPS = listOf(
     listOf("general", "appearance"),
     listOf("capture", "datetime", "notifications", "ai"),
     listOf("organisation", "privacy", "data", "desktop"),
-    listOf("about"),
+    listOf("pro", "about"),
 )
 
 private val HUE_BLUE = Color(0xFF5B8DEF)
@@ -488,7 +503,8 @@ private fun SettingsHub(
                             headlineContent = { Text(section.title, style = MaterialTheme.typography.titleMedium) },
                             supportingContent = {
                                 Text(
-                                    section.visibleRows.map { it.title }.distinct().take(3).joinToString(", "),
+                                    section.visibleRows.singleOrNull()?.supporting
+                                        ?: section.visibleRows.map { it.title }.distinct().take(3).joinToString(", "),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     style = MaterialTheme.typography.bodyMedium,
@@ -1133,6 +1149,29 @@ private fun rememberSettingsSections(
         ),
     )
 
+    val proAvailable by koinInject<com.tina.app.pro.ProStore>().available.collectAsState()
+    val entitlement by com.tina.app.pro.rememberEntitlement()
+    val pro = SettingsSection(
+        id = "pro",
+        title = stringResource(Res.string.sec_pro),
+        icon = Icons.Outlined.WorkspacePremium,
+        hue = HUE_AMBER,
+        // nothing to buy on desktop yet; a Pro user still sees their plan
+        visible = proAvailable || entitlement is com.tina.app.pro.Entitlement.Pro,
+        rows = listOf(
+            SettingsRow.Navigation(
+                id = "proPlan",
+                title = stringResource(Res.string.pro_title),
+                supporting = when (val current = entitlement) {
+                    is com.tina.app.pro.Entitlement.Pro -> stringResource(Res.string.pro_plan_active, current.plan.label())
+                    com.tina.app.pro.Entitlement.Free -> stringResource(Res.string.pro_plan_free)
+                },
+                keywords = listOf("subscription", "upgrade", "premium", "trial", "purchase"),
+                onClick = { onNavigate(SettingsDestination.PRO) },
+            ),
+        ),
+    )
+
     val about = SettingsSection(
         id = "about",
         title = stringResource(Res.string.sec_about),
@@ -1170,7 +1209,7 @@ private fun rememberSettingsSections(
 
     return listOf(
         general, appearance, capture, dateTime, notifications,
-        ai, organisation, privacy, data, desktop, about,
+        ai, organisation, privacy, data, desktop, pro, about,
     )
 }
 

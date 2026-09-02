@@ -370,3 +370,13 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - **R8 on.** 69 MB to 11.7 MB. Keep rules for serialization, Room entities, widgets, receivers and the rich editor. Capture, Sort, Settings, the note editor and an Ollama round trip verified on the minified build.
 - **Launcher icon and theme.** Adaptive icon (check + capture line) with a monochrome layer; `Theme.Tina` paints the pre-Compose window in the theme ground and styles the Android 12+ splash. A proper brand icon is a v1.8 design task.
 - **CI.** GitHub Actions runs tests, lint and an unsigned release build on every push; a tag builds a signed bundle from secrets. Signing is conditional on a keystore, README no longer carries a password, version name comes from the build.
+
+### Play Billing scaffold (v1.9 groundwork, built early)
+
+- `ProStore` in commonMain with `PlayProStore` (Android) and `NoProStore` (desktop). The entitlement is cached in the settings DataStore so Pro survives being offline; every launch re-reads Play and a successful "nothing" revokes.
+- Purchases are acknowledged on the client. Server-side verification (the relay's `/entitlement`) waits until hosted AI exists, because that is the only thing a forged purchase could steal.
+- Play Billing's auto-reconnection never delivers `onBillingSetupFinished` on a device with no Play account (it retries forever with result 3), so `connect()` has an 8-second timeout and the paywall then says Play is unavailable.
+- Nothing is gated. `rememberIsPro()` is there for the v1.9 features; gating existing free features would break the "capture stays free forever" promise in MONETIZATION.md.
+- A one-row settings section opens its row from the hub. tina Pro was the first such section and the middle page was a wasted tap.
+- Large screens: sheets and the bar cap at 640 dp; lists stay full width. A max width on the agenda would have to move the swipe-to-navigate hit area too, so it waits for a real tablet test.
+

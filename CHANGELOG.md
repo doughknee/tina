@@ -24,6 +24,14 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 - Version shown in About is the build's version.
 - Continuous integration builds and tests every push; tags build a signed bundle.
 
+### tina Pro (groundwork)
+- Settings → tina Pro: the paywall page with the three plans, the free trial called out, Restore purchases and Manage subscription. Nothing is gated yet; the Pro features arrive with v1.9.
+
+### Everywhere
+- Sheets and the capture bar stop growing at 640 dp on tablets and desktop; the Ideas grid adds columns as the window widens.
+- Day cells, rows and swipe actions are announced by screen readers, and rows expose their actions to TalkBack.
+- Deleting from an item's page shows Undo on the page you return to.
+
 ## v1.6 — Swipe to sort, settings hub, series editing (2026-09-02)
 See the GitHub release notes.
 

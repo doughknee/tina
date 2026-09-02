@@ -61,6 +61,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.androidx.work.runtime)
             implementation(libs.androidx.glance.appwidget)
+            implementation(libs.androidx.billing)
             // sideloaded APKs never get Play's install-time compile: this installs the merged
             // Compose baseline profiles on first launch so the JIT is not cold on every sheet
             implementation(libs.androidx.profileinstaller)
@@ -86,6 +87,11 @@ android {
         targetSdk = 36
         versionCode = 8
         versionName = "1.6.0"
+        // the maintainer's own builds are Pro without a purchase: tina.proOverride=true in local.properties
+        val local = Properties().apply {
+            rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+        }
+        buildConfigField("boolean", "PRO_OVERRIDE", (local.getProperty("tina.proOverride") == "true").toString())
     }
 
     signingConfigs {
