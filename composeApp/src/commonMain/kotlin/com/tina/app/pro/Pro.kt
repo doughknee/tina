@@ -9,9 +9,9 @@ import org.koin.compose.koinInject
 
 /** The three Play products from docs/MONETIZATION.md §2. */
 enum class ProPlan(val productId: String) {
-    MONTHLY("tina_pro_monthly"),
-    YEARLY("tina_pro_yearly"),
-    LIFETIME("tina_pro_lifetime");
+    MONTHLY("peggy_pro_monthly"),
+    YEARLY("peggy_pro_yearly"),
+    LIFETIME("peggy_pro_lifetime");
 
     val subscription: Boolean get() = this != LIFETIME
 

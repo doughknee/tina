@@ -60,7 +60,7 @@ actual fun rememberBackupHandlers(
         BackupHandlers(
             export = {
                 val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-                exportLauncher.launch("tina-backup-$today.json")
+                exportLauncher.launch("peggy-backup-$today.json")
             },
             restore = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
         )

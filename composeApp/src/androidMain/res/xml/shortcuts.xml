@@ -6,7 +6,7 @@
         android:shortcutShortLabel="@string/shortcut_capture">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.tina.app"
+            android:targetPackage="com.peggy.app"
             android:targetClass="com.tina.app.MainActivity" />
     </shortcut>
 </shortcuts>

@@ -43,7 +43,7 @@ class AutoBackupWorker(
                 .toLocalDateTime(TimeZone.currentSystemDefault()).date
             val dir = autoBackupDir(applicationContext)
             // temp file then rename: a crash mid-write must never leave a truncated backup in the set
-            val target = File(dir, "tina-auto-$today.json")
+            val target = File(dir, "peggy-auto-$today.json")
             val temp = File(dir, "tina-auto-$today.json.tmp")
             temp.writeText(backups.exportJson(settings.toBackupSettings()))
             if (!temp.renameTo(target)) { target.delete(); temp.renameTo(target) }

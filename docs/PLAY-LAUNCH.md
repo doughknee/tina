@@ -1,4 +1,4 @@
-# tina — Google Play launch checklist
+# Peggy — Google Play launch checklist
 
 Everything needed to go from a sideloaded APK to a production listing. Items marked **(owner)** need the Play Console account holder; everything else is engineering and is either done or scheduled in `ROADMAP.md`.
 
@@ -6,7 +6,7 @@ Everything needed to go from a sideloaded APK to a production listing. Items mar
 
 - [ ] Developer profile verified, payments profile created, tax info submitted.
 - [ ] Enrol in the 15% service-fee tier (Play Console → Monetization setup) before the first sale.
-- [ ] Create the app: name **tina**, default language en-US, app (not game), free with in-app purchases.
+- [ ] Create the app: name **Peggy**, default language en-US, app (not game), free with in-app purchases.
 - [ ] Declarations: Ads = none; News app = no; COVID = no; Government app = no; Financial features = none; Health = none.
 - [ ] Target audience: 13+ (not designed for children). Content rating questionnaire → Everyone.
 - [ ] Data Safety form: use section 4 below verbatim.
@@ -31,26 +31,26 @@ Recruit testers from the app's own audience: a short post in r/androidapps, r/pr
 
 ## 3. Store listing
 
-**App name**: tina
+**App name**: Peggy
 **Short description (≤80)**: Capture anything in two seconds. Plan, sort, and remember, all on your device.
 **Full description**:
 
-> tina is the fastest way to get a thought out of your head and into the right place.
+> Peggy is the fastest way to get a thought out of your head and into the right place.
 >
 > Type "call sam tomorrow at 3" and it's a task on Thursday at 3 PM. "lunch with jess friday noon for an hour" is an event. "gym every weekday" repeats. Ideas become notes. Nothing needs a form, a date picker, or a decision.
 >
-> **Plan** shows your day, week, month, or everything, with repeats rolled up so a daily habit is one line, not thirty. **Sort** empties your inbox with a swipe: right for today, left for someday. **Ideas** keeps your notes in a rich editor. **Ask** lets you talk to your own data with your own AI key, or with tina Pro.
+> **Plan** shows your day, week, month, or everything, with repeats rolled up so a daily habit is one line, not thirty. **Sort** empties your inbox with a swipe: right for today, left for someday. **Ideas** keeps your notes in a rich editor. **Ask** lets you talk to your own data with your own AI key, or with Peggy Pro.
 >
 > Everything lives on your phone. No account. No cloud. Export a backup whenever you like. Undo everywhere instead of "are you sure?" dialogs.
 >
 > - Reminders that ring on time, with Done and Snooze from the notification
 > - Home-screen widgets and Quick Settings tiles for capture and today
-> - Share text from any app straight into tina
+> - Share text from any app straight into Peggy
 > - Material You colours, dark theme, pure black
 > - App lock with your device credential
 > - Windows desktop app included
 >
-> tina Pro (optional): AI without keys, extra themes and icons, more widgets, unlimited Ask history, and sync between your devices when it ships.
+> Peggy Pro (optional): AI without keys, extra themes and icons, more widgets, unlimited Ask history, and sync between your devices when it ships.
 
 **Category**: Productivity. **Tags**: to-do list, notes, calendar, reminders.
 **Contact email**: the developer address on the Play account. **Website**: the GitHub repo or Pages site.
@@ -58,7 +58,7 @@ Recruit testers from the app's own audience: a short post in r/androidapps, r/pr
 **Graphics**
 - App icon 512×512 PNG (generated from the adaptive icon in `composeApp/src/androidMain/res`).
 - Feature graphic 1024×500: brand colour background, the icon, "Capture in two seconds." A generator script lives in `docs/assets/` once created.
-- Phone screenshots, 1080×2400, 6-8, in this order with captions: Capture with chips ("Type it. tina files it."), Plan Day ("Your day, in order"), Plan Week with a rolled-up habit ("Habits are one line"), Sort swipe ("Empty the inbox with a swipe"), Ideas grid, Ask, Settings hub, Widgets on a home screen.
+- Phone screenshots, 1080×2400, 6-8, in this order with captions: Capture with chips ("Type it. Peggy files it."), Plan Day ("Your day, in order"), Plan Week with a rolled-up habit ("Habits are one line"), Sort swipe ("Empty the inbox with a swipe"), Ideas grid, Ask, Settings hub, Widgets on a home screen.
 - 7-inch and 10-inch tablet screenshots after the v1.8 layout work.
 
 **What's new (per release)**: three to five user-facing lines, copied from `CHANGELOG.md`.
@@ -79,13 +79,13 @@ Data types:
 | App activity | Other user-generated content (captures, tasks, events, notes) | No | Yes | Yes | App functionality |
 | App info and performance | Crash logs | No | No | — | — (none collected until a crash reporter is added; update then) |
 
-"Shared" means sent to the AI provider the user configured (Anthropic, OpenAI, a custom endpoint, or tina's relay for Pro). "Collected" stays No because tina operates no server that stores user data; if the Pro relay ever logs content, change this.
+"Shared" means sent to the AI provider the user configured (Anthropic, OpenAI, a custom endpoint, or Peggy's relay for Pro). "Collected" stays No because Peggy operates no server that stores user data; if the Pro relay ever logs content, change this.
 
 Nothing is collected for analytics or advertising. No device or other IDs. No location, contacts, files, or messages.
 
 ## 5. Permission declarations
 
-**USE_EXACT_ALARM** (Play requires a declaration): "tina is a reminders and calendar app. Its core function is to remind the user of tasks and events at the exact time they set. Exact alarms are used only for user-created reminders and the user's chosen daily digest times."
+**USE_EXACT_ALARM** (Play requires a declaration): "Peggy is a reminders and calendar app. Its core function is to remind the user of tasks and events at the exact time they set. Exact alarms are used only for user-created reminders and the user's chosen daily digest times."
 
 **RECEIVE_BOOT_COMPLETED**: re-arms reminders after a restart. **POST_NOTIFICATIONS**: reminders and digests. **ACCESS_LOCAL_NETWORK** (Android 17): only to reach a self-hosted Ollama on the user's LAN when they configure one. No other sensitive permissions. No `QUERY_ALL_PACKAGES`, no foreground services, no accessibility service.
 

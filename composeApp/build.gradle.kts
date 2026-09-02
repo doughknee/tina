@@ -82,7 +82,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.tina.app"
+        applicationId = "com.peggy.app"
         minSdk = 31
         targetSdk = 36
         versionCode = 9
@@ -156,7 +156,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Msi)
-            packageName = "tina"
+            packageName = "Peggy"
             packageVersion = "1.7.0"
         }
     }

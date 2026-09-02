@@ -117,7 +117,7 @@ fun PaywallScreen(onBack: () -> Unit, store: ProStore = koinInject()) {
                         if (current.plan.subscription) {
                             TextButton(onClick = {
                                 uriHandler.openUri(
-                                    "https://play.google.com/store/account/subscriptions?sku=${current.plan.productId}&package=com.tina.app",
+                                    "https://play.google.com/store/account/subscriptions?sku=${current.plan.productId}&package=com.peggy.app",
                                 )
                             }) { Text(stringResource(Res.string.pro_manage)) }
                         }

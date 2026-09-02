@@ -1,4 +1,4 @@
-# tina
+# Peggy
 
 A personal capture, calendar, tasks, and notes app for one user. No accounts, no cloud, no sync — everything lives in Room on the device. Kotlin Multiplatform + Compose Multiplatform; Android first, JVM desktop second.
 
@@ -59,7 +59,7 @@ Sideload updates must be signed with the same keystore — back `release.keystor
 .\gradlew :composeApp:createReleaseDistributable
 ```
 
-Output: `composeApp\build\compose\binaries\main-release\app\tina\` — a self-contained folder with `tina.exe` (bundled JRE, no install needed; zip it to share). An MSI installer is also configured (`.\gradlew :composeApp:packageReleaseMsi`) but requires the [WiX Toolset 3.x](https://wixtoolset.org) on PATH.
+Output: `composeApp\build\compose\binaries\main-release\app\Peggy\` — a self-contained folder with `Peggy.exe` (bundled JRE, no install needed; zip it to share). An MSI installer is also configured (`.\gradlew :composeApp:packageReleaseMsi`) but requires the [WiX Toolset 3.x](https://wixtoolset.org) on PATH.
 
 Desktop data lives in `~\.tina\` (`tina.db`, `settings.preferences_pb`).
 

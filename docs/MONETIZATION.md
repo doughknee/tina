@@ -1,10 +1,10 @@
-# tina — monetization plan
+# Peggy — monetization plan
 
 Written 2026-09-02. Read `ROADMAP.md` first; this document decides what is sold, at what price, why, and how the code and the store are wired for it. Numbers are estimates to be replaced with Play Console data after the first month.
 
 ## 1. The shape of the business
 
-tina is a local-first utility with no accounts and no servers. That is its main selling point and its main constraint: there is nothing to charge for "in the cloud" unless we build one thing that costs money to run. The plan builds exactly one: a hosted AI relay. Everything else that is paid is either cosmetic, convenience, or a power feature that costs nothing per user to operate.
+Peggy is a local-first utility with no accounts and no servers. That is its main selling point and its main constraint: there is nothing to charge for "in the cloud" unless we build one thing that costs money to run. The plan builds exactly one: a hosted AI relay. Everything else that is paid is either cosmetic, convenience, or a power feature that costs nothing per user to operate.
 
 Three rules:
 
@@ -16,9 +16,9 @@ Three rules:
 
 | SKU | Type | Price (USD, Play localizes) | What it unlocks |
 |---|---|---|---|
-| `tina_pro_monthly` | Subscription, 7-day free trial | $3.99 / month | Everything below |
-| `tina_pro_yearly` | Subscription, 7-day free trial | $29.99 / year (37% off) | Everything below |
-| `tina_pro_lifetime` | One-time in-app product | $49.99 | Everything below **except hosted AI**, which is capped at a small lifetime quota (see §4) |
+| `peggy_pro_monthly` | Subscription, 7-day free trial | $3.99 / month | Everything below |
+| `peggy_pro_yearly` | Subscription, 7-day free trial | $29.99 / year (37% off) | Everything below |
+| `peggy_pro_lifetime` | One-time in-app product | $49.99 | Everything below **except hosted AI**, which is capped at a small lifetime quota (see §4) |
 
 **Pro includes**
 - **Hosted Ask, parse, and improve.** No API key. Streams. Best model for Ask, fast model for parse and improve. A visible monthly quota (default: 400 Ask turns, unlimited captures with AI refinement up to 3,000/month).
@@ -81,13 +81,13 @@ Engineering scope for v1.9 (roadmap), all Android; desktop honours the same enti
 3. **`BillingRepository`** (androidMain): connect, query products, launch the flow, acknowledge, handle `PENDING`, restore. Server-side verification through the relay's `/entitlement` endpoint; until the relay exists, client-side acknowledgement is enough for the testing tracks.
 4. **Developer override**: a build-time flag (`BuildConfig.PRO_OVERRIDE` set from a gitignored property) so the maintainer's device is Pro. Never a runtime toggle.
 5. **Gating points**: a `Gate.pro { … }` composable that shows the paywall sheet instead of the feature: hosted provider option in Parsing & AI, themes/icons, extra widgets, Ask history beyond 30 days, ICS export, encrypted folder backups.
-6. **Paywall**: one sheet, three prices, the trial called out, "Restore purchases", "Not now". Shown at most once per week unprompted; always available from Settings → tina Pro.
+6. **Paywall**: one sheet, three prices, the trial called out, "Restore purchases", "Not now". Shown at most once per week unprompted; always available from Settings → Peggy Pro.
 7. **Lifecycle**: grace period (Play default 3 days) keeps Pro; account hold shows a one-line banner in Settings; cancellation keeps Pro until period end; refunds revoke on the next launch.
 8. **Testing**: license testers on the internal track buy for free; test cards; verify purchase, restore after reinstall, cancel, and expiry with Play's test subscriptions (5-minute periods).
 
 ## 7. Where the paywall appears, and where it never does
 
-Appears: Settings → tina Pro (always); Parsing & AI when choosing "tina (no key needed)"; Appearance when tapping a locked theme or icon; the widget picker for Pro widgets; Ask history past 30 days.
+Appears: Settings → Peggy Pro (always); Parsing & AI when choosing "Peggy (no key needed)"; Appearance when tapping a locked theme or icon; the widget picker for Pro widgets; Ask history past 30 days.
 
 Never: during capture, on first launch, on the empty states, in notifications, or as an interstitial after any action. The trial is offered exactly once, inside the paywall, not as a pop-up.
 

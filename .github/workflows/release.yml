@@ -27,7 +27,7 @@ jobs:
         run: ./gradlew :composeApp:desktopTest :composeApp:bundleRelease :composeApp:assembleRelease --no-daemon --console=plain
       - uses: actions/upload-artifact@v4
         with:
-          name: tina-${{ github.ref_name }}
+          name: peggy-${{ github.ref_name }}
           path: |
             composeApp/build/outputs/bundle/release/*.aab
             composeApp/build/outputs/apk/release/*.apk

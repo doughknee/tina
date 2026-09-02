@@ -1,10 +1,10 @@
-# tina — roadmap to v2.0.0
+# Peggy — roadmap to v2.0.0
 
 Written 2026-09-02 from five code audits (see `docs/audits/`) and the state of `main` at v1.6.0. This is the plan for turning a very good personal app into a product that strangers install from Google Play, pay for, and keep. Companion documents: `MONETIZATION.md` (what is sold and how), `PLAY-LAUNCH.md` (the store checklist), `PRIVACY.md` (the policy to host).
 
-## What tina is, in one paragraph
+## What Peggy is, in one paragraph
 
-Capture anything in under two seconds; tina turns it into a task, an event, or an idea and puts it where it belongs. Plan shows the day, week, or month. Sort empties the inbox with a swipe. Ideas holds notes. Ask talks to your own data. Everything lives on the device, nothing needs an account, and every action has undo. The product promise for v2.0 is the same, plus three words: **it never loses anything, it always rings, and it pays for itself.**
+Capture anything in under two seconds; Peggy turns it into a task, an event, or an idea and puts it where it belongs. Plan shows the day, week, or month. Sort empties the inbox with a swipe. Ideas holds notes. Ask talks to your own data. Everything lives on the device, nothing needs an account, and every action has undo. The product promise for v2.0 is the same, plus three words: **it never loses anything, it always rings, and it pays for itself.**
 
 ## Where v1.6.0 stands
 
@@ -79,7 +79,7 @@ Theme: it looks and feels like a product on every screen size, and blind users c
 Theme: the business. See `MONETIZATION.md` for the model; this is the engineering.
 
 - **Entitlements**: a `ProEntitlement` state (free / pro / trial) read from Play Billing, cached locally, verified on launch and purchase, with a developer override for the maintainer's own device.
-- **Play Billing**: one-time "tina Pro" product plus a yearly subscription with a 7-day trial; purchase, restore, pending-purchase, grace and account-hold states; a paywall that shows the actual value (before/after), never a nag.
+- **Play Billing**: one-time "Peggy Pro" product plus a yearly subscription with a 7-day trial; purchase, restore, pending-purchase, grace and account-hold states; a paywall that shows the actual value (before/after), never a nag.
 - **Pro features**: hosted AI (no key needed) through a relay that verifies purchase tokens, pins models, enforces quotas, and streams; unlimited Ask history; encrypted device-to-device sync (see below); custom themes and app icons; multiple widgets; Wear/desktop companions later.
 - **AI hardening (free and Pro)**: context built once per chat and cached; Haiku for parse/improve; confirmation and batch cap for write actions; the DATABASE block delimited as data; streaming; retries; token/cost display for BYOK users; correct model ids; conversation restored after process death.
 - **Sync groundwork**: `uuid`, `version`, tombstones on occurrences, dirty flags. Sync itself is a v2.0 candidate, not a promise.
@@ -149,7 +149,7 @@ Everything below is on `main`, built as an R8 release APK, and checked on the em
 - Brand palette when dynamic colour is off; list-detail layouts on expanded windows; onboarding cards; what's-new sheet on upgrade; notes grid/list toggle; live regions; dead strings and plurals; desktop window persistence and tray icon; Accessibility Scanner run (needs a device).
 
 **v1.9 Pro: groundwork done**
-- `ProStore` with Play Billing 8, cached entitlement, acknowledge, restore, pending state, maintainer override; Settings → tina Pro paywall page; `rememberIsPro()` for the gates. Products are not created in Play Console yet, so the page says "not on sale yet" on any device today.
+- `ProStore` with Play Billing 8, cached entitlement, acknowledge, restore, pending state, maintainer override; Settings → Peggy Pro paywall page; `rememberIsPro()` for the gates. Products are not created in Play Console yet, so the page says "not on sale yet" on any device today.
 
 **v1.9: not done**
 - The relay, hosted AI, the Pro features themselves and their gates, streaming, context caching, sync groundwork beyond `uuid`.

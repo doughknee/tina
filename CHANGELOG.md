@@ -18,6 +18,7 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 - Weekly auto-backups are written atomically.
 
 ### Play readiness
+- The app is now called Peggy. Same data format: a tina backup imports into Peggy unchanged.
 - Real launcher icon (with themed icon), themed splash, no white flash in dark mode.
 - Release builds are 6× smaller (11.7 MB from 69 MB).
 - Shared text is capped at 5,000 characters; AI endpoints over plain http are limited to your own network.

@@ -380,3 +380,11 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - A one-row settings section opens its row from the hub. tina Pro was the first such section and the middle page was a wasted tap.
 - Large screens: sheets and the bar cap at 640 dp; lists stay full width. A max width on the agenda would have to move the swipe-to-navigate hit area too, so it waits for a real tablet test.
 - Ask errors are typed (`AiException(kind)`) at the HTTP layer and turned into one sentence each on the Ask page. Capture parsing stays silent on failure by design: a failed refine falls back to the local parser and the user never waits on it.
+
+### Rename to Peggy (2026-09-02)
+
+- Napkin was rejected: an existing note-taking app (napkin.one) owns the word in this category. Peggy is clear on Play in tasks and notes, says itself out loud, and "peg it down" gives the copy.
+- `applicationId` is now `com.peggy.app`. It had to change before the first Play upload, since the id is permanent after that. The Kotlin package, namespace, intent actions, theme name, `TinaApp`, the desktop `~/.tina` folder, `tina.db`, the `TINA_*` signing variables and `tina.proOverride` all stay: nobody sees them and renaming them would only churn history.
+- A new applicationId is a new app on a device: existing installs keep their data under tina and move it with Export → Import. Backups are byte-for-byte compatible.
+- Pro product ids are `peggy_pro_monthly`, `peggy_pro_yearly`, `peggy_pro_lifetime`; nothing was created in Play Console under the old ids.
+
