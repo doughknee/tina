@@ -10,6 +10,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
+@Composable
+actual fun SyncSystemBars(dark: Boolean) {
+    val view = androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.SideEffect {
+        val window = (view.context as? android.app.Activity)?.window ?: return@SideEffect
+        androidx.core.view.WindowCompat.getInsetsController(window, view).apply {
+            isAppearanceLightStatusBars = !dark
+            isAppearanceLightNavigationBars = !dark
+        }
+    }
+}
+
 /** Mirrors the system "Remove animations" accessibility switch. */
 @Composable
 actual fun systemPrefersReducedMotion(): Boolean {

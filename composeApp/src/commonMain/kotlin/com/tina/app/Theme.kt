@@ -20,6 +20,14 @@ val LocalSettings = staticCompositionLocalOf { Settings() }
 @Composable
 expect fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorScheme
 
+/**
+ * Keeps the system bar icons legible against the app's *own* theme. Edge-to-edge picks icon
+ * colour from the system theme, so forcing tina light while the phone is dark left white
+ * icons on a lavender status bar.
+ */
+@Composable
+expect fun SyncSystemBars(dark: Boolean)
+
 /** True when the platform itself asks for reduced motion. */
 @Composable
 expect fun systemPrefersReducedMotion(): Boolean
@@ -71,6 +79,7 @@ fun AppTheme(settings: Settings, content: @Composable () -> Unit) {
         ReduceMotionMode.SYSTEM -> systemPrefersReducedMotion()
     }
 
+    SyncSystemBars(dark)
     CompositionLocalProvider(LocalReduceMotion provides reduceMotion) {
         // expressive: the spring MotionScheme every AppMotion transition reads, plus the
         // expressive component defaults now that material3 1.12 ships them
