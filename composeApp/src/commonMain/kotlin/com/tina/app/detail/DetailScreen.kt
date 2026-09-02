@@ -27,14 +27,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import com.tina.app.ui.ConnectedButtonGroup
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
@@ -199,15 +197,11 @@ private fun DetailContent(
             textStyle = MaterialTheme.typography.titleLarge,
         )
 
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            ItemType.entries.forEachIndexed { index, type ->
-                SegmentedButton(
-                    selected = item.type == type,
-                    onClick = { viewModel.setType(type) },
-                    shape = SegmentedButtonDefaults.itemShape(index, ItemType.entries.size),
-                ) { Text(typeLabel(type)) }
-            }
-        }
+        ConnectedButtonGroup(
+            count = ItemType.entries.size,
+            selectedIndex = item.type.ordinal,
+            onSelect = { viewModel.setType(ItemType.entries[it]) },
+        ) { index, _ -> Text(typeLabel(ItemType.entries[index]), style = MaterialTheme.typography.labelLarge) }
 
         if (item.type == ItemType.TASK || item.type == ItemType.INBOX) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -249,23 +243,20 @@ private fun DetailContent(
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(Res.string.detail_priority), style = MaterialTheme.typography.titleSmall)
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    Priority.entries.forEachIndexed { index, priority ->
-                        SegmentedButton(
-                            selected = item.priority == priority,
-                            onClick = { viewModel.setPriority(priority) },
-                            shape = SegmentedButtonDefaults.itemShape(index, Priority.entries.size),
-                        ) {
-                            Text(
-                                when (priority) {
-                                    Priority.NONE -> stringResource(Res.string.pr_none)
-                                    Priority.LOW -> stringResource(Res.string.pr_low)
-                                    Priority.MEDIUM -> stringResource(Res.string.pr_medium)
-                                    Priority.HIGH -> stringResource(Res.string.pr_high)
-                                },
-                            )
-                        }
-                    }
+                ConnectedButtonGroup(
+                    count = Priority.entries.size,
+                    selectedIndex = item.priority.ordinal,
+                    onSelect = { viewModel.setPriority(Priority.entries[it]) },
+                ) { index, _ ->
+                    Text(
+                        when (Priority.entries[index]) {
+                            Priority.NONE -> stringResource(Res.string.pr_none)
+                            Priority.LOW -> stringResource(Res.string.pr_low)
+                            Priority.MEDIUM -> stringResource(Res.string.pr_medium)
+                            Priority.HIGH -> stringResource(Res.string.pr_high)
+                        },
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                 }
             }
 

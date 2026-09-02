@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -134,7 +134,7 @@ fun ImproveSheet(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.padding(vertical = 16.dp),
                 ) {
-                    CircularProgressIndicator(Modifier.size(24.dp))
+                    LoadingIndicator(Modifier.size(32.dp))
                     Text(
                         stringResource(Res.string.improve_loading),
                         style = MaterialTheme.typography.bodyMedium,

@@ -80,10 +80,7 @@ sealed interface SettingsRow {
         override val enabled: Boolean = true,
     ) : SettingsRow
 
-    /**
-     * Segmented single choice. Named for the expressive ButtonGroup it will use once
-     * material3 ships one; renders as SingleChoiceSegmentedButtonRow today.
-     */
+    /** Single choice, rendered as a connected ToggleButton group (ui/ConnectedButtonGroup). */
     data class ButtonGroupRow(
         override val id: String,
         override val title: String,

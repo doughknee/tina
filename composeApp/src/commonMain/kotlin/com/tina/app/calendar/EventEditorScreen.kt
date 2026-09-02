@@ -36,15 +36,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import com.tina.app.ui.ConnectedButtonGroup
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
@@ -546,24 +544,21 @@ private fun CustomRepeatDialog(
                         Icon(Icons.Outlined.Add, contentDescription = null)
                     }
                 }
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    RecurrenceRule.Freq.entries.forEachIndexed { index, f ->
-                        SegmentedButton(
-                            selected = freq == f,
-                            onClick = { freq = f },
-                            shape = SegmentedButtonDefaults.itemShape(index, RecurrenceRule.Freq.entries.size),
-                        ) {
-                            Text(
-                                when (f) {
-                                    RecurrenceRule.Freq.DAILY -> stringResource(Res.string.repeat_daily)
-                                    RecurrenceRule.Freq.WEEKLY -> stringResource(Res.string.repeat_weekly)
-                                    RecurrenceRule.Freq.MONTHLY -> stringResource(Res.string.repeat_monthly)
-                                    RecurrenceRule.Freq.YEARLY -> stringResource(Res.string.repeat_yearly)
-                                },
-                                style = MaterialTheme.typography.labelSmall,
-                            )
-                        }
-                    }
+                ConnectedButtonGroup(
+                    count = RecurrenceRule.Freq.entries.size,
+                    selectedIndex = freq.ordinal,
+                    onSelect = { freq = RecurrenceRule.Freq.entries[it] },
+                ) { index, _ ->
+                    Text(
+                        when (RecurrenceRule.Freq.entries[index]) {
+                            RecurrenceRule.Freq.DAILY -> stringResource(Res.string.repeat_daily)
+                            RecurrenceRule.Freq.WEEKLY -> stringResource(Res.string.repeat_weekly)
+                            RecurrenceRule.Freq.MONTHLY -> stringResource(Res.string.repeat_monthly)
+                            RecurrenceRule.Freq.YEARLY -> stringResource(Res.string.repeat_yearly)
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                    )
                 }
                 if (freq == RecurrenceRule.Freq.WEEKLY) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {

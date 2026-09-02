@@ -25,7 +25,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -242,7 +242,7 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
                 if (viewModel.sending) {
                     item {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            CircularProgressIndicator(Modifier.size(18.dp))
+                            LoadingIndicator(Modifier.size(24.dp))
                             Text(
                                 stringResource(Res.string.ask_thinking),
                                 style = MaterialTheme.typography.bodyMedium,

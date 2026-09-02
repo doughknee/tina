@@ -27,9 +27,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -37,6 +34,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import com.tina.app.ui.ConnectedButtonGroup
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import com.tina.app.ui.rememberUndoWindow
@@ -177,15 +175,12 @@ fun TrashScreen(onBack: () -> Unit, viewModel: TrashViewModel = koinViewModel())
                 SettingsRowSurface(index = 0, count = 1) {
                     Column(Modifier.padding(16.dp)) {
                         Text(stringResource(Res.string.trash_keep_for), style = MaterialTheme.typography.bodyLarge)
-                        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 12.dp)) {
-                            RETENTIONS.forEachIndexed { index, option ->
-                                SegmentedButton(
-                                    selected = index == retentionIndex,
-                                    onClick = { viewModel.setRetention(option) },
-                                    shape = SegmentedButtonDefaults.itemShape(index, RETENTIONS.size),
-                                ) { Text(retentionLabels[index]) }
-                            }
-                        }
+                        ConnectedButtonGroup(
+                            count = RETENTIONS.size,
+                            selectedIndex = retentionIndex,
+                            onSelect = { viewModel.setRetention(RETENTIONS[it]) },
+                            modifier = Modifier.padding(top = 12.dp),
+                        ) { index, _ -> Text(retentionLabels[index], style = MaterialTheme.typography.labelLarge) }
                     }
                 }
             }

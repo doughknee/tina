@@ -32,12 +32,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import com.tina.app.ui.ConnectedButtonGroup
 import com.tina.app.resources.Res
 import com.tina.app.resources.set_soon
 import org.jetbrains.compose.resources.stringResource
@@ -229,11 +227,7 @@ fun DestructiveRow(row: SettingsRow.Destructive) {
     )
 }
 
-/**
- * Segmented single choice.
- * TODO(expressive): material3 1.9.0 ships no ButtonGroup/ToggleButton, so this uses
- * SingleChoiceSegmentedButtonRow at the same 48dp height. Swap when they land.
- */
+/** Single choice as a connected toggle-button group; the checked option shows its icon. */
 @Composable
 fun ButtonGroupRow(row: SettingsRow.ButtonGroupRow) {
     Column(Modifier.padding(16.dp)) {
@@ -245,25 +239,17 @@ fun ButtonGroupRow(row: SettingsRow.ButtonGroupRow) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 12.dp)) {
-            row.options.forEachIndexed { index, option ->
-                val selected = index == row.selectedIndex
-                SegmentedButton(
-                    selected = selected,
-                    onClick = { row.onSelect(index) },
-                    shape = SegmentedButtonDefaults.itemShape(index, row.options.size),
-                    icon = {
-                        if (selected && option.icon != null) {
-                            Icon(option.icon, contentDescription = null, Modifier.size(18.dp))
-                        } else if (selected) {
-                            SegmentedButtonDefaults.ActiveIcon()
-                        }
-                    },
-                    modifier = Modifier.semantics { this.stateDescription = option.label },
-                ) {
-                    Text(option.label, style = MaterialTheme.typography.labelLarge)
-                }
+        ConnectedButtonGroup(
+            count = row.options.size,
+            selectedIndex = row.selectedIndex,
+            onSelect = row.onSelect,
+            modifier = Modifier.padding(top = 12.dp),
+        ) { index, checked ->
+            val option = row.options[index]
+            if (checked && option.icon != null) {
+                Icon(option.icon, contentDescription = null, Modifier.padding(end = 8.dp).size(18.dp))
             }
+            Text(option.label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
         }
     }
 }

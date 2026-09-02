@@ -50,9 +50,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -142,6 +139,7 @@ import com.tina.app.resources.triage_someday
 import com.tina.app.resources.triage_this_week
 import com.tina.app.resources.undo
 import com.tina.app.resources.weekdays_full
+import com.tina.app.ui.ConnectedButtonGroup
 import com.tina.app.ui.ItemRow
 import com.tina.app.ui.KeyBus
 import com.tina.app.ui.KeyCommand
@@ -510,30 +508,25 @@ private enum class HeaderKind { NONE, STRIP, PILLED_WEEK, GRID }
 
 private fun anytimeKey(row: AgendaRow): String = "any-${row.item.id}"
 
-// TODO(expressive): ButtonGroup + ToggleButton once material3 ships them; segmented buttons until then
 @Composable
 private fun RangeSwitcher(selected: Granularity, onSelect: (Granularity) -> Unit) {
-    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
-        Granularity.entries.forEachIndexed { index, option ->
-            SegmentedButton(
-                selected = option == selected,
-                onClick = { onSelect(option) },
-                shape = SegmentedButtonDefaults.itemShape(index, Granularity.entries.size),
-                label = {
-                    Text(
-                        stringResource(
-                            when (option) {
-                                Granularity.DAY -> Res.string.range_day
-                                Granularity.WEEK -> Res.string.range_week
-                                Granularity.MONTH -> Res.string.range_month
-                                Granularity.ALL -> Res.string.range_all
-                            },
-                        ),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
+    ConnectedButtonGroup(
+        count = Granularity.entries.size,
+        selectedIndex = selected.ordinal,
+        onSelect = { onSelect(Granularity.entries[it]) },
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+    ) { index, _ ->
+        Text(
+            stringResource(
+                when (Granularity.entries[index]) {
+                    Granularity.DAY -> Res.string.range_day
+                    Granularity.WEEK -> Res.string.range_week
+                    Granularity.MONTH -> Res.string.range_month
+                    Granularity.ALL -> Res.string.range_all
                 },
-            )
-        }
+            ),
+            style = MaterialTheme.typography.labelLarge,
+        )
     }
 }
 
