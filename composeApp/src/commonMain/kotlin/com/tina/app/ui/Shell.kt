@@ -290,7 +290,6 @@ fun Shell(
                     }
                 }
 
-                SaveBurst(trigger = captureViewModel.saveCount, modifier = Modifier.align(Alignment.Center))
 
                 ShellSheet(
                     visible = suggestionsOpen,
@@ -318,6 +317,9 @@ fun Shell(
                 ) {
                     AskSheet(viewModel = askViewModel, snackbarHostState = snackbarHostState)
                 }
+
+                // last, so the celebration draws over whichever sheet is up
+                SaveBurst(trigger = captureViewModel.saveCount, modifier = Modifier.align(Alignment.Center))
             }
         }
     }
