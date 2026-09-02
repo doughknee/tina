@@ -32,6 +32,9 @@ data object SettingsRoute
 
 data class SettingsSubRoute(val destination: String)
 
+/** One settings category's page, optionally landing on a row (from search). */
+data class SettingsSectionRoute(val sectionId: String, val highlight: String? = null)
+
 data class DetailRoute(val id: Long)
 
 data class EventEditRoute(val id: Long)
@@ -84,6 +87,15 @@ fun App() {
                         com.tina.app.ui.settings.SettingsScreen(
                             onBack = { backStack.removeLastOrNull() },
                             onNavigate = { backStack.add(SettingsSubRoute(it.name)) },
+                            onOpenSection = { id, row -> backStack.add(SettingsSectionRoute(id, row)) },
+                        )
+                    }
+                    entry<SettingsSectionRoute> { route ->
+                        com.tina.app.ui.settings.SettingsScreen(
+                            onBack = { backStack.removeLastOrNull() },
+                            onNavigate = { backStack.add(SettingsSubRoute(it.name)) },
+                            sectionId = route.sectionId,
+                            highlightRowId = route.highlight,
                         )
                     }
                     entry<SettingsSubRoute> { route ->

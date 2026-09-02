@@ -318,3 +318,9 @@ Running log of choices made without asking, newest last.
 - **Measured, not guessed.** `adb screenrecord` at 120 Hz plus frame-gap analysis: the nav bar tracked the keyboard exactly (constant 232 px) in every run, so there was no "snap"; what showed up were dropped frames (16–50 ms gaps) while the keyboard rose with the sheet open. Cause: `imePadding()` on the shell shrinks it every frame, and the page underneath (app bar, calendar, lazy list) was re-measured 120 times a second.
 - **Fix.** `keepHeightUnderKeyboard()` measures the page against the keyboard-free height, so its constraints never change and Compose skips its measure; the bar, nav and sheet just cover its bottom. Order matters: it goes *before* `fillMaxSize()`, otherwise the fixed min-height changes per frame and the page re-measures anyway (that variant measured worse than before). After the fix: 8 ms frames throughout, three runs.
 - **Sheet tail.** The spring overshoot on the sheet's slide could open a sliver between sheet and bar. The sheet now carries a 32 dp tail offset down behind the bar, so overshoot never exposes the page.
+
+## Settings as a hub of categories
+
+- **Modelled on the system settings page.** The main page is a search pill and one card per category (tinted circle icon, title, the first three row titles as the summary), grouped the way Android groups them: everyday first, About last. Each category opens its own page with the rows it already had. The section data (`rememberSettingsSections`) is unchanged; the hub and section pages are two renderings of it, chosen by `sectionId`.
+- **Search lands on the row.** A result opens the category page with that row highlighted (`SettingsSectionRoute(sectionId, highlight)`), instead of scrolling one long page.
+- **Summaries are derived**, not written: the first three distinct row titles. ponytail: a hand-written summary per category if a derived one ever reads badly.

@@ -1,6 +1,7 @@
 package com.tina.app.ui.settings
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -16,6 +17,9 @@ data class SettingsSection(
     val title: String,
     val visible: Boolean = true,
     val rows: List<SettingsRow>,
+    /** Hub card: the tinted circle icon, as on the system settings page. */
+    val icon: ImageVector? = null,
+    val hue: Color? = null,
 ) {
     val visibleRows: List<SettingsRow> get() = rows.filter { it.visible }
 }

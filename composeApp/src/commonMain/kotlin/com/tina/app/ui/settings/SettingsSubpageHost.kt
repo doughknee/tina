@@ -90,6 +90,9 @@ fun SettingsSubpageHost(
             title = stringResource(Res.string.whats_new_title),
             onBack = onBack,
             entries = listOf(
+                "1.5 — Plan, Sort, Ideas" to
+                    "Pages named for what you do there, Idea mode for notes, one calendar for every " +
+                        "zoom level, search as a sheet, and a smoother keyboard.",
                 "1.4 — Three places, four zoom levels" to
                     "Agenda, Library and Ask; capture from anywhere; Day / Week / Month / All with " +
                         "repeats rolled up and completed per day.",

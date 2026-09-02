@@ -440,11 +440,12 @@ fun SettingsSectionBlock(
     section: SettingsSection,
     highlightedRowId: String? = null,
     rowModifier: (SettingsRow) -> Modifier = { Modifier },
+    showHeader: Boolean = true,
 ) {
     val rows = section.visibleRows
     if (rows.isEmpty()) return
     Column {
-        SettingsSectionHeader(section.title)
+        if (showHeader) SettingsSectionHeader(section.title)
         SettingsGroup {
             rows.forEachIndexed { index, row ->
                 val standalone = row is SettingsRow.Custom && !row.inGroup

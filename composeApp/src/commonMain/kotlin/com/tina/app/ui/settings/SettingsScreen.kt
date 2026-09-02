@@ -21,6 +21,19 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddCircle
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Computer
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Sell
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BrightnessAuto
 import androidx.compose.material.icons.outlined.Close
@@ -276,6 +289,10 @@ private fun minutesLabel(minutes: Int, use24h: Boolean): String =
 fun SettingsScreen(
     onBack: () -> Unit,
     onNavigate: (SettingsDestination) -> Unit,
+    /** Null draws the hub of categories; a section id draws that section's own page. */
+    sectionId: String? = null,
+    highlightRowId: String? = null,
+    onOpenSection: (sectionId: String, rowId: String?) -> Unit = { _, _ -> },
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val settings by viewModel.settings.collectAsState()
@@ -286,9 +303,8 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
-    var searching by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
-    var highlightedRowId by remember { mutableStateOf<String?>(null) }
+    var highlightedRowId by remember { mutableStateOf(highlightRowId) }
 
     val clearedText = stringResource(Res.string.set_cleared_completed)
     val undoText = stringResource(Res.string.undo)
@@ -325,6 +341,7 @@ fun SettingsScreen(
         onImport = backupHandlers.restore,
         snackbarHostState = snackbarHostState,
     )
+    val currentSection = sectionId?.let { id -> sections.firstOrNull { it.id == id } }
 
     timeTarget?.let { target ->
         val current = when (target) {
@@ -356,21 +373,10 @@ fun SettingsScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text(stringResource(Res.string.settings)) },
+                title = { Text(currentSection?.title ?: stringResource(Res.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(Res.string.back))
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { searching = !searching; if (!searching) query = "" },
-                        modifier = Modifier.size(48.dp),
-                    ) {
-                        Icon(
-                            if (searching) Icons.Outlined.Close else Icons.Outlined.Search,
-                            stringResource(Res.string.settings_search),
-                        )
                     }
                 },
                 colors = TopAppBarDefaults.largeTopAppBarColors(
@@ -382,35 +388,28 @@ fun SettingsScreen(
         },
     ) { padding ->
         Column(Modifier.padding(padding)) {
-            AnimatedVisibility(visible = searching, enter = expandEnter(), exit = expandExit()) {
-                SettingsSearchField(query, onQueryChange = { query = it })
+            if (currentSection != null) {
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    item { SettingsSectionBlock(section = currentSection, highlightedRowId = highlightedRowId, showHeader = false) }
+                }
+                return@Column
             }
-            if (searching && query.isNotBlank()) {
+            SettingsSearchField(query, onQueryChange = { query = it })
+            if (query.isNotBlank()) {
                 SettingsSearchResults(
                     sections = sections,
                     query = query,
                     onResult = { section, row ->
-                        searching = false
                         query = ""
-                        highlightedRowId = row.id
-                        scope.launch {
-                            val index = sections.filter { it.visible }.indexOf(section)
-                            if (index >= 0) listState.animateScrollToItem(index)
-                        }
+                        onOpenSection(section.id, row.id)
                     },
                 )
                 return@Column
             }
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-            ) {
-                items(sections.filter { it.visible && it.visibleRows.isNotEmpty() }.size) { i ->
-                    val section = sections.filter { it.visible && it.visibleRows.isNotEmpty() }[i]
-                    SettingsSectionBlock(section = section, highlightedRowId = highlightedRowId)
-                }
-            }
+            SettingsHub(sections = sections, listState = listState, onOpen = { onOpenSection(it.id, null) })
         }
     }
 
@@ -420,6 +419,81 @@ fun SettingsScreen(
             kotlinx.coroutines.delay(600)
             highlightedRowId = null
         }
+    }
+}
+
+/** Hub groups, in the order of the system settings page: the everyday ones first, About last. */
+private val HUB_GROUPS = listOf(
+    listOf("general", "appearance"),
+    listOf("capture", "datetime", "notifications", "ai"),
+    listOf("organisation", "privacy", "data", "desktop"),
+    listOf("about"),
+)
+
+private val HUE_BLUE = Color(0xFF5B8DEF)
+private val HUE_ORANGE = Color(0xFFF2994A)
+private val HUE_PURPLE = Color(0xFF9B7BEF)
+private val HUE_TEAL = Color(0xFF3DBBA8)
+private val HUE_PINK = Color(0xFFE8739B)
+private val HUE_VIOLET = Color(0xFFB067E6)
+private val HUE_GREEN = Color(0xFF5FBF6A)
+private val HUE_CYAN = Color(0xFF45B4D9)
+private val HUE_AMBER = Color(0xFFE6B84C)
+private val HUE_SLATE = Color(0xFF8A96B0)
+private val HUE_GREY = Color(0xFF9E9E9E)
+
+/** The main page: one card per category, each summarised by its first rows, like system settings. */
+@Composable
+private fun SettingsHub(
+    sections: List<SettingsSection>,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onOpen: (SettingsSection) -> Unit,
+) {
+    val visible = sections.filter { it.visible && it.visibleRows.isNotEmpty() }
+    val groups = HUB_GROUPS
+        .map { ids -> ids.mapNotNull { id -> visible.firstOrNull { it.id == id } } }
+        .filter { it.isNotEmpty() }
+    LazyColumn(
+        state = listState,
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        items(groups.size) { g ->
+            val group = groups[g]
+            SettingsGroup {
+                group.forEachIndexed { index, section ->
+                    SettingsRowSurface(index = index, count = group.size) {
+                        ListItem(
+                            leadingContent = {
+                                section.icon?.let { CategoryIcon(it, section.hue ?: MaterialTheme.colorScheme.primary) }
+                            },
+                            headlineContent = { Text(section.title, style = MaterialTheme.typography.titleMedium) },
+                            supportingContent = {
+                                Text(
+                                    section.visibleRows.map { it.title }.distinct().take(3).joinToString(", "),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            modifier = Modifier.clickable { onOpen(section) }.padding(vertical = 4.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryIcon(icon: ImageVector, hue: Color) {
+    Box(
+        Modifier.size(40.dp).background(hue.copy(alpha = 0.22f), CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(icon, contentDescription = null, tint = hue, modifier = Modifier.size(22.dp))
     }
 }
 
@@ -435,6 +509,7 @@ private fun SettingsSearchField(query: String, onQueryChange: (String) -> Unit) 
             onValueChange = onQueryChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(stringResource(Res.string.settings_search)) },
+            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
             singleLine = true,
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -570,6 +645,8 @@ private fun rememberSettingsSections(
     val general = SettingsSection(
         id = "general",
         title = stringResource(Res.string.sec_general),
+        icon = Icons.Outlined.Tune,
+        hue = HUE_BLUE,
         rows = listOf(
             SettingsRow.Navigation(
                 id = "openAppTo",
@@ -611,6 +688,8 @@ private fun rememberSettingsSections(
     val appearance = SettingsSection(
         id = "appearance",
         title = stringResource(Res.string.sec_appearance),
+        icon = Icons.Outlined.Palette,
+        hue = HUE_ORANGE,
         rows = listOf(
             SettingsRow.ButtonGroupRow(
                 id = "theme",
@@ -655,6 +734,8 @@ private fun rememberSettingsSections(
     val capture = SettingsSection(
         id = "capture",
         title = stringResource(Res.string.sec_capture),
+        icon = Icons.Outlined.AddCircle,
+        hue = HUE_PURPLE,
         rows = listOf(
             SettingsRow.Switch(
                 id = "qsTile",
@@ -711,6 +792,8 @@ private fun rememberSettingsSections(
     val dateTime = SettingsSection(
         id = "datetime",
         title = stringResource(Res.string.sec_datetime),
+        icon = Icons.Outlined.Schedule,
+        hue = HUE_TEAL,
         rows = listOf(
             SettingsRow.ButtonGroupRow(
                 id = "firstDay",
@@ -770,6 +853,8 @@ private fun rememberSettingsSections(
     val notifications = SettingsSection(
         id = "notifications",
         title = stringResource(Res.string.sec_notifications),
+        icon = Icons.Outlined.Notifications,
+        hue = HUE_PINK,
         rows = listOf(
             SettingsRow.Switch(
                 id = "dailyAgenda",
@@ -818,6 +903,8 @@ private fun rememberSettingsSections(
     val ai = SettingsSection(
         id = "ai",
         title = stringResource(Res.string.sec_ai),
+        icon = Icons.Outlined.AutoAwesome,
+        hue = HUE_VIOLET,
         rows = listOf(
             SettingsRow.ChipRailRow(
                 id = "provider",
@@ -868,6 +955,8 @@ private fun rememberSettingsSections(
     val organisation = SettingsSection(
         id = "organisation",
         title = stringResource(Res.string.sec_organisation),
+        icon = Icons.Outlined.Sell,
+        hue = HUE_GREEN,
         rows = listOf(
             SettingsRow.Navigation(
                 id = "tags",
@@ -898,6 +987,8 @@ private fun rememberSettingsSections(
     val privacy = SettingsSection(
         id = "privacy",
         title = stringResource(Res.string.sec_privacy),
+        icon = Icons.Outlined.Shield,
+        hue = HUE_CYAN,
         visible = Platform.isAndroid,
         rows = listOf(
             SettingsRow.Switch(
@@ -922,6 +1013,8 @@ private fun rememberSettingsSections(
     val data = SettingsSection(
         id = "data",
         title = stringResource(Res.string.sec_data),
+        icon = Icons.Outlined.Storage,
+        hue = HUE_AMBER,
         rows = listOf(
             SettingsRow.External(
                 id = "export",
@@ -975,6 +1068,8 @@ private fun rememberSettingsSections(
     val desktop = SettingsSection(
         id = "desktop",
         title = stringResource(Res.string.sec_desktop),
+        icon = Icons.Outlined.Computer,
+        hue = HUE_SLATE,
         visible = Platform.isDesktop,
         rows = listOf(
             SettingsRow.Value(
@@ -1014,6 +1109,8 @@ private fun rememberSettingsSections(
     val about = SettingsSection(
         id = "about",
         title = stringResource(Res.string.sec_about),
+        icon = Icons.Outlined.Info,
+        hue = HUE_GREY,
         rows = listOf(
             SettingsRow.Value(
                 id = "version",
