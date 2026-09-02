@@ -304,7 +304,7 @@ private fun dayGroups(
         )
         addGroup(
             GroupKey.Anytime,
-            "Anytime",
+            "No set time",
             untimed + series + anytime.sortedBy { it.sortOrder }.map { AgendaRow.Single(it) },
         )
     }
@@ -339,7 +339,7 @@ private fun spanGroups(
         }
         addGroup(
             GroupKey.Anytime,
-            "Anytime",
+            "No set time",
             anytime.sortedBy { it.sortOrder }.map { AgendaRow.Single(it) },
             cap,
         )
@@ -380,7 +380,7 @@ private fun horizonGroups(
         }
         addGroup(
             GroupKey.Anytime,
-            "Anytime",
+            "No set time",
             anytime.sortedBy { it.sortOrder }.map { AgendaRow.Single(it) },
             HORIZON_BUCKET_CAP,
         )
