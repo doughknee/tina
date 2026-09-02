@@ -65,5 +65,15 @@ Desktop data lives in `~\.tina\` (`tina.db`, `settings.preferences_pb`).
 
 ## Development
 
+### Trying a change on your phone without Play
+
+The Play build is signed by Google, so an upload-key APK cannot install over it. Build the `dev` variant instead: same release code, package `com.peggy.app.dev`, shown as "Peggy dev" next to the real app with its own data.
+
+```bash
+ANDROID_SERIAL=<device> ./gradlew :composeApp:installDev
+```
+
+Static launcher shortcuts in the dev build open the Play app (they name the package); everything else is independent.
+
 - Tests (parser, recurrence, reminders, backup, repository — runs on JVM): `.\gradlew :composeApp:desktopTest`
 - One `items` table holds every entity type; type changes are lossless. See [DECISIONS.md](DECISIONS.md) for the data-model and parser rules.

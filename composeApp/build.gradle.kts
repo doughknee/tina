@@ -112,6 +112,7 @@ android {
 
     buildFeatures {
         buildConfig = true
+        resValues = true
     }
 
     buildTypes {
@@ -121,6 +122,19 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            resValue("string", "app_name", "Peggy")
+        }
+        // release code under its own package id, so it installs next to the Play build and never
+        // collides with it: `gradlew :composeApp:installDev` (ANDROID_SERIAL picks the device)
+        create("dev") {
+            initWith(getByName("release"))
+            matchingFallbacks += "release"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "Peggy dev")
+        }
+        debug {
+            resValue("string", "app_name", "Peggy debug")
         }
     }
 }
