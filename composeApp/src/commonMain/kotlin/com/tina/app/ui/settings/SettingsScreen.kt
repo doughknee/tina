@@ -216,6 +216,8 @@ import com.tina.app.resources.set_quiet_end
 import com.tina.app.resources.set_quiet_hours
 import com.tina.app.resources.set_quiet_hours_sub
 import com.tina.app.resources.set_quiet_start
+import com.tina.app.resources.set_undated_to_sort
+import com.tina.app.resources.set_undated_to_sort_sub
 import com.tina.app.resources.set_overdue_nudge_sub
 import com.tina.app.resources.set_provider
 import com.tina.app.resources.set_provider_sub
@@ -790,6 +792,14 @@ private fun rememberSettingsSections(
                     viewModel.setQuickSettingsTile(it)
                     actions.setQuickTileEnabled(it)
                 },
+            ),
+            SettingsRow.Switch(
+                id = "undatedToSort",
+                title = stringResource(Res.string.set_undated_to_sort),
+                supporting = stringResource(Res.string.set_undated_to_sort_sub),
+                keywords = listOf("inbox", "triage", "anytime", "undated"),
+                checked = settings.undatedToSort,
+                onCheckedChange = viewModel::setUndatedToSort,
             ),
             SettingsRow.Switch(
                 id = "autoFocusCapture",

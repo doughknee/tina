@@ -45,6 +45,8 @@ data class Item(
     val endAt: Long? = null,
     val allDay: Boolean = false,
     val recurrence: String? = null,
+    /** A reminder the user snoozed from the notification; cleared when it fires or is answered on Sort. */
+    val snoozedUntil: Long? = null,
     /** Set when the item is in the Trash; null everywhere else. Purged after the retention window. */
     val deletedAt: Long? = null,
 ) {

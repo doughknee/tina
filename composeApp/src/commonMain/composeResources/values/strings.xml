@@ -80,6 +80,20 @@
     <string name="triage_someday">Someday</string>
     <string name="triage_make_event">Event</string>
     <string name="triage_make_note">Note</string>
+    <string name="triage_done">Done</string>
+    <string name="triage_keep">Keep</string>
+    <string name="triage_drop">Drop</string>
+    <string name="sort_new">New</string>
+    <string name="sort_overdue">Overdue</string>
+    <string name="sort_snoozed">Snoozed</string>
+    <string name="sort_stale">Still relevant?</string>
+    <string name="sort_empty">Nothing to decide</string>
+    <string name="sort_empty_sub">New captures, overdue tasks, snoozes and old somedays show up here</string>
+    <string name="sort_due">due %1$s</string>
+    <string name="sort_snoozed_until">snoozed until %1$s</string>
+    <string name="sort_untouched">untouched %1$d days</string>
+    <string name="set_undated_to_sort">Undated captures go to Sort</string>
+    <string name="set_undated_to_sort_sub">Off: they land on today’s list instead</string>
 
     <string name="deleted">Deleted</string>
     <string name="sorted">Sorted</string>

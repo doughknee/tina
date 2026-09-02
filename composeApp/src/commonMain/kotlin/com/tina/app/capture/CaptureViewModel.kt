@@ -160,7 +160,7 @@ class CaptureViewModel(
         val effective = effective()
         val raw = text
         viewModelScope.launch {
-            lastSavedId = repository.capture(effective, tz, settings.value.defaultReminderMinutes)
+            lastSavedId = repository.capture(effective, tz, settings.value.defaultReminderMinutes, settings.value.undatedToSort)
             lastSavedId?.let { id ->
                 refiner.refineInBackground(id, raw) { original, _ -> refinedEvents.tryEmit(original) }
             }

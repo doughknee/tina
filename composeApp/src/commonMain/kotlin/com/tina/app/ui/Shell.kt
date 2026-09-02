@@ -204,6 +204,13 @@ fun Shell(
         captureSheetOpen = false
         focusManager.clearFocus()
     }
+    val sortRequested by OpenSortRequests.pending.collectAsState()
+    LaunchedEffect(sortRequested) {
+        if (sortRequested) {
+            OpenSortRequests.clear()
+            showTab(TinaTab.INBOX)
+        }
+    }
 
     val focusRequested by CaptureFocus.pending.collectAsState()
     LaunchedEffect(focusRequested) {

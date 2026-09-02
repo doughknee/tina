@@ -87,6 +87,20 @@ interface ItemDao {
     @Query("SELECT COUNT(*) FROM items WHERE type = 'INBOX' AND deletedAt IS NULL")
     fun observeInboxCount(): Flow<Int>
 
+    /** Tasks past their day; a series is judged per occurrence on the agenda, not here. */
+    @Query("SELECT * FROM items WHERE type = 'TASK' AND completed = 0 AND recurrence IS NULL AND dueDate IS NOT NULL AND dueDate < :todayEpochDay AND deletedAt IS NULL ORDER BY dueDate")
+    fun observeOverdue(todayEpochDay: Int): Flow<List<Item>>
+
+    /** Someday items nobody has touched for a while. */
+    @Query("SELECT * FROM items WHERE type = 'TASK' AND completed = 0 AND dueDate IS NULL AND recurrence IS NULL AND updatedAt < :cutoffMillis AND deletedAt IS NULL ORDER BY updatedAt")
+    fun observeStale(cutoffMillis: Long): Flow<List<Item>>
+
+    @Query("SELECT * FROM items WHERE snoozedUntil IS NOT NULL AND completed = 0 AND deletedAt IS NULL ORDER BY snoozedUntil")
+    fun observeSnoozed(): Flow<List<Item>>
+
+    @Query("UPDATE items SET snoozedUntil = :until WHERE id = :id")
+    suspend fun setSnoozedUntil(id: Long, until: Long?)
+
     @Query("SELECT * FROM items WHERE deletedAt IS NULL ORDER BY createdAt DESC LIMIT 3")
     fun observeRecent(): Flow<List<Item>>
 

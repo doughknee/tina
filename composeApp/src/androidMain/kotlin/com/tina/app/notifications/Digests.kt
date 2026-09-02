@@ -175,7 +175,7 @@ class DigestReceiver : BroadcastReceiver(), KoinComponent {
         }
     }
 
-    private fun notify(context: Context, id: Int, title: String, body: String) {
+    private fun notify(context: Context, id: Int, title: String, body: String, openSort: Boolean = id == OVERDUE_ID) {
         if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) !=
             PackageManager.PERMISSION_GRANTED
         ) {
@@ -185,7 +185,8 @@ class DigestReceiver : BroadcastReceiver(), KoinComponent {
         val contentIntent = PendingIntent.getActivity(
             context,
             id,
-            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .putExtra(MainActivity.EXTRA_OPEN_SORT, openSort),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val notification = NotificationCompat.Builder(context, DIGEST_CHANNEL_ID)

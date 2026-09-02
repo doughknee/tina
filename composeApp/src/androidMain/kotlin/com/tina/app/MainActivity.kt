@@ -88,6 +88,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun handleFocusCapture(intent: android.content.Intent?) {
         intent?.getLongExtra(EXTRA_OPEN_ITEM, -1L)?.takeIf { it > 0 }?.let { com.tina.app.ui.OpenItemRequests.request(it) }
+        if (intent?.getBooleanExtra(EXTRA_OPEN_SORT, false) == true) com.tina.app.ui.OpenSortRequests.request()
         if (intent?.getBooleanExtra(EXTRA_FOCUS_CAPTURE, false) == true) {
             com.tina.app.ui.CaptureFocus.request(idea = intent.getBooleanExtra(EXTRA_FOCUS_IDEA, false))
         }
@@ -138,5 +139,6 @@ class MainActivity : ComponentActivity() {
         const val EXTRA_FOCUS_CAPTURE = "com.tina.app.FOCUS_CAPTURE"
         const val EXTRA_FOCUS_IDEA = "com.tina.app.FOCUS_IDEA"
         const val EXTRA_OPEN_ITEM = "com.tina.app.OPEN_ITEM"
+        const val EXTRA_OPEN_SORT = "com.tina.app.OPEN_SORT"
     }
 }

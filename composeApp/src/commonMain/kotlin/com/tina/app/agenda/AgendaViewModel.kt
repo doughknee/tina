@@ -91,7 +91,7 @@ class AgendaViewModel(
     val state: StateFlow<AgendaUiState?> = combine(
         anchor,
         repository.observeAll(),
-        repository.observeInboxCount(),
+        repository.observeDecisionCount(),
         settingsRepository.settings,
         marks,
     ) { (today, selected, granularity), items, inbox, settings, (done, skipped) ->

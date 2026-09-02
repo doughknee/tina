@@ -2,6 +2,15 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
+## v1.8.0 (dev)
+
+### Sort is now the decisions page
+- Everything that needs a call from you, grouped: new captures with no date, overdue tasks, snoozed reminders, and someday items untouched for 30 days.
+- Each group has its own one-tap answers (Today, Done, Keep, Drop, and the rest); swipes stay, and everything is undoable.
+- A capture with no date now lands on Sort instead of today's list. Settings → Capture turns that off.
+- The tab badge and Plan's "to sort" card count every decision owed, not just the inbox.
+- The overdue nudge opens Sort.
+
 ## v1.7.3 (closed testing)
 
 - All-day events stay on their date when you change time zone. They used to slide a day.

@@ -414,3 +414,9 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 
 - MaterialKolor generates the scheme from the launcher blue at runtime (it is Google's material-color-utilities ported to KMP). Hand-picking forty tonal roles would have been wrong in the ways that only show on a real screen, and the library also opens the door to real contrast tone sets later.
 
+### Sort becomes the decisions page (v1.8.0)
+
+- The inbox was empty because the app never created inbox items: an undated capture became a task on today's Anytime list. Sort now receives undated captures by default (setting to keep the old behaviour) and also lists overdue tasks, snoozed reminders (a new `snoozedUntil` column, migration 6→7) and someday items untouched for 30 days.
+- Same page, same swipe cards, different feeds; the alternative was deleting the tab and going to two, which threw away the one interaction testers liked.
+- Recurring tasks are never "overdue" here; they are judged per occurrence on the agenda.
+

@@ -62,6 +62,7 @@ data class Settings(
     // off by default: opening the app shouldn't cover half the screen with a keyboard.
     // The capture widget and tile still focus the field, since that's their whole job.
     val autoFocusCapture: Boolean = false,
+    val undatedToSort: Boolean = true,
     val keepKeyboardUp: Boolean = true,
     val voiceCapture: Boolean = true,
     val undoWindowSeconds: Int = 5,
@@ -146,6 +147,7 @@ private val KEY_TRASH_RETENTION = stringPreferencesKey("trashRetention")
 private val KEY_LAUNCH_AT_LOGIN = booleanPreferencesKey("launchAtLogin")
 private val KEY_CLOSE_TO_TRAY = booleanPreferencesKey("closeToTray")
 private val KEY_ONBOARDING_SEEN = booleanPreferencesKey("onboardingSeen")
+private val KEY_UNDATED_TO_SORT = booleanPreferencesKey("undatedToSort")
 private val KEY_LAST_TIME_ZONE = androidx.datastore.preferences.core.stringPreferencesKey("lastTimeZone")
 
 class SettingsRepository(
@@ -197,6 +199,7 @@ class SettingsRepository(
             overdueNudge = p[KEY_OVERDUE_NUDGE] ?: false,
             overdueNudgeMinutes = p[KEY_OVERDUE_NUDGE_MIN] ?: (18 * 60),
             quietHours = p[KEY_QUIET] ?: false,
+            undatedToSort = p[KEY_UNDATED_TO_SORT] ?: true,
             quietStartMinutes = p[KEY_QUIET_START] ?: (22 * 60),
             quietEndMinutes = p[KEY_QUIET_END] ?: (7 * 60),
             inboxReminder = p[KEY_INBOX_REMINDER] ?: false,
@@ -258,6 +261,7 @@ class SettingsRepository(
     suspend fun setOverdueNudge(enabled: Boolean) = store.edit { it[KEY_OVERDUE_NUDGE] = enabled }
     suspend fun setOverdueNudgeMinutes(minutes: Int) = store.edit { it[KEY_OVERDUE_NUDGE_MIN] = minutes }
     suspend fun setQuietHours(enabled: Boolean) = store.edit { it[KEY_QUIET] = enabled }
+    suspend fun setUndatedToSort(enabled: Boolean) = store.edit { it[KEY_UNDATED_TO_SORT] = enabled }
     suspend fun setQuietStartMinutes(minutes: Int) = store.edit { it[KEY_QUIET_START] = minutes }
     suspend fun setQuietEndMinutes(minutes: Int) = store.edit { it[KEY_QUIET_END] = minutes }
     suspend fun setInboxReminder(enabled: Boolean) = store.edit { it[KEY_INBOX_REMINDER] = enabled }

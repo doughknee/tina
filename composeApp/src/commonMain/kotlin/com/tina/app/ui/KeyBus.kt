@@ -44,6 +44,14 @@ object OpenItemRequests {
     fun clear() { _pending.value = null }
 }
 
+/** A digest tap asks the shell to show the Sort tab. */
+object OpenSortRequests {
+    private val _pending = MutableStateFlow(false)
+    val pending: StateFlow<Boolean> = _pending
+    fun request() { _pending.value = true }
+    fun clear() { _pending.value = false }
+}
+
 object CaptureFocus {
     private val _pending = MutableStateFlow(false)
     val pending: StateFlow<Boolean> = _pending

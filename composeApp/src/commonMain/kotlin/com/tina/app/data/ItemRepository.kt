@@ -6,6 +6,7 @@ import com.tina.app.notifications.ReminderScheduler
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -31,6 +32,21 @@ class ItemRepository(
     suspend fun getAll(): List<Item> = dao.getAll()
 
     fun observeInbox(): Flow<List<Item>> = dao.observeInbox()
+
+    /** Everything Sort lists, grouped. Today and the stale cutoff are fixed when the flow starts. */
+    fun observeDecisions(): Flow<Decisions> {
+        val now = clock.now()
+        val today = now.toLocalDateTime(TimeZone.currentSystemDefault()).date.toEpochDays().toInt()
+        val cutoff = now.toEpochMilliseconds() - STALE_AFTER_DAYS * 24L * 60 * 60 * 1000
+        return kotlinx.coroutines.flow.combine(
+            dao.observeInbox(), dao.observeOverdue(today), dao.observeSnoozed(), dao.observeStale(cutoff),
+        ) { new, overdue, snoozed, stale -> Decisions(new, overdue, snoozed, stale) }
+    }
+
+    fun observeDecisionCount(): Flow<Int> = observeDecisions().map { it.total }
+
+    suspend fun snooze(id: Long, untilMillis: Long) = dao.setSnoozedUntil(id, untilMillis)
+    suspend fun clearSnooze(id: Long) = dao.setSnoozedUntil(id, null)
     fun observeInboxCount(): Flow<Int> = dao.observeInboxCount()
     fun observeRecent(): Flow<List<Item>> = dao.observeRecent()
 
@@ -197,9 +213,10 @@ class ItemRepository(
         parsed: ParsedCapture,
         tz: TimeZone,
         defaultReminderMinutes: Int = DEFAULT_REMINDER_MINUTES,
+        undatedToSort: Boolean = true,
     ): Long {
         val now = clock.now().toLocalDateTime(tz)
-        return insert(itemFromCapture(parsed, now, tz, defaultReminderMinutes))
+        return insert(itemFromCapture(parsed, now, tz, defaultReminderMinutes, undatedToSort))
     }
 
     /** Expand an event's occurrences (recurring or not) within a range. */
@@ -218,6 +235,8 @@ fun itemFromCapture(
     now: LocalDateTime,
     tz: TimeZone,
     defaultReminderMinutes: Int = DEFAULT_REMINDER_MINUTES,
+    /** A task with no date is a decision, not a plan: it lands on Sort rather than today's list. */
+    undatedToSort: Boolean = true,
 ): Item {
     val nowMillis = now.toInstant(tz).toEpochMilliseconds()
     val base = Item(
@@ -260,7 +279,7 @@ fun itemFromCapture(
             }
         }
 
-        ItemType.TASK -> base.copy(
+        ItemType.TASK -> if (undatedToSort && parsed.date == null && parsed.rrule == null) base.copy(type = ItemType.INBOX) else base.copy(
             dueDate = parsed.date?.toEpochDays()?.toInt(),
             dueTime = parsed.time?.let { it.hour * 60 + it.minute },
             recurrence = parsed.rrule,
@@ -273,3 +292,16 @@ fun itemFromCapture(
 
 @OptIn(kotlin.uuid.ExperimentalUuidApi::class)
 fun newUuid(): String = kotlin.uuid.Uuid.random().toHexString()
+
+/** Days a someday item can sit untouched before Sort asks whether it still matters. */
+const val STALE_AFTER_DAYS = 30
+
+data class Decisions(
+    val new: List<Item> = emptyList(),
+    val overdue: List<Item> = emptyList(),
+    val snoozed: List<Item> = emptyList(),
+    val stale: List<Item> = emptyList(),
+) {
+    val total: Int get() = new.size + overdue.size + snoozed.size + stale.size
+    val isEmpty: Boolean get() = total == 0
+}

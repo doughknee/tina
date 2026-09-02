@@ -66,12 +66,15 @@ class ReminderReceiver : BroadcastReceiver(), KoinComponent {
                     ACTION_SNOOZE -> {
                         val minutes = intent.getIntExtra(EXTRA_SNOOZE_MINUTES, 10)
                         dismissReminder(context, itemId)
+                        val until = System.currentTimeMillis() + minutes * 60_000L
+                        repository.snooze(itemId, until)
                         (scheduler as AndroidReminderScheduler).scheduleExactAt(
-                            System.currentTimeMillis() + minutes * 60_000L,
+                            until,
                             firePendingIntent(context, itemId),
                         )
                     }
                     else -> {
+                        repository.clearSnooze(itemId)
                         repository.get(itemId)?.let { item ->
                             val remindable = item.type == ItemType.TASK || item.type == ItemType.EVENT
                             // an occurrence already ticked or skipped from the agenda stays quiet

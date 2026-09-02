@@ -14,7 +14,7 @@ import kotlinx.coroutines.IO
 
 @Database(
     entities = [Item::class, ChatEntity::class, ChatMessageEntity::class, OccurrenceCompletion::class],
-    version = 6,
+    version = 7,
 )
 @TypeConverters(Converters::class)
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -79,11 +79,18 @@ private val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
+/** Additive: a snoozed reminder remembers when it comes back, so Sort can list it. */
+private val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE `items` ADD COLUMN `snoozedUntil` INTEGER")
+    }
+}
+
 fun buildDatabase(builder: RoomDatabase.Builder<AppDatabase>): AppDatabase =
     builder
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
-        .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+        .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
         // v1 was the pre-feature scaffold with an empty placeholder table; nothing worth migrating.
         // Only that path may drop tables: a forgotten migration must crash, never wipe the user
         .fallbackToDestructiveMigrationFrom(dropAllTables = true, 1)

@@ -111,6 +111,7 @@ class SettingsViewModel(
     fun setOverdueNudge(v: Boolean) = launchEdit { repository.setOverdueNudge(v) }
     fun setOverdueNudgeMinutes(v: Int) = launchEdit { repository.setOverdueNudgeMinutes(v) }
     fun setQuietHours(v: Boolean) = launchEdit { repository.setQuietHours(v) }
+    fun setUndatedToSort(v: Boolean) = launchEdit { repository.setUndatedToSort(v) }
     fun setQuietStartMinutes(v: Int) = launchEdit { repository.setQuietStartMinutes(v) }
     fun setQuietEndMinutes(v: Int) = launchEdit { repository.setQuietEndMinutes(v) }
     fun setInboxReminder(v: Boolean) = launchEdit { repository.setInboxReminder(v) }
