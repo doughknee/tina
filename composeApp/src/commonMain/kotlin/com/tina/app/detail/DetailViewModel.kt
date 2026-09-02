@@ -32,6 +32,8 @@ class DetailViewModel(
     fun setDate(date: LocalDate?) = edit { it.copy(dueDate = date?.toEpochDays()?.toInt()) }
     fun setTime(time: LocalTime?) = edit { it.copy(dueTime = time?.let { t -> t.hour * 60 + t.minute }) }
     fun setReminder(minutes: Int?) = edit { it.copy(reminderOffsetMinutes = minutes) }
+    /** Rule change on a series: the item is the series, so this edits every future occurrence. */
+    fun setRrule(rrule: String?) = edit { it.copy(recurrence = rrule) }
     fun setTags(raw: String) = edit { item ->
         item.copy(tags = raw.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() })
     }

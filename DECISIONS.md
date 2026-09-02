@@ -345,3 +345,7 @@ Running log of choices made without asking, newest last.
 ## An idea's snackbar offers Open
 
 - Saving in Idea mode shows "Idea saved · Open" instead of "Captured · Undo": an idea is usually the start of something, so one tap continues it in the note editor. The editor has delete for the rare wrong save; Plan-mode captures keep Undo.
+
+## Series edit in place
+
+- The repeat editor (rail + custom dialog) moved out of the event editor into `ui/RepeatEditor.kt` and the task page uses the same one, so a recurring task's rule is edited where its other fields are. The series row's long-press menu gained "Edit series", which opens that page. Editing the rule keeps per-occurrence completions (they are keyed by item and day, not by rule).

@@ -33,6 +33,7 @@
     <string name="series_complete_day">Complete</string>
     <string name="more_rows">+%1$d more</string>
     <string name="fewer_rows">Show fewer</string>
+    <string name="series_edit">Edit series</string>
     <string name="series_skip">Skip this one</string>
     <string name="series_end">End series</string>
     <string name="series_ended">Series ended</string>

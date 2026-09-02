@@ -32,7 +32,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import com.tina.app.data.parseRrule
 import com.tina.app.ui.ConnectedButtonGroup
+import com.tina.app.ui.CustomRepeatDialog
+import com.tina.app.ui.RepeatSection
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
@@ -238,6 +241,24 @@ private fun DetailContent(
                             }
                         }
                     } else null,
+                )
+            }
+
+            // a series edits in place, with the same editor events use
+            var showCustomRepeat by remember { mutableStateOf(false) }
+            RepeatSection(
+                rrule = item.recurrence,
+                onSelect = viewModel::setRrule,
+                onCustom = { showCustomRepeat = true },
+            )
+            if (showCustomRepeat) {
+                CustomRepeatDialog(
+                    initial = item.recurrence?.let { parseRrule(it) },
+                    onDismiss = { showCustomRepeat = false },
+                    onConfirm = {
+                        viewModel.setRrule(it)
+                        showCustomRepeat = false
+                    },
                 )
             }
 

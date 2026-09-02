@@ -135,6 +135,7 @@ import com.tina.app.resources.series_complete_day
 import com.tina.app.resources.series_count_month
 import com.tina.app.resources.series_count_week
 import com.tina.app.resources.series_done_of
+import com.tina.app.resources.series_edit
 import com.tina.app.resources.series_end
 import com.tina.app.resources.series_ended
 import com.tina.app.resources.series_hidden
@@ -712,6 +713,14 @@ private fun SeriesRow(
                 },
             )
             DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                // the rule itself is edited on the item page, same editor as events
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.series_edit)) },
+                    onClick = {
+                        menuOpen = false
+                        onOpenItem(item)
+                    },
+                )
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.series_skip)) },
                     onClick = {
