@@ -10,7 +10,7 @@ Everything needed to go from a sideloaded APK to a production listing. Items mar
 - [ ] Declarations: Ads = none; News app = no; COVID = no; Government app = no; Financial features = none; Health = none.
 - [ ] Target audience: 13+ (not designed for children). Content rating questionnaire → Everyone.
 - [ ] Data Safety form: use section 4 below verbatim.
-- [ ] Privacy policy URL: host `docs/PRIVACY.md` at a public URL (GitHub Pages works) and paste it.
+- [ ] Privacy policy URL: `https://doughknee.com/peggy/privacy/` (the page is generated into `site/` from `docs/PRIVACY.md`; publish `site/` at doughknee.com).
 - [ ] Permission declaration for `USE_EXACT_ALARM`: use section 5 below.
 - [ ] Play App Signing: accept Google-managed signing on first upload. Rotate the local keystore password first (it is in the README history) and keep the upload key outside the repo.
 - [ ] Set up Real-time Developer Notifications (Pub/Sub topic) when subscriptions ship in v1.9.
@@ -53,7 +53,7 @@ Recruit testers from the app's own audience: a short post in r/androidapps, r/pr
 > Peggy Pro (optional): AI without keys, extra themes and icons, more widgets, unlimited Ask history, and sync between your devices when it ships.
 
 **Category**: Productivity. **Tags**: to-do list, notes, calendar, reminders.
-**Contact email**: the developer address on the Play account. **Website**: the GitHub repo or Pages site.
+**Contact email**: the developer address on the Play account. **Website**: `https://doughknee.com/peggy/`.
 
 **Graphics**
 - App icon 512×512 PNG (generated from the adaptive icon in `composeApp/src/androidMain/res`).
@@ -106,7 +106,7 @@ Nothing is collected for analytics or advertising. No device or other IDs. No lo
 
 ## 8. Remaining manual steps after the overnight pass
 
-- Host the privacy policy and paste its URL.
+- Publish `site/` at doughknee.com and paste `https://doughknee.com/peggy/privacy/` as the policy URL.
 - Create the Play app, upload the first AAB to internal testing, add testers.
 - Submit the `USE_EXACT_ALARM` declaration with the text above.
 - Rotate the upload keystore password; delete it from README history if the repo ever goes public.

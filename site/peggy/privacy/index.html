@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Peggy privacy policy</title>
+<meta name="description" content="How Peggy handles your data: on your device, no account, no analytics.">
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfd; --fg: #1c1c22; --muted: #5d5f6b; --accent: #4f5fd6; --card: #ffffff; --line: #e6e6ee; }
+@media (prefers-color-scheme: dark) { :root { --bg: #121216; --fg: #ececf2; --muted: #a0a2b0; --accent: #9aa5ff; --card: #1c1c22; --line: #2a2a33; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 680px; margin: 0 auto; padding: 48px 24px 96px; }
+h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.02em; }
+h2 { font-size: 1.25rem; margin: 40px 0 8px; }
+p, li { color: var(--fg); }
+.muted { color: var(--muted); }
+a { color: var(--accent); }
+.hero { padding: 48px 0 24px; }
+.claim { font-size: 1.35rem; color: var(--muted); margin: 0 0 28px; }
+.btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 999px; font-weight: 600; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin: 32px 0; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+.card strong { display: block; margin-bottom: 4px; }
+footer { margin-top: 64px; font-size: 0.9rem; color: var(--muted); }
+footer a { color: inherit; }
+.icon { width: 72px; height: 72px; border-radius: 20px; background: #4f5fd6; display: grid; place-items: center; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Peggy privacy policy</h1>
+<p>Effective 2026-09-02. Applies to the Peggy Android and desktop apps published by Brandon Harris.</p>
+<h2>The short version</h2>
+<p>Peggy keeps your data on your device. It has no account system, no analytics, no advertising, and no server of its own. The only time your data leaves your device is when <strong>you</strong> turn on an AI feature and choose where it goes.</p>
+<h2>What Peggy stores</h2>
+<p>Tasks, events, notes, tags, settings, and (if you use Ask) your conversations. All of it is stored in a database on your device. Uninstalling Peggy deletes it. You can export a copy at any time from Settings → Data, and delete everything from the same place.</p>
+<h2>Android backup</h2>
+<p>Android may include Peggy's database in the device backup to your own Google account if you have device backup enabled. Peggy excludes its settings file, including any AI key, from that backup. You control device backup in your Android settings.</p>
+<h2>AI features (optional, off by default)</h2>
+<p>If you enable an AI provider in Settings → Parsing &amp; AI, Peggy sends text to that provider:</p>
+<ul><li><strong>Capture parsing and Improve</strong> send the text of the item being parsed or improved.</li><li><strong>Ask</strong> sends your question, the conversation so far, and a summary of your tasks, events, and notes so the model can answer about them.</li></ul>
+<p>Where it goes depends on your choice:</p>
+<ul><li><strong>Ollama</strong> on your own computer or network: nothing leaves your network.</li><li><strong>Anthropic</strong> or <strong>OpenAI</strong>: their API, under their privacy policies, using your own API key.</li><li><strong>A custom endpoint</strong> you configure.</li><li><strong>Peggy Pro</strong> (when available): Peggy's relay service forwards requests to a model provider with Peggy's own key. The relay does not store the content of your requests; it keeps a count of requests per subscription for quota purposes.</li></ul>
+<p>Your API key is stored on your device only, encrypted with the device keystore on Android, and is never included in exports or backups.</p>
+<p>You can report an AI response you find inappropriate from the Ask screen; the report contains only the text you choose to include.</p>
+<h2>Purchases</h2>
+<p>Peggy Pro is sold through Google Play. Google processes the payment; Peggy receives a purchase token to unlock features and never sees your payment details.</p>
+<h2>Permissions</h2>
+<ul><li>Notifications and exact alarms: to ring reminders at the time you set.</li><li>Boot completed: to re-arm reminders after a restart.</li><li>Local network (Android 17+): only to reach an Ollama server you configured.</li><li>Microphone is not requested; voice capture uses your device's speech recognizer through its own interface.</li></ul>
+<h2>Children</h2>
+<p>Peggy is not directed at children under 13.</p>
+<h2>Changes</h2>
+<p>Changes to this policy are published with the app release notes and at this address.</p>
+<h2>Contact</h2>
+<p>Questions or deletion requests: bcharris713@gmail.com</p>
+<footer>© Brandon Harris · <a href="/peggy/">Peggy</a> · <a href="/peggy/privacy/">Privacy</a></footer>
+</main>
+</body>
+</html>
