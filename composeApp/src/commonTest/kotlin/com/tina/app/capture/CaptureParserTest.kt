@@ -4,6 +4,7 @@ import com.tina.app.data.ItemType
 import com.tina.app.data.Priority
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.datetime.LocalDate
@@ -210,22 +211,14 @@ class CaptureParserTest {
         assertEquals("evening walk", parse("evening walk every day").title)
     }
 
-    // --- notes ---
+    // --- notes: the parser never makes one; Idea mode does ---
 
-    @Test fun threeSentencesIsNote() {
-        val p = parse("Talked to the landlord. He agreed to fix the sink. Follow up next month.")
-        assertEquals(ItemType.NOTE, p.type)
-        assertEquals("Talked to the landlord", p.title)
-        assertTrue(p.body!!.contains("fix the sink"))
-    }
-
-    @Test fun longTextIsNote() {
-        val text = "a".repeat(101) + " " + "b".repeat(101)
-        assertEquals(ItemType.NOTE, parse(text).type)
-    }
-
-    @Test fun multiLineIsNote() {
-        assertEquals(ItemType.NOTE, parse("shopping\nmilk\neggs").type)
+    @Test fun theParserNeverMakesANote() {
+        listOf(
+            "Talked to the landlord. He agreed to fix the sink. Follow up next month.",
+            "a".repeat(101) + " " + "b".repeat(101),
+            "shopping\nmilk\neggs",
+        ).forEach { assertNotEquals(ItemType.NOTE, parse(it).type) }
     }
 
     // --- ambiguity ---

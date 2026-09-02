@@ -127,14 +127,6 @@ fun parseCapture(
 
     val tags = RE_TAG.findAll(input).map { it.groupValues[1].lowercase() }.distinct().toList()
 
-    // Prose beats embedded signals: long text is a note.
-    val sentences = input.split(RE_SENTENCE_SPLIT).map { it.trim() }.filter { it.isNotEmpty() }
-    val nonBlankLines = input.lines().filter { it.isNotBlank() }
-    if (sentences.size >= 3 || nonBlankLines.size >= 3 || input.length > 200) {
-        val title = (sentences.firstOrNull()?.lineSequence()?.first() ?: input).take(80).trim()
-        return ParsedCapture(title = title, type = ItemType.NOTE, tags = tags, body = input)
-    }
-
     var text = RE_TAG.replace(input, " ")
 
     var priority = Priority.NONE

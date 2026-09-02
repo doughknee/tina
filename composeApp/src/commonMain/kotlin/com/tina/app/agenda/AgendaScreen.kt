@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Celebration
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Inbox
@@ -95,8 +96,8 @@ import com.tina.app.resources.Res
 import com.tina.app.resources.agenda_everything
 import com.tina.app.resources.calendar_jump_today
 import com.tina.app.resources.calendar_nothing
-import com.tina.app.resources.calendar_view_month
-import com.tina.app.resources.calendar_view_week
+import com.tina.app.resources.calendar_choose
+import com.tina.app.resources.calendar_hidden
 import com.tina.app.resources.date_today
 import com.tina.app.resources.deleted
 import com.tina.app.resources.dup_keep
@@ -192,7 +193,8 @@ fun AgendaScreen(
     val granularity by viewModel.granularity.collectAsState()
     val expandedGroups by viewModel.expandedGroups.collectAsState()
     val expandedSeries by viewModel.expandedSeries.collectAsState()
-    var monthMode by rememberSaveable { mutableStateOf(false) }
+    val calendar by viewModel.calendar.collectAsState()
+    var calendarMenu by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
@@ -219,7 +221,7 @@ fun AgendaScreen(
         firstVisibleWeekDate = selectedDate,
         firstDayOfWeek = settings.firstDayOfWeek,
     )
-    val gridShown = granularity == Granularity.MONTH || (granularity == Granularity.DAY && monthMode)
+    val gridShown = calendar == AgendaCalendar.MONTH
 
     // keep the dot query in step with whichever header is on screen
     LaunchedEffect(monthState, weekState, gridShown) {
@@ -286,19 +288,43 @@ fun AgendaScreen(
                             monthNames[visibleMonth.number - 1]
                         }
                     }
-                    val toggleable = granularity == Granularity.DAY
-                    Row(
-                        Modifier.combinedClickable(enabled = toggleable, onClick = { monthMode = !monthMode }),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(title, style = MaterialTheme.typography.titleLargeEmphasized)
-                        if (toggleable) {
+                    // the title opens the calendar choice: none, a week strip, or the month grid
+                    Box {
+                        Row(
+                            Modifier.combinedClickable(onClick = { calendarMenu = true }),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(title, style = MaterialTheme.typography.titleLargeEmphasized)
                             Icon(
-                                if (monthMode) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                                stringResource(if (monthMode) Res.string.calendar_view_week else Res.string.calendar_view_month),
+                                Icons.Outlined.ExpandMore,
+                                stringResource(Res.string.calendar_choose),
                                 Modifier.padding(start = 4.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        }
+                        DropdownMenu(expanded = calendarMenu, onDismissRequest = { calendarMenu = false }) {
+                            AgendaCalendar.entries.forEach { option ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            stringResource(
+                                                when (option) {
+                                                    AgendaCalendar.HIDDEN -> Res.string.calendar_hidden
+                                                    AgendaCalendar.WEEK -> Res.string.range_week
+                                                    AgendaCalendar.MONTH -> Res.string.range_month
+                                                },
+                                            ),
+                                        )
+                                    },
+                                    trailingIcon = if (option == calendar) {
+                                        { Icon(Icons.Outlined.Check, contentDescription = null) }
+                                    } else null,
+                                    onClick = {
+                                        viewModel.setCalendar(option)
+                                        calendarMenu = false
+                                    },
+                                )
+                            }
                         }
                     }
                 },
@@ -325,11 +351,10 @@ fun AgendaScreen(
             RangeSwitcher(granularity, viewModel::setGranularity)
 
             AnimatedContent(
-                targetState = when {
-                    granularity == Granularity.ALL -> HeaderKind.NONE
-                    gridShown -> HeaderKind.GRID
-                    granularity == Granularity.WEEK -> HeaderKind.PILLED_WEEK
-                    else -> HeaderKind.STRIP
+                targetState = when (calendar) {
+                    AgendaCalendar.HIDDEN -> HeaderKind.NONE
+                    AgendaCalendar.MONTH -> HeaderKind.GRID
+                    AgendaCalendar.WEEK -> HeaderKind.STRIP
                 },
                 transitionSpec = { motion.fadeSwap().using(SizeTransform(clip = false)) },
                 label = "date-header",
@@ -370,14 +395,6 @@ fun AgendaScreen(
                             },
                         )
                     }
-                    // the seven days from the selected date, pilled as one unit
-                    HeaderKind.PILLED_WEEK -> PilledWeek(
-                        start = selectedDate,
-                        today = today,
-                        hasContent = { dots[it].orEmpty().isNotEmpty() },
-                        onSelect = viewModel::select,
-                        onLongClick = onCaptureForDate,
-                    )
                 }
             }
 
@@ -504,7 +521,7 @@ fun AgendaScreen(
     }
 }
 
-private enum class HeaderKind { NONE, STRIP, PILLED_WEEK, GRID }
+private enum class HeaderKind { NONE, STRIP, GRID }
 
 private fun anytimeKey(row: AgendaRow): String = "any-${row.item.id}"
 
@@ -934,54 +951,6 @@ private fun WeekdayHeader(firstDayOfWeekIso: Int) {
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-    }
-}
-
-/** Week range header: the seven days from [start], drawn as one pill. */
-@Composable
-private fun PilledWeek(
-    start: LocalDate,
-    today: LocalDate,
-    hasContent: (LocalDate) -> Boolean,
-    onSelect: (LocalDate) -> Unit,
-    onLongClick: (LocalDate) -> Unit,
-) {
-    val names = stringArrayResource(Res.array.weekdays_full)
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shape = MaterialTheme.shapes.largeIncreased,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-    ) {
-        Column(Modifier.padding(vertical = 4.dp)) {
-            Row(Modifier.fillMaxWidth()) {
-                repeat(7) { offset ->
-                    val date = start.plus(offset, DateTimeUnit.DAY)
-                    Text(
-                        names[date.dayOfWeek.isoDayNumber - 1].take(1),
-                        modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (date == today) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            Row(Modifier.fillMaxWidth()) {
-                repeat(7) { offset ->
-                    val date = start.plus(offset, DateTimeUnit.DAY)
-                    Box(Modifier.weight(1f)) {
-                        DayCell(
-                            date = date,
-                            inMonth = true,
-                            isSelected = date == today,
-                            isToday = date == today,
-                            hasContent = hasContent(date),
-                            onClick = { onSelect(date) },
-                            onLongClick = { onLongClick(date) },
-                        )
-                    }
-                }
-            }
         }
     }
 }

@@ -38,6 +38,7 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.outlined.TaskAlt
@@ -71,6 +72,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -102,6 +104,8 @@ import com.tina.app.data.Priority
 import com.tina.app.resources.Res
 import com.tina.app.resources.ai_refined
 import com.tina.app.resources.ask_placeholder
+import com.tina.app.resources.capture_idea_body
+import com.tina.app.resources.capture_idea_placeholder
 import com.tina.app.resources.capture_placeholder
 import com.tina.app.resources.capture_recent
 import com.tina.app.resources.capture_start
@@ -117,10 +121,12 @@ import com.tina.app.resources.captured
 import com.tina.app.resources.chip_remove
 import com.tina.app.resources.mode_ask
 import com.tina.app.resources.mode_capture
+import com.tina.app.resources.mode_idea
 import com.tina.app.resources.priority_high
 import com.tina.app.resources.priority_low
 import com.tina.app.resources.priority_medium
 import com.tina.app.resources.undo
+import com.tina.app.ui.ConnectedButtonGroup
 import com.tina.app.ui.dateLabel
 import com.tina.app.ui.durationLabel
 import com.tina.app.ui.recurrenceLabel
@@ -154,6 +160,8 @@ fun CaptureBar(
     focusRequester: FocusRequester,
     /** The shell shows the suggestions sheet while the empty field has focus. */
     onFocusChanged: (Boolean) -> Unit,
+    /** True while a sheet is up: the bar paints the sheet's surface so the two read as one panel. */
+    blendWithSheet: Boolean,
     viewModel: CaptureViewModel,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -221,13 +229,18 @@ fun CaptureBar(
     }
     val micVisible = !askMode && speech.available && settings.voiceCapture
 
-    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(if (blendWithSheet) MaterialTheme.colorScheme.surfaceContainerLow else Color.Transparent)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             shape = MaterialTheme.shapes.extraLarge,
             modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
         ) {
-            Row(Modifier.padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.padding(start = 8.dp, end = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 // the mode switch: a labelled pill that morphs shape between Capture and Ask,
                 // so the current mode is readable at a glance and the switch is an obvious button
                 ToggleButton(
@@ -235,23 +248,43 @@ fun CaptureBar(
                     onCheckedChange = onAskModeChange,
                     enabled = askAvailable,
                     modifier = Modifier.height(40.dp),
+                    // one round shape in every state; the morph read as a glitch this close to the edge
+                    shapes = ToggleButtonDefaults.shapes(
+                        shape = ToggleButtonDefaults.roundShape,
+                        pressedShape = ToggleButtonDefaults.roundShape,
+                        checkedShape = ToggleButtonDefaults.roundShape,
+                    ),
                     colors = ToggleButtonDefaults.tonalToggleButtonColors(),
                     contentPadding = PaddingValues(horizontal = 12.dp),
                 ) {
                     Icon(
-                        if (askMode) Icons.Outlined.AutoAwesome else Icons.Outlined.Edit,
+                        when {
+                            askMode -> Icons.Outlined.AutoAwesome
+                            viewModel.ideaMode -> Icons.Outlined.Lightbulb
+                            else -> Icons.Outlined.Edit
+                        },
                         contentDescription = null,
                         Modifier.size(18.dp),
                     )
                     Text(
-                        stringResource(if (askMode) Res.string.mode_ask else Res.string.mode_capture),
+                        stringResource(
+                            when {
+                                askMode -> Res.string.mode_ask
+                                viewModel.ideaMode -> Res.string.mode_idea
+                                else -> Res.string.mode_capture
+                            },
+                        ),
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.padding(start = 6.dp),
                     )
                 }
 
                 val placeholder = stringResource(
-                    if (askMode) Res.string.ask_placeholder else Res.string.capture_placeholder,
+                    when {
+                        askMode -> Res.string.ask_placeholder
+                        viewModel.ideaMode -> Res.string.capture_idea_placeholder
+                        else -> Res.string.capture_placeholder
+                    },
                 )
                 BasicTextField(
                     value = field,
@@ -417,7 +450,7 @@ fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit) 
                 )
             }
             // parser tokens: the chip appears under the field the moment one is inserted
-            listOf(
+            if (!viewModel.ideaMode) listOf(
                 Res.string.starter_today to "today ",
                 Res.string.starter_tomorrow to "tomorrow ",
                 Res.string.starter_next_week to "next week ",
@@ -431,6 +464,42 @@ fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit) 
             }
         }
     }
+}
+
+/** Plan | Idea, at the top of the capture sheet. Plan parses; Idea makes a note from title + body. */
+@Composable
+fun CaptureModeToggle(viewModel: CaptureViewModel, modifier: Modifier = Modifier) {
+    ConnectedButtonGroup(
+        count = 2,
+        selectedIndex = if (viewModel.ideaMode) 1 else 0,
+        onSelect = { viewModel.switchIdeaMode(it == 1) },
+        modifier = modifier,
+    ) { index, _ ->
+        Icon(if (index == 0) Icons.Outlined.Edit else Icons.Outlined.Lightbulb, null, Modifier.size(18.dp))
+        Text(
+            stringResource(if (index == 0) Res.string.mode_capture else Res.string.mode_idea),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(start = 8.dp),
+        )
+    }
+}
+
+/** Idea mode while typing: the field is the title, this is the body. */
+@Composable
+fun IdeaBody(viewModel: CaptureViewModel, modifier: Modifier = Modifier) {
+    androidx.compose.material3.TextField(
+        value = viewModel.body,
+        onValueChange = viewModel::onBodyChange,
+        modifier = modifier.fillMaxWidth(),
+        placeholder = { Text(stringResource(Res.string.capture_idea_body)) },
+        minLines = 3,
+        maxLines = 8,
+        shape = MaterialTheme.shapes.large,
+        colors = androidx.compose.material3.TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+        ),
+    )
 }
 
 /** Live parse chips: what tina understood, each removable, the type cycling on tap. */

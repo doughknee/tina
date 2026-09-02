@@ -1,5 +1,9 @@
 package com.tina.app
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -61,11 +65,13 @@ fun App() {
             val motion = rememberAppMotion()
             NavDisplay(
                 backStack = backStack,
+                // the slides expose the container beside a page; paint it in the theme, not window white
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
                 onBack = { backStack.removeLastOrNull() },
                 transitionSpec = { motion.push() },
                 popTransitionSpec = { motion.pop() },
-                // nav3 hands us the swipe edge: 1 is the right edge, which mirrors the pop.
-                predictivePopTransitionSpec = { edge -> motion.pop(fromRightEdge = edge == 1) },
+                // one direction for every pop, whichever edge the swipe started on: mirroring read as wrong
+                predictivePopTransitionSpec = { _ -> motion.pop() },
                 entryProvider = entryProvider {
                     entry<ShellRoute> {
                         Shell(

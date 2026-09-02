@@ -26,6 +26,9 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 
+/** The date header above the list. One choice, applied to every range. */
+enum class AgendaCalendar { HIDDEN, WEEK, MONTH }
+
 data class AgendaUiState(
     val today: LocalDate,
     val selected: LocalDate,
@@ -51,6 +54,14 @@ class AgendaViewModel(
     val granularity: StateFlow<Granularity> = settingsRepository.settings
         .map { s -> Granularity.entries.firstOrNull { it.name == s.agendaRange } ?: Granularity.DAY }
         .stateIn(viewModelScope, SharingStarted.Eagerly, Granularity.DAY)
+
+    val calendar: StateFlow<AgendaCalendar> = settingsRepository.settings
+        .map { s -> AgendaCalendar.entries.firstOrNull { it.name == s.agendaCalendar } ?: AgendaCalendar.WEEK }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AgendaCalendar.WEEK)
+
+    fun setCalendar(value: AgendaCalendar) {
+        viewModelScope.launch { settingsRepository.setAgendaCalendar(value.name) }
+    }
 
     /** Per-group "+N more" and per-series inline expansion. Both reset on range change. */
     val expandedGroups = MutableStateFlow<Set<GroupKey>>(emptySet())

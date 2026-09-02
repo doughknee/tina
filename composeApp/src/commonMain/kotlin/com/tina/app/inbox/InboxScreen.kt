@@ -35,7 +35,7 @@ import com.tina.app.resources.Res
 import com.tina.app.resources.date_today
 import com.tina.app.resources.date_tomorrow
 import com.tina.app.resources.deleted
-import com.tina.app.resources.inbox
+import com.tina.app.resources.tab_sort
 import com.tina.app.resources.inbox_captured
 import com.tina.app.resources.inbox_empty
 import com.tina.app.resources.inbox_empty_sub
@@ -85,7 +85,7 @@ fun InboxScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.inbox), style = MaterialTheme.typography.titleLargeEmphasized) },
+                title = { Text(stringResource(Res.string.tab_sort), style = MaterialTheme.typography.titleLargeEmphasized) },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Outlined.Settings, stringResource(Res.string.settings))

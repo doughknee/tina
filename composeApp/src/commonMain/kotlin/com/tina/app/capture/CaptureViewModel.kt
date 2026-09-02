@@ -76,6 +76,12 @@ class CaptureViewModel(
     var typeOverride by mutableStateOf<ItemType?>(null)
         private set
 
+    /** Idea mode: the field is a note's title and [body] its text. Plan mode parses. */
+    var ideaMode by mutableStateOf(false)
+        private set
+    var body by mutableStateOf("")
+        private set
+
     /** Increments on every save; drives the celebration animation. */
     var saveCount by mutableStateOf(0)
         private set
@@ -87,6 +93,14 @@ class CaptureViewModel(
         get() = parseCapture(text, Clock.System.now().toLocalDateTime(tz), settings.value.firstDayOfWeek)
 
     fun effective(): ParsedCapture {
+        if (ideaMode) {
+            return ParsedCapture(
+                title = text.trim(),
+                type = ItemType.NOTE,
+                body = body.trim().ifEmpty { null },
+                tags = parsed.tags,
+            )
+        }
         var p = parsed
         if (ChipKind.DATE in removedKinds) p = p.copy(date = null)
         if (ChipKind.TIME in removedKinds) p = p.copy(time = null)
@@ -97,7 +111,6 @@ class CaptureViewModel(
         // removing the time demotes an event back to the date rules
         if (p.type == ItemType.EVENT && p.time == null && p.rrule == null) p = p.copy(type = ItemType.TASK)
         typeOverride?.let { p = p.copy(type = it) }
-        if (p.type == ItemType.NOTE && p.body == null) p = p.copy(body = text)
         return p
     }
 
@@ -113,6 +126,15 @@ class CaptureViewModel(
     /** Seed the field (e.g. from a calendar long-press) without disturbing other state. */
     fun prefill(value: String) = onTextChange(value)
 
+    fun switchIdeaMode(value: Boolean) {
+        ideaMode = value
+        typeOverride = null
+    }
+
+    fun onBodyChange(value: String) {
+        body = value
+    }
+
     fun removeChip(kind: ChipKind) {
         removedKinds = removedKinds + kind
     }
@@ -125,7 +147,8 @@ class CaptureViewModel(
         typeOverride = when (effective().type) {
             ItemType.INBOX -> ItemType.TASK
             ItemType.TASK -> ItemType.EVENT
-            ItemType.EVENT -> ItemType.NOTE
+            // notes are made in Idea mode, not by cycling
+            ItemType.EVENT -> ItemType.INBOX
             ItemType.NOTE -> ItemType.INBOX
         }
     }
@@ -140,6 +163,7 @@ class CaptureViewModel(
                 refiner.refineInBackground(id, raw) { original, _ -> refinedEvents.tryEmit(original) }
             }
             fieldValue = TextFieldValue()
+            body = ""
             removedKinds = emptySet()
             removedTags = emptySet()
             typeOverride = null
@@ -151,6 +175,7 @@ class CaptureViewModel(
     /** Throw the draft away: text, removed chips, type override. */
     fun discard() {
         fieldValue = TextFieldValue()
+        body = ""
         removedKinds = emptySet()
         removedTags = emptySet()
         typeOverride = null

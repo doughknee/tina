@@ -76,13 +76,15 @@ import com.tina.app.resources.Res
 import com.tina.app.resources.draft_discard
 import com.tina.app.resources.draft_discard_title
 import com.tina.app.resources.draft_keep
-import com.tina.app.resources.inbox
+import com.tina.app.resources.tab_sort
 import com.tina.app.resources.tab_agenda
 import com.tina.app.resources.tab_notes
 import com.tina.app.search.SearchSheet
 import com.tina.app.search.SearchViewModel
 import com.tina.app.ui.capture.CaptureBar
 import com.tina.app.ui.capture.CaptureChips
+import com.tina.app.ui.capture.CaptureModeToggle
+import com.tina.app.ui.capture.IdeaBody
 import com.tina.app.ui.capture.CaptureSuggestions
 import com.tina.app.ui.capture.SaveBurst
 import kotlin.math.roundToInt
@@ -95,7 +97,7 @@ import org.koin.compose.viewmodel.koinViewModel
 // Selected nav item keeps the Filled variant (M3 active-state convention).
 enum class TinaTab(val icon: ImageVector, val outlinedIcon: ImageVector, val label: StringResource) {
     AGENDA(Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, Res.string.tab_agenda),
-    INBOX(Icons.Filled.Inbox, Icons.Outlined.Inbox, Res.string.inbox),
+    INBOX(Icons.Filled.Inbox, Icons.Outlined.Inbox, Res.string.tab_sort),
     NOTES(Icons.AutoMirrored.Filled.Notes, Icons.AutoMirrored.Outlined.Notes, Res.string.tab_notes),
 }
 
@@ -121,6 +123,9 @@ fun Shell(
     var askOpen by remember { mutableStateOf(false) }
     var searchOpen by remember { mutableStateOf(false) }
     var captureFocused by remember { mutableStateOf(false) }
+    // opened when the field takes focus, closed only by scrim / handle / back — putting the
+    // keyboard away leaves it up, so the starters stay in reach
+    var captureSheetOpen by remember { mutableStateOf(false) }
 
     val captureViewModel: CaptureViewModel = koinViewModel()
     val askViewModel: AskViewModel = koinViewModel()
@@ -135,7 +140,7 @@ fun Shell(
     // the capture sheet rises while the field has focus and stays while there is a draft:
     // starters when empty, parse chips while typing, and it survives the keyboard going away
     val hasDraft = captureViewModel.text.isNotBlank()
-    val suggestionsOpen = !askOpen && !searchOpen && (captureFocused || hasDraft)
+    val suggestionsOpen = !askOpen && !searchOpen && (captureSheetOpen || hasDraft)
     var discardPrompt by remember { mutableStateOf(false) }
 
     // closing Ask also drops focus: a focused field in capture mode would raise the capture sheet
@@ -158,13 +163,19 @@ fun Shell(
     // reads the view model at call time: this reference gets memoised across recompositions,
     // so a captured `hasDraft` went stale and drags kept seeing an empty field
     fun dismissCaptureSheet() {
-        if (captureViewModel.text.isNotBlank()) discardPrompt = true else focusManager.clearFocus()
+        if (captureViewModel.text.isNotBlank()) {
+            discardPrompt = true
+        } else {
+            captureSheetOpen = false
+            focusManager.clearFocus()
+        }
     }
 
     fun showTab(tab: TinaTab) {
         selectedName = tab.name
         askOpen = false
         searchOpen = false
+        captureSheetOpen = false
         focusManager.clearFocus()
     }
 
@@ -192,7 +203,7 @@ fun Shell(
     BackHandler(enabled = searchOpen) { closeSearch() }
     BackHandler(enabled = askOpen) { closeAsk() }
     // the keyboard takes the first back itself; the next one, with a draft still up, asks
-    BackHandler(enabled = !askOpen && !searchOpen && hasDraft && !captureFocused) { discardPrompt = true }
+    BackHandler(enabled = !askOpen && !searchOpen && suggestionsOpen && !captureFocused) { dismissCaptureSheet() }
 
     if (discardPrompt) {
         AlertDialog(
@@ -203,6 +214,7 @@ fun Shell(
                 TextButton(onClick = {
                     discardPrompt = false
                     captureViewModel.discard()
+                    captureSheetOpen = false
                     focusManager.clearFocus()
                 }) { Text(stringResource(Res.string.draft_discard)) }
             },
@@ -254,7 +266,11 @@ fun Shell(
                         askBusy = askViewModel.sending,
                         snackbarHostState = snackbarHostState,
                         focusRequester = captureFocus,
-                        onFocusChanged = { captureFocused = it },
+                        onFocusChanged = {
+                            captureFocused = it
+                            if (it) captureSheetOpen = true
+                        },
+                        blendWithSheet = suggestionsOpen || askOpen,
                         viewModel = captureViewModel,
                     )
                 }
@@ -297,15 +313,19 @@ fun Shell(
                     onDismiss = ::dismissCaptureSheet,
                     modifier = Modifier.align(Alignment.BottomCenter),
                 ) {
-                    AnimatedContent(
-                        targetState = captureViewModel.text.isBlank(),
-                        transitionSpec = { motion.fadeSwap() },
-                        label = "capture-sheet",
-                    ) { empty ->
-                        if (empty) {
-                            CaptureSuggestions(captureViewModel, onOpenItem)
-                        } else {
-                            CaptureChips(captureViewModel, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                    Column {
+                        CaptureModeToggle(captureViewModel, Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp))
+                        AnimatedContent(
+                            targetState = captureViewModel.text.isBlank(),
+                            transitionSpec = { motion.fadeSwap() },
+                            label = "capture-sheet",
+                        ) { empty ->
+                            when {
+                                empty -> CaptureSuggestions(captureViewModel, onOpenItem)
+                                captureViewModel.ideaMode ->
+                                    IdeaBody(captureViewModel, Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp))
+                                else -> CaptureChips(captureViewModel, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                            }
                         }
                     }
                 }

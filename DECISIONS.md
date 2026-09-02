@@ -296,3 +296,13 @@ Running log of choices made without asking, newest last.
 - **The nav bar is the app's three verbs**: plan (Agenda), sort (Inbox), write (Notes). Inbox is the one split that isn't redundant with the home — untriaged captures are precisely what the Agenda does not list — and its badge is the natural "you have things to sort" signal for a capture-first app. Material's own guidance is 3–5 destinations; two looked like something was missing.
 - **Capture and Ask are modes, not destinations.** The bar's leading control is a labelled expressive `ToggleButton` pill (✎ Capture / ✦ Ask) that morphs shape on switch, so the current mode reads at a glance and the switch is an obvious button. With no AI provider the pill still names the mode but won't flip.
 - **The capture bar hides while the search sheet is up.** Search has its own field; two stacked fields would fight for the keyboard. Every other sheet keeps the bar.
+
+## Refinement pass before v1.5: Plan · Sort · Ideas
+
+- **Vocabulary.** Pages are named for what you do there: Plan (was Agenda), Sort (was Inbox), Ideas (was Notes). The bar's modes are Plan / Idea / Ask. Enum names and file names keep their old identifiers (`TinaTab.AGENDA`, `InboxScreen`) — only the labels changed.
+- **Capture sheet has its own state.** `captureSheetOpen` is set when the field takes focus and cleared only by scrim, handle, back, tab change or discard. Dismissing the keyboard no longer collapses the sheet; back with the keyboard down closes it (prompting if there is a draft).
+- **Bar blends into the sheet.** The bar paints `surfaceContainerLow` whenever a sheet is up so it reads as the sheet's bottom edge rather than a cutout.
+- **Mode pill keeps one shape.** The Plan/Idea/Ask pill uses `roundShape` for every state; colour alone signals the mode. The morph made it look glued to the edge.
+- **One calendar for every range.** `agendaCalendar` (HIDDEN / WEEK / MONTH) is a persisted setting chosen from the title's dropdown and applied on Day, Week, Month and All alike. The pilled-week header and the per-range special cases are gone.
+- **Idea mode replaces note parsing.** The parser never returns NOTE any more (long prose is a task like any other short text). In Idea mode the field is the title and the sheet shows a body field; parser-token starters are hidden. Type cycling skips NOTE. ponytail: tags are still pulled from the title in Idea mode, nothing else is.
+- **Settings transition.** NavDisplay is painted with the theme background so the pop/push slide never shows the window behind it, and predictive back uses the same pop spec as a completed back.
