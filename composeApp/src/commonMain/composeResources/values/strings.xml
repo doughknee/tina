@@ -159,6 +159,7 @@
     <string name="import_failed">Not a tina backup</string>
 
     <string name="notes_empty">No ideas yet</string>
+    <string name="notes_no_matches">No ideas match “%1$s”</string>
     <string name="ideas_empty_hint">Switch the bar below to Idea and write one. The first line is the title.</string>
     <string name="note_new">New note</string>
     <string name="note_untitled">Untitled</string>

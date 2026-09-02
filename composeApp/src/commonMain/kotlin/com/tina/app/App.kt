@@ -94,6 +94,7 @@ fun App() {
                 com.tina.app.ui.OpenItemRequests.clear()
                 repository.get(id)?.let(::openItem)
             }
+            androidx.compose.runtime.LaunchedEffect(pagesVisible) { com.tina.app.ui.KeyBus.pageOpen = pagesVisible }
             val motion = rememberAppMotion()
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                 // shared-element rows need an animated scope; a still AnimatedContent provides one

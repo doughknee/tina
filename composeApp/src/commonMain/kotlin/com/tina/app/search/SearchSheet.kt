@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.draw.alpha
@@ -124,6 +125,7 @@ fun SearchSheet(viewModel: SearchViewModel, onOpenItem: (Item) -> Unit) {
                     value = query,
                     onValueChange = viewModel::setQuery,
                     modifier = Modifier.weight(1f).padding(horizontal = 12.dp).focusRequester(focus)
+                        .onFocusChanged { com.tina.app.ui.KeyBus.textInputActive = it.isFocused }
                         .semantics { contentDescription = searchLabel },
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),

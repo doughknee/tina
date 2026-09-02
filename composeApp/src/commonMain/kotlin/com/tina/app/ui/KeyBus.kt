@@ -12,6 +12,10 @@ enum class KeyCommand { FOCUS_CAPTURE, NEW_ITEM, SEARCH, UP, DOWN, LEFT, RIGHT, 
  * Android never emits, so this is inert there.
  */
 object KeyBus {
+    /** Set by text fields: bare-key shortcuts (N, arrows, Enter) stay out of typing. */
+    @Volatile var textInputActive: Boolean = false
+    /** Set by the app when a page covers the shell: arrows must not move the agenda underneath. */
+    @Volatile var pageOpen: Boolean = false
     private val _events = MutableSharedFlow<KeyCommand>(extraBufferCapacity = 16)
     val events: SharedFlow<KeyCommand> = _events
     fun emit(command: KeyCommand): Boolean = _events.tryEmit(command)

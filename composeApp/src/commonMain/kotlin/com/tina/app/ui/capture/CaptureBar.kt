@@ -133,6 +133,7 @@ import com.tina.app.resources.priority_low
 import com.tina.app.resources.priority_medium
 import com.tina.app.resources.undo
 import com.tina.app.ui.ConnectedButtonGroup
+import com.tina.app.ui.KeyBus
 import com.tina.app.ui.dateLabel
 import com.tina.app.ui.durationLabel
 import com.tina.app.ui.recurrenceLabel
@@ -278,7 +279,10 @@ fun CaptureBar(
                         pressedShape = ToggleButtonDefaults.roundShape,
                         checkedShape = ToggleButtonDefaults.roundShape,
                     ),
-                    colors = ToggleButtonDefaults.tonalToggleButtonColors(),
+                    colors = ToggleButtonDefaults.tonalToggleButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
                     contentPadding = PaddingValues(horizontal = 12.dp),
                 ) {
                     Icon(
@@ -320,6 +324,7 @@ fun CaptureBar(
                         .semantics { contentDescription = placeholder }
                         .onFocusChanged {
                             focused = it.isFocused
+                            KeyBus.textInputActive = it.isFocused
                             onFocusChanged(it.isFocused)
                         }
                         .onPreviewKeyEvent { event ->
@@ -590,6 +595,8 @@ fun CaptureChips(viewModel: CaptureViewModel, modifier: Modifier = Modifier) {
 /** A soft burst that springs in with a quarter-turn and fades out after every save. */
 @Composable
 fun SaveBurst(trigger: Int, modifier: Modifier = Modifier) {
+    // a 160 dp shape flying across the screen is exactly what reduce-motion asks not to see
+    if (com.tina.app.ui.LocalReduceMotion.current) return
     val scale = remember { Animatable(0f) }
     val alpha = remember { Animatable(0f) }
     // the burst is the one place the bouncy fast spatial spring is exactly right

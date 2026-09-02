@@ -55,6 +55,7 @@ import com.tina.app.resources.note_unpin
 import com.tina.app.resources.note_untitled
 import com.tina.app.resources.ideas_empty_hint
 import com.tina.app.resources.notes_empty
+import com.tina.app.resources.notes_no_matches
 import com.tina.app.resources.search
 import com.tina.app.resources.search_close
 import com.tina.app.resources.settings
@@ -144,11 +145,12 @@ fun NotesScreen(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    stringResource(Res.string.notes_empty),
+                    if (query.isBlank()) stringResource(Res.string.notes_empty) else stringResource(Res.string.notes_no_matches, query),
                     style = MaterialTheme.typography.titleMediumEmphasized,
                     modifier = Modifier.padding(top = 16.dp),
+                    textAlign = TextAlign.Center,
                 )
-                Text(
+                if (query.isBlank()) Text(
                     stringResource(Res.string.ideas_empty_hint),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

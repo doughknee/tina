@@ -741,7 +741,8 @@ private fun rememberSettingsSections(
                 title = stringResource(Res.string.set_pure_black),
                 supporting = stringResource(Res.string.set_pure_black_sub),
                 keywords = listOf("oled", "amoled", "battery"),
-                visible = settings.themeMode == ThemeMode.DARK,
+                visible = settings.themeMode == ThemeMode.DARK ||
+                    (settings.themeMode == ThemeMode.SYSTEM && androidx.compose.foundation.isSystemInDarkTheme()),
                 checked = settings.pureBlack,
                 onCheckedChange = viewModel::setPureBlack,
             ),

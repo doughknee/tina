@@ -67,9 +67,11 @@ fun main() {
             state = rememberWindowState(size = DpSize(1200.dp, 800.dp)),
             onKeyEvent = { event ->
                 if (event.type != KeyEventType.KeyDown) return@Window false
+                val bareKeysAllowed = !KeyBus.textInputActive && !KeyBus.pageOpen
                 when {
                     event.isCtrlPressed && event.key == Key.N -> KeyBus.emit(KeyCommand.FOCUS_CAPTURE)
                     event.isCtrlPressed && event.key == Key.F -> KeyBus.emit(KeyCommand.SEARCH)
+                    !bareKeysAllowed -> false
                     event.key == Key.N -> KeyBus.emit(KeyCommand.NEW_ITEM)
                     event.key == Key.DirectionUp -> KeyBus.emit(KeyCommand.UP)
                     event.key == Key.DirectionDown -> KeyBus.emit(KeyCommand.DOWN)
