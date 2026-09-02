@@ -60,6 +60,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -193,7 +194,11 @@ fun CaptureBar(
     // Android: the keyboard going away is the user saying "done" — drop focus so the
     // suggestions panel folds instead of squatting on half the screen. Desktop has no IME.
     // isImeVisible is Android-only; the inset height is the common-code equivalent
-    val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    // derived: reading the inset directly recomposed the whole bar on every frame of the
+    // keyboard animation; only the flip between shown and hidden matters here
+    val ime = WindowInsets.ime
+    val density = LocalDensity.current
+    val imeVisible by remember(ime, density) { derivedStateOf { ime.getBottom(density) > 0 } }
     LaunchedEffect(imeVisible) {
         if (com.tina.app.ui.settings.Platform.isAndroid && !imeVisible && focused) focusManager.clearFocus()
     }
@@ -232,6 +237,8 @@ fun CaptureBar(
     Column(
         Modifier
             .fillMaxWidth()
+            // own layer: the bar rides the keyboard every frame; record it once, move the layer
+            .graphicsLayer()
             .background(if (blendWithSheet) MaterialTheme.colorScheme.surfaceContainerLow else Color.Transparent)
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
