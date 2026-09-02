@@ -81,6 +81,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -305,6 +306,7 @@ fun SettingsScreen(
 
     var query by remember { mutableStateOf("") }
     var highlightedRowId by remember { mutableStateOf(highlightRowId) }
+    val focusManager = LocalFocusManager.current
 
     val clearedText = stringResource(Res.string.set_cleared_completed)
     val undoText = stringResource(Res.string.undo)
@@ -403,6 +405,8 @@ fun SettingsScreen(
                     sections = sections,
                     query = query,
                     onResult = { section, row ->
+                        // the keyboard would otherwise ride along to the section page
+                        focusManager.clearFocus()
                         query = ""
                         onOpenSection(section.id, row.id)
                     },
@@ -416,7 +420,7 @@ fun SettingsScreen(
     // clear the highlight after it has been seen
     LaunchedEffect(highlightedRowId) {
         if (highlightedRowId != null) {
-            kotlinx.coroutines.delay(600)
+            kotlinx.coroutines.delay(1500)
             highlightedRowId = null
         }
     }
