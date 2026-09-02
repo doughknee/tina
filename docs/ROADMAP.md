@@ -123,6 +123,36 @@ Natural-language time zones in capture ("3pm Berlin"), attachments on notes, cal
 
 Solo developer, part-time evenings: roughly four months. Full-time: about eight weeks.
 
-## Done in the overnight pass of 2026-09-02
+## Status after the overnight pass of 2026-09-02
 
-Items from this roadmap that were implemented and verified on the emulator the same night are marked in `CHANGELOG.md` under "Unreleased" and in the commit log. See the end of `PLAY-LAUNCH.md` for the remaining manual steps that only the account owner can do.
+Everything below is on `main`, built as an R8 release APK, and checked on the emulator (`docs/audits/*.md` has the findings that drove it; `CHANGELOG.md` has the user-facing list).
+
+**v1.7 Trust: done**
+- Data safety: migration guard + JVM migration test; backup v2 (uuid, trash, occurrences, chats, settings offered, one transaction, version check); atomic weekly auto-backup; backup rules; WAL checkpoint; API key in Keystore; `updatedAt` bumps; occurrence rows follow their item.
+- Reminders: recurring tasks re-arm; `USE_EXACT_ALARM` + `setAlarmClock` fallback; re-arm on update/reboot/timezone/permission change; tap opens the item; Done ticks the day's occurrence and refreshes the widget; grouped with a summary; notification icon; `BigTextStyle`; digests fixed; alarms cancelled on purge.
+- Play blockers: adaptive + monochrome icon, splash, night window background, RTL flag, R8 (69 → 12 MB), signing from env/properties, CI + tag workflow, cleartext limited to private hosts, share clamp, version from Gradle.
+- Ask hardening: DATABASE block delimited as data, batch cap (10), confirmation card for deletions or >3 changes, send guard, safe reschedule, ordered undo.
+
+**v1.7: not done**
+- All-day events as epoch-day pairs (needs a migration and a day of testing on real time-zone moves).
+- Quiet hours; inbox reminder on its own time; desktop reminder note.
+- Auto-backup "last success" line and SAF folder choice.
+- Share sheet's "ask once before the first AI refine".
+
+**v1.8 Polish: done**
+- A11y: day cells, rows, swipe actions, headings, labelled fields.
+- Layout: sheets and bar capped at 640 dp; adaptive Ideas grid.
+- States: agenda loading indicator; Ideas "no matches"; search Recent list; differentiated Ask errors; API 31/32 banner logic; swatch check contrast.
+- Undo after page deletes; the four dormant settings rows enabled; reduce-motion honoured by the save burst; desktop keys stay out of text fields.
+
+**v1.8: not done**
+- Brand palette when dynamic colour is off; list-detail layouts on expanded windows; onboarding cards; what's-new sheet on upgrade; notes grid/list toggle; live regions; dead strings and plurals; desktop window persistence and tray icon; Accessibility Scanner run (needs a device).
+
+**v1.9 Pro: groundwork done**
+- `ProStore` with Play Billing 8, cached entitlement, acknowledge, restore, pending state, maintainer override; Settings → tina Pro paywall page; `rememberIsPro()` for the gates. Products are not created in Play Console yet, so the page says "not on sale yet" on any device today.
+
+**v1.9: not done**
+- The relay, hosted AI, the Pro features themselves and their gates, streaming, context caching, sync groundwork beyond `uuid`.
+
+**v2.0: not done**
+- Screenshot tests, detekt, baseline profile, crash visibility, listing screenshots, closed testing, rollout. The Play Console and policy steps that only the account owner can do are listed in `PLAY-LAUNCH.md` §8.

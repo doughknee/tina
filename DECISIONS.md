@@ -379,4 +379,4 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - Nothing is gated. `rememberIsPro()` is there for the v1.9 features; gating existing free features would break the "capture stays free forever" promise in MONETIZATION.md.
 - A one-row settings section opens its row from the hub. tina Pro was the first such section and the middle page was a wasted tap.
 - Large screens: sheets and the bar cap at 640 dp; lists stay full width. A max width on the agenda would have to move the swipe-to-navigate hit area too, so it waits for a real tablet test.
-
+- Ask errors are typed (`AiException(kind)`) at the HTTP layer and turned into one sentence each on the Ask page. Capture parsing stays silent on failure by design: a failed refine falls back to the local parser and the user never waits on it.
