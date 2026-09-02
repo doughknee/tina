@@ -395,3 +395,8 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - `ForegroundActivity` replaces the per-class activity tracking that billing had; review needs the same thing.
 - Once the phone runs the Play build it is signed by Google's key; sideloading upload-key APKs over it fails. Phone updates now go through internal testing, which is what the versionCode bump is for.
 
+### The Peggy icon (v1.7.2)
+
+- A pin with the check inside. The pushpin candidate read as a syringe or a capital H at launcher size; the pin keeps "peg it down" and carries the check the app already used, so the notification icon and the feature graphic stay coherent.
+- One geometry, defined in `docs/assets/icon.py`, drives the adaptive foreground, the monochrome layer (outline, since one colour cannot show a check on a filled pin), the Play icon, the feature graphic and the site SVG.
+

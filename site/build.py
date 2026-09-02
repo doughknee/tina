@@ -35,8 +35,8 @@ footer a { color: inherit; }
 PLAY_URL = "https://play.google.com/store/apps/details?id=com.peggy.app"
 ICON_SVG = (
     '<svg width="44" height="44" viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg">'
-    '<path d="M30 56 L47 72 L80 38" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>'
-    '<path d="M30 86 H80" stroke="#fff" stroke-opacity="0.7" stroke-width="8" stroke-linecap="round"/></svg>'
+    '<path d="M35.6,56.1 A22,22 0 1,1 72.4,56.1 L54,84 Z" fill="#fff"/>'
+    '<path d="M42,45 L50,53 L66,37" stroke="#4f5fd6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 )
 
 

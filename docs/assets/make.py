@@ -17,19 +17,25 @@ def font(size, bold=True):
     return ImageFont.load_default()
 
 
-def check_mark(draw, x, y, scale, colour=WHITE, line=MUTED):
-    """The launcher glyph: a check with a baseline under it."""
-    w = int(28 * scale)
-    draw.line([(x, y + 60 * scale), (x + 55 * scale, y + 115 * scale), (x + 165 * scale, y)], fill=colour, width=w, joint="curve")
-    for px, py in [(x, y + 60 * scale), (x + 55 * scale, y + 115 * scale), (x + 165 * scale, y)]:
-        draw.ellipse([px - w / 2, py - w / 2, px + w / 2, py + w / 2], fill=colour)
-    draw.rounded_rectangle([x + 10 * scale, y + 150 * scale, x + 155 * scale, y + 172 * scale], radius=int(11 * scale), fill=line)
+def pin_glyph(draw, x, y, scale, colour=WHITE, ink=BRAND):
+    """The launcher glyph: a pin with the check inside, in the 108-unit icon space at (x, y)."""
+    import math
+    r, cx, cy, tip = 22 * scale, x + 54 * scale, y + 44 * scale, y + 84 * scale
+    a = math.acos(r / (tip - cy))
+    px, py = r * math.sin(a), r * math.cos(a)
+    draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=colour)
+    draw.polygon([(cx - px, cy + py), (cx + px, cy + py), (cx, tip)], fill=colour)
+    pts = [(x + 42 * scale, y + 45 * scale), (x + 50 * scale, y + 53 * scale), (x + 66 * scale, y + 37 * scale)]
+    w = 8 * scale
+    draw.line(pts, fill=ink, width=int(w), joint="curve")
+    for qx, qy in pts:
+        draw.ellipse([qx - w / 2, qy - w / 2, qx + w / 2, qy + w / 2], fill=ink)
 
 
 def feature_graphic():
     im = Image.new("RGB", (1024, 500), BRAND)
     d = ImageDraw.Draw(im)
-    check_mark(d, 108, 200, 1.0)
+    pin_glyph(d, 10, 60, 3.5)
     d.text((362, 150), "Peggy", font=font(96), fill=WHITE)
     d.text((362, 282), "Capture in two seconds.", font=font(40), fill=WHITE)
     d.text((362, 334), "Plan, sort, remember. All on your device.", font=font(30), fill=MUTED)
@@ -39,7 +45,7 @@ def feature_graphic():
 def play_icon():
     im = Image.new("RGB", (512, 512), BRAND)
     d = ImageDraw.Draw(im)
-    check_mark(d, 140, 170, 1.4)
+    pin_glyph(d, 0, 0, 512 / 108)
     im.save(HERE / "play-icon-512.png")
 
 
