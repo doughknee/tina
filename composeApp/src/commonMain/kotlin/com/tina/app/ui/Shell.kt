@@ -1,6 +1,7 @@
 package com.tina.app.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
@@ -361,6 +362,8 @@ fun Shell(
                     visible = suggestionsOpen,
                     onDismiss = ::dismissCaptureSheet,
                     modifier = Modifier.align(Alignment.BottomCenter),
+                    // it rose on its own and then rose again with the keyboard: two motions for one tap
+                    enter = motion.fadeEnter(),
                 ) {
                     Column {
                         AnimatedContent(
@@ -422,6 +425,8 @@ private fun ShellSheet(
     visible: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Slide by default; the capture sheet fades, because the keyboard is already lifting it. */
+    enter: EnterTransition? = null,
     content: @Composable () -> Unit,
 ) {
     val dismissDistance = with(LocalDensity.current) { 80.dp.toPx() }
@@ -454,7 +459,7 @@ private fun ShellSheet(
         AnimatedVisibility(
             visible = visible,
             modifier = modifier,
-            enter = motion.sheetEnter(),
+            enter = enter ?: motion.sheetEnter(),
             exit = motion.sheetExit(),
         ) {
             Surface(
