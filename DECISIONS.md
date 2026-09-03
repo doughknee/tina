@@ -426,3 +426,9 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - Time ranges are one clock plus a length, so "2-4pm" never trips the two-times ambiguity rule. A bare start ("10-6pm") flips to am when pm would put it after the end.
 - Frequency words ("daily", "weekly") only count when they end the phrase or are followed by a day; "the daily show" and "weekly report draft" stay titles.
 
+### Widget pass (v1.8.0)
+
+- Checked on the emulator's Pixel launcher in light and dark: the capture pill and the Today card render correctly, the pill and the quick-settings tile land in the bar with the field focused, and a Today row now deep-links to its item.
+- The Today widget only refreshed when the app went to the background or a reminder fired, so the next morning it still showed yesterday until the app was opened. `updatePeriodMillis` of 30 minutes is the floor Android allows and is enough for the date to roll.
+- Picker previews are PNG crops of the rendered widgets (`drawable-nodpi`). Glance cannot supply a preview layout, and an app icon in the picker undersells a widget.
+

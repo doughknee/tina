@@ -135,6 +135,28 @@ private fun WidgetBody(context: Context, entries: List<WidgetEntry>) {
                 Text(
                     open.toString(),
                     style = TextStyle(color = GlanceTheme.colors.primary, fontSize = 14.sp),
+                    modifier = GlanceModifier.padding(end = 8.dp),
+                )
+            }
+            // capture from the widget too: the pill widget is not the only way in
+            Box(
+                modifier = GlanceModifier
+                    .size(28.dp)
+                    .background(GlanceTheme.colors.primary)
+                    .cornerRadius(14.dp)
+                    .clickable(
+                        androidx.glance.appwidget.action.actionStartActivity(
+                            android.content.Intent(context, MainActivity::class.java)
+                                .putExtra(MainActivity.EXTRA_FOCUS_CAPTURE, true),
+                        ),
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                androidx.glance.Image(
+                    provider = androidx.glance.ImageProvider(R.drawable.ic_capture),
+                    contentDescription = context.getString(R.string.widget_hint),
+                    modifier = GlanceModifier.size(16.dp),
+                    colorFilter = androidx.glance.ColorFilter.tint(GlanceTheme.colors.onPrimary),
                 )
             }
         }
@@ -176,7 +198,14 @@ private fun WidgetBody(context: Context, entries: List<WidgetEntry>) {
                             ) {}
                             Spacer(GlanceModifier.width(11.dp))
                         }
-                        Column(modifier = GlanceModifier.defaultWeight().clickable(actionStartActivity<MainActivity>())) {
+                        Column(
+                            modifier = GlanceModifier.defaultWeight().clickable(
+                                androidx.glance.appwidget.action.actionStartActivity(
+                                    android.content.Intent(context, MainActivity::class.java)
+                                        .putExtra(MainActivity.EXTRA_OPEN_ITEM, entry.id),
+                                ),
+                            ),
+                        ) {
                             Text(
                                 entry.title,
                                 style = TextStyle(color = GlanceTheme.colors.onSurface, fontSize = 14.sp),

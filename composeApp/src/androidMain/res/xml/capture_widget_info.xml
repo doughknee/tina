@@ -6,4 +6,5 @@
     android:resizeMode="horizontal"
     android:widgetCategory="home_screen"
     android:description="@string/widget_description"
+    android:previewImage="@drawable/widget_capture_preview"
     android:initialLayout="@layout/glance_default_loading_layout" />
