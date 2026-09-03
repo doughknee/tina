@@ -96,10 +96,13 @@ class CaptureViewModel(
 
     fun effective(): ParsedCapture {
         if (ideaMode) {
+            // everything in the title renders as a wall of bold; a long thought splits into title + body
+            val (title, split) = com.tina.app.notes.splitIdea(text)
+            val extra = body.trim().ifEmpty { null }
             return ParsedCapture(
-                title = text.trim(),
+                title = if (extra == null) title else text.trim(),
                 type = ItemType.NOTE,
-                body = body.trim().ifEmpty { null },
+                body = extra ?: split,
                 tags = parsed.tags,
             )
         }

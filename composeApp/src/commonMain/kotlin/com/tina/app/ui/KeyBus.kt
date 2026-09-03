@@ -1,5 +1,7 @@
 package com.tina.app.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -14,8 +16,9 @@ enum class KeyCommand { FOCUS_CAPTURE, NEW_ITEM, SEARCH, UP, DOWN, LEFT, RIGHT, 
 object KeyBus {
     /** Set by text fields: bare-key shortcuts (N, arrows, Enter) stay out of typing. */
     @Volatile var textInputActive: Boolean = false
-    /** Set by the app when a page covers the shell: arrows must not move the agenda underneath. */
-    @Volatile var pageOpen: Boolean = false
+    /** Set by the app when a page covers the shell: arrows must not move the agenda underneath.
+     *  Observable so a page's BackHandler can yield to the pushed page above the shell. */
+    var pageOpen: Boolean by androidx.compose.runtime.mutableStateOf(false)
     private val _events = MutableSharedFlow<KeyCommand>(extraBufferCapacity = 16)
     val events: SharedFlow<KeyCommand> = _events
     fun emit(command: KeyCommand): Boolean = _events.tryEmit(command)
@@ -58,8 +61,12 @@ object CaptureFocus {
     /** True when the request came from an Idea entry point (tile, shortcut): the bar opens in Idea mode. */
     var idea: Boolean = false
         private set
-    fun request(idea: Boolean = false) {
+    /** Text to seed the field with, e.g. "#kitchen " when capturing from inside a tag. */
+    var prefill: String? = null
+        private set
+    fun request(idea: Boolean = false, prefill: String? = null) {
         this.idea = idea
+        this.prefill = prefill
         _pending.value = true
     }
     fun clear() { _pending.value = false }

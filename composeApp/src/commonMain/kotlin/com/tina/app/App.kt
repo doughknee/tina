@@ -112,6 +112,7 @@ fun App() {
                             onOpenSettings = { push(SettingsRoute) },
                             onOpenItem = ::openItem,
                             onOpenNote = { id -> push(NoteRoute(id)) },
+                            onOpenTag = { tag -> push(TagRoute(tag)) },
                         )
                     }
                 }
@@ -170,13 +171,23 @@ fun App() {
                                 EventEditorScreen(itemId = route.id, onBack = ::popLast)
                             }
                             entry<NoteRoute> { route ->
-                                NoteEditorScreen(noteId = route.id, onBack = ::popLast)
+                                NoteEditorScreen(
+                                    noteId = route.id,
+                                    onBack = ::popLast,
+                                    onOpenNote = { id -> push(NoteRoute(id)) },
+                                    onOpenTag = { tag -> push(TagRoute(tag)) },
+                                )
                             }
                             entry<TagRoute> { route ->
                                 com.tina.app.search.TagScreen(
                                     tag = route.tag,
                                     onBack = ::popLast,
                                     onOpenItem = ::openItem,
+                                    onCapture = { prefill ->
+                                        // back to the shell, bar focused with the tag already typed
+                                        pagesVisible = false
+                                        com.tina.app.ui.CaptureFocus.request(prefill = prefill)
+                                    },
                                 )
                             }
                         },

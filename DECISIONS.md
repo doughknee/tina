@@ -437,3 +437,13 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - Every destructive action was walked: deletes on every page, Sort answers, occurrence skips and series ends, duplicate merges, tag deletes, clear completed, trash purge, Ask's write actions. All had undo. Empty trash had only hold-to-confirm; it now keeps the rows in memory for the undo window and re-inserts them. Delete everything stays hold-only: it is the one action meant to be final, and a backup is the undo.
 - Habit history (occurrence rows) is not restored by trash undo; the items are. Acceptable for the window involved.
 
+### Ideas redesign (v1.8.0)
+
+- Built from the Claude Design file `Tina Ideas Redesign.dc.html` (turns 5 and 6). The card shape (titled / scrap / list) is decided in `previewOf`, not the composable, so the grid, the list layout, search rows and the tag page all agree. Capture puts everything in `title`; `splitIdea` splits a long one-liner at the first line or sentence so old and new notes both render right.
+- No project entity. A project is a tag that has a pinned note carrying it (`TagUi.overview`): pinning promotes, unpinning demotes, nothing to create or archive. The rail chip's underline is the only new visual concept.
+- Selection state lives in the ViewModel and the tap handlers read it at tap time. Function references to local funs were being memoised with the `selectionMode` they were created with, so a tap in selection mode opened the note. `KeyBus.pageOpen` became observable so the grid's BackHandler yields to a page pushed above the shell.
+- The tag rail chip is drawn by hand: stock `FilterChip` owns its click and a long press on top of it never fired.
+- Skipped: manual drag-reorder (the staggered grid has no stock reorder), checklists with real checkbox state (`richeditor-compose` 1.2.0 has no task-list model; list cards show bullets), share / copy-as-Markdown, AI tag suggestions. Add when the editor grows a checklist model or someone asks.
+- `NoteEditorViewModel.edit` skips unchanged writes: opening a note re-emits its body and every open was bumping `updatedAt`, which reshuffled "Last edited".
+- `htmlPreview` only turns block tags into spaces; inline tags vanish, so "<b>ginger</b>." no longer reads "ginger .".
+

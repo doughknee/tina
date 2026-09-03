@@ -118,6 +118,7 @@ fun Shell(
     onOpenSettings: () -> Unit,
     onOpenItem: (Item) -> Unit,
     onOpenNote: (Long) -> Unit,
+    onOpenTag: (String) -> Unit,
 ) {
     val settings = LocalSettings.current
     val askAvailable = settings.aiAskEnabled && settings.aiProvider != AiProvider.OFF
@@ -218,6 +219,7 @@ fun Shell(
         askOpen = false
         askSheetOpen = false
         captureViewModel.switchIdeaMode(CaptureFocus.idea)
+        CaptureFocus.prefill?.let(captureViewModel::prefill)
         searchOpen = false
         captureFocus.requestFocus()
         CaptureFocus.clear()
@@ -348,6 +350,7 @@ fun Shell(
                         TinaTab.NOTES -> NotesScreen(
                             onOpenSettings = onOpenSettings,
                             onOpenNote = onOpenNote,
+                            onOpenTag = onOpenTag,
                             viewModel = notesViewModel,
                         )
                     }

@@ -52,6 +52,9 @@ data class Settings(
     val agendaRange: String = "DAY",
     /** Agenda calendar header (an [com.tina.app.agenda.AgendaCalendar] name): the same on every range. */
     val agendaCalendar: String = "WEEK",
+    /** Ideas grid: NotesSort / NotesLayout names. */
+    val notesSort: String = "EDITED",
+    val notesLayout: String = "GRID",
     val haptics: Boolean = true,
     val reduceMotion: ReduceMotionMode = ReduceMotionMode.SYSTEM,
     // Appearance
@@ -116,6 +119,8 @@ private val KEY_AI_WIFI_ONLY = booleanPreferencesKey("aiWifiOnly")
 private val KEY_OPEN_APP_TO = stringPreferencesKey("openAppTo")
 private val KEY_AGENDA_RANGE = stringPreferencesKey("agendaRange")
 private val KEY_AGENDA_CALENDAR = stringPreferencesKey("agendaCalendar")
+private val KEY_NOTES_SORT = stringPreferencesKey("notesSort")
+private val KEY_NOTES_LAYOUT = stringPreferencesKey("notesLayout")
 private val KEY_HAPTICS = booleanPreferencesKey("haptics")
 private val KEY_REDUCE_MOTION = stringPreferencesKey("reduceMotion")
 private val KEY_CONTRAST = stringPreferencesKey("contrast")
@@ -177,6 +182,8 @@ class SettingsRepository(
             aiAskWriteEnabled = p[KEY_AI_ASK_WRITE] ?: false,
             aiWifiOnly = p[KEY_AI_WIFI_ONLY] ?: false,
             agendaRange = p[KEY_AGENDA_RANGE] ?: "DAY",
+            notesSort = p[KEY_NOTES_SORT] ?: "EDITED",
+            notesLayout = p[KEY_NOTES_LAYOUT] ?: "GRID",
             agendaCalendar = p[KEY_AGENDA_CALENDAR] ?: "WEEK",
             openAppTo = p[KEY_OPEN_APP_TO]?.let { v -> OpenAppTo.entries.firstOrNull { it.name == v } }
                 ?: OpenAppTo.CAPTURE,
@@ -244,6 +251,8 @@ class SettingsRepository(
     suspend fun setOpenAppTo(value: OpenAppTo) = store.edit { it[KEY_OPEN_APP_TO] = value.name }
     suspend fun setAgendaRange(value: String) = store.edit { it[KEY_AGENDA_RANGE] = value }
     suspend fun setAgendaCalendar(value: String) = store.edit { it[KEY_AGENDA_CALENDAR] = value }
+    suspend fun setNotesSort(value: String) = store.edit { it[KEY_NOTES_SORT] = value }
+    suspend fun setNotesLayout(value: String) = store.edit { it[KEY_NOTES_LAYOUT] = value }
     suspend fun setHaptics(enabled: Boolean) = store.edit { it[KEY_HAPTICS] = enabled }
     suspend fun setReduceMotion(mode: ReduceMotionMode) = store.edit { it[KEY_REDUCE_MOTION] = mode.name }
     suspend fun setContrast(mode: ContrastMode) = store.edit { it[KEY_CONTRAST] = mode.name }

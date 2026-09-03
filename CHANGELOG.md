@@ -4,6 +4,20 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 
 ## v1.8.0 (dev)
 
+### Ideas, redesigned
+- Cards render by what they hold: a titled note, a bare thought with no bold headline, or a list with its first four items and "+2 items". The pin only shows on pinned notes.
+- Pinned notes get their own section; the rest sit under "Everything else". Two columns on phones, adaptive on desktop.
+- A tag rail under the title filters the grid. Hold a chip to open the tag. A tag with a pinned note is a project and gets an underline.
+- Long-press a card to select; pin, colour, tag or delete several at once with one undo.
+- Sort by last edited, created or title, and pick Grid, List or Large. Both stick.
+- Search shows rows with the matching words highlighted and a count.
+- The editor reads like paper: a wrapping title, "Edited 4 minutes ago · 38 words", room around the text, tags at the end, and a format bar that only appears while you type. Type "- ", "1. " or "# " at the start of a line for a bullet, a number or a heading. The menu duplicates a note or turns it into a task.
+- A long one-line idea splits into a title and body at capture, so it reads as a note instead of a headline.
+
+### A tag is the project
+- Open any tag to see its overview note, open tasks, upcoming events and ideas together. Pin a note carrying the tag and it becomes the overview; unpin it and the tag is just a filter again.
+- The bar at the bottom of a tag page captures straight into that tag.
+
 ### Small things
 - Emptying the trash can be undone for a few seconds, like everything else.
 - The week view says "4 more repeats" instead of "4 occurrences hidden".
