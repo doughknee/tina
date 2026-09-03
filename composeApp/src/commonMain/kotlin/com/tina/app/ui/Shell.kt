@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBarsIgnoringVisibility
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -522,10 +523,13 @@ private class KeyboardShift(private val ime: WindowInsets, private val bars: Win
     fun value(): Int = (ime.getBottom(density) - bars.getBottom(density)).coerceAtLeast(0)
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun rememberKeyboardShift(): KeyboardShift {
     val ime = WindowInsets.ime
-    val bars = WindowInsets.navigationBars
+    // the stable inset: during a keyboard animation the visible nav-bar inset sometimes reads 0,
+    // so the shell overshot by the bar's height and snapped back on the last frame
+    val bars = WindowInsets.navigationBarsIgnoringVisibility
     val density = LocalDensity.current
     return remember(ime, bars, density) { KeyboardShift(ime, bars, density) }
 }
