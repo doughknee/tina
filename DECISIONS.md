@@ -432,3 +432,8 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - The Today widget only refreshed when the app went to the background or a reminder fired, so the next morning it still showed yesterday until the app was opened. `updatePeriodMillis` of 30 minutes is the floor Android allows and is enough for the date to roll.
 - Picker previews are PNG crops of the rendered widgets (`drawable-nodpi`). Glance cannot supply a preview layout, and an app icon in the picker undersells a widget.
 
+### Undo audit (v1.8.0)
+
+- Every destructive action was walked: deletes on every page, Sort answers, occurrence skips and series ends, duplicate merges, tag deletes, clear completed, trash purge, Ask's write actions. All had undo. Empty trash had only hold-to-confirm; it now keeps the rows in memory for the undo window and re-inserts them. Delete everything stays hold-only: it is the one action meant to be final, and a backup is the undo.
+- Habit history (occurrence rows) is not restored by trash undo; the items are. Acceptable for the window involved.
+

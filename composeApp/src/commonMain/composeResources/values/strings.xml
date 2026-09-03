@@ -25,7 +25,7 @@
     <string name="range_all">All</string>
     <string name="agenda_everything">Everything</string>
     <string name="section_repeating_week">Repeating this week</string>
-    <string name="series_hidden">%1$d occurrences hidden</string>
+    <string name="series_hidden">%1$d more repeats</string>
     <string name="series_done_of">%1$d of %2$d done</string>
     <string name="series_count_week">%1$d this week</string>
     <string name="series_count_month">%1$d this month</string>
@@ -383,6 +383,7 @@
     <string name="trash_restored">Restored</string>
     <string name="trash_purged">Removed for good</string>
     <string name="trash_empty_all">Empty trash</string>
+    <string name="trash_emptied">Trash emptied</string>
     <string name="trash_deleted_ago">deleted %1$s</string>
     <string name="trash_days_left">%1$d left</string>
     <string name="trash_swipe_hint">Swipe an item to purge it now</string>

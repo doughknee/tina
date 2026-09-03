@@ -4,6 +4,10 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 
 ## v1.8.0 (dev)
 
+### Small things
+- Emptying the trash can be undone for a few seconds, like everything else.
+- The week view says "4 more repeats" instead of "4 occurrences hidden".
+
 ### Widgets
 - The Today widget has a capture button, tapping a row opens that item, and it refreshes itself every half hour so it rolls over at midnight without opening the app.
 - Both widgets show a real preview in the widget picker instead of the app icon.

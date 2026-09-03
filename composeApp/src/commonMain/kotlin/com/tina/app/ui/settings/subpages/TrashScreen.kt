@@ -67,6 +67,7 @@ import com.tina.app.resources.trash_days_left
 import com.tina.app.resources.trash_deleted_ago
 import com.tina.app.resources.trash_empty
 import com.tina.app.resources.trash_empty_all
+import com.tina.app.resources.trash_emptied
 import com.tina.app.resources.trash_forever
 import com.tina.app.resources.trash_keep_for
 import com.tina.app.resources.trash_purged
@@ -96,6 +97,7 @@ class TrashViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), com.tina.app.data.Settings())
 
     private var lastPurged: Item? = null
+    private var lastEmptied: List<Item> = emptyList()
 
     fun restore(item: Item) {
         viewModelScope.launch { repository.restore(item) }
@@ -112,8 +114,16 @@ class TrashViewModel(
         viewModelScope.launch { repository.restore(item) }
     }
 
+    /** The rows are kept in memory for the undo window and re-inserted if asked. */
     fun emptyTrash() {
+        lastEmptied = items.value
         viewModelScope.launch { repository.emptyTrash() }
+    }
+
+    fun undoEmptyTrash() {
+        val rows = lastEmptied
+        lastEmptied = emptyList()
+        viewModelScope.launch { rows.forEach { repository.restore(it) } }
     }
 
     fun setRetention(value: TrashRetention) {
@@ -140,6 +150,7 @@ fun TrashScreen(onBack: () -> Unit, viewModel: TrashViewModel = koinViewModel())
     )
     val retentionIndex = RETENTIONS.indexOf(settings.trashRetention).coerceAtLeast(0)
     val purgedText = stringResource(Res.string.trash_purged)
+    val emptiedText = stringResource(Res.string.trash_emptied)
     val restoredText = stringResource(Res.string.trash_restored)
     val undoText = stringResource(Res.string.undo)
 
@@ -223,10 +234,15 @@ fun TrashScreen(onBack: () -> Unit, viewModel: TrashViewModel = koinViewModel())
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(start = 12.dp, bottom = 12.dp),
                     )
-                    // emptying is destructive and unrecoverable, so it holds rather than asks
+                    // a hold instead of a dialog, and undo on top: the rows come back if you change your mind
                     HoldToConfirm(
                         label = stringResource(Res.string.trash_empty_all),
-                        onConfirm = viewModel::emptyTrash,
+                        onConfirm = {
+                            viewModel.emptyTrash()
+                            scope.launch {
+                                if (snackbarHostState.showUndo(emptiedText, undoText, undoWindow)) viewModel.undoEmptyTrash()
+                            }
+                        },
                     )
                 }
             }
