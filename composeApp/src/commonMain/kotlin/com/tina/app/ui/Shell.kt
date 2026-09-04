@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -261,11 +261,12 @@ fun Shell(
     }
 
     NavigationSuiteScaffold(
-        // the whole shell (bar and nav included) is padded for the keyboard by the platform's
-        // own inset animation; imePadding consumes the inset, so the nav bar inside pads nothing
-        // extra. A hand-rolled lift (offset by ime minus nav-bar inset) was faster on paper but
-        // drifted from the keyboard on device; see DECISIONS "The keyboard lifts the shell".
-        modifier = Modifier.imePadding(),
+        // the whole shell (bar and nav included) is padded for the keyboard, and it jumps to the
+        // keyboard's final height the moment the keyboard starts showing rather than easing there:
+        // on the Pixel the keyboard window pops in fully drawn ~60 ms after the tap and shrinks
+        // away on hide, ignoring the 300 ms inset ease, so anything that eases climbs out from
+        // under it. imeAnimationTarget is the end value from the first frame of the animation.
+        modifier = Modifier.windowInsetsPadding(keyboardTarget()),
         navigationSuiteItems = {
             TinaTab.entries.forEach { tab ->
                 val selected = selectedTab == tab && !askVisible && !searchOpen
