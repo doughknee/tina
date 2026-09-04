@@ -97,10 +97,11 @@ header.stuck{border-bottom-color:var(--line)}
    height from the manifest, so the ratio comes per image and a shot from a
    differently-shaped device renders correctly instead of being squashed. */
 .phone img{border-radius:32px;background:var(--panel)}
-.shot{display:flex;flex-direction:column;align-items:center;gap:14px}
+.shot{display:flex;flex-direction:column;align-items:center;gap:14px;margin:0}
 .shot figcaption{font-size:.9rem;color:var(--muted);text-align:center;max-width:30ch}
 .pair{display:flex;gap:clamp(14px,3vw,28px);justify-content:center;flex-wrap:wrap}
 .pair .phone{width:min(228px,58vw)}
+.pair .shot{max-width:min(228px,58vw)}
 
 /* claims strip */
 .claims{border-block:1px solid var(--line);background:var(--panel)}
@@ -266,7 +267,7 @@ footer a:hover{color:var(--ink);text-decoration:underline}
       <ul class="points"><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Habits stay one row.</strong> A daily task shows as a single line with the week's progress, not seven copies.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Reminders that ring.</strong> On the exact minute, after a reboot, and after you land in another time zone.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>A month at a glance.</strong> Dots mark the days with something on them.</span></li></ul>
       
     </div>
-    <div class="reveal"><div class="pair"><div class="phone"><img src="/peggy/shots/plan-day.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Plan tab showing one day, split into Morning and Afternoon, with an appointment at 9 AM and lunch at 1 PM."></div><div class="phone"><img src="/peggy/shots/plan-week.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Plan tab showing a week, with a daily habit rolled into a single row that tracks how many days are done."></div></div></div>
+    <div class="reveal"><div class="pair"><figure class="shot"><div class="phone"><img src="/peggy/shots/plan-day.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Plan tab showing one day, split into Morning and Afternoon, with an appointment at 9 AM and lunch at 1 PM."></div><figcaption>Today, in the order it happens.</figcaption></figure><figure class="shot"><div class="phone"><img src="/peggy/shots/plan-week.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Plan tab showing a week, with a daily habit rolled into a single row that tracks how many days are done."></div><figcaption>A daily habit is one row, not seven.</figcaption></figure></div></div>
   </div>
 </section>
 
@@ -280,7 +281,7 @@ footer a:hover{color:var(--ink);text-decoration:underline}
       <ul class="points"><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Checklists you can tick from the grid.</strong> No need to open the note to cross something off.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Real writing tools.</strong> Headings, bold, bullets and checklists, with markdown shortcuts as you type.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Share it out.</strong> Send a note anywhere, or copy it as Markdown.</span></li></ul>
       
     </div>
-    <div class="reveal"><div class="pair"><div class="phone"><img src="/peggy/shots/ideas.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Ideas tab: a grid of note cards including a packing checklist showing two of six done, above a row of tag filters."></div><div class="phone"><img src="/peggy/shots/editor.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="A note open in the editor, mixing a paragraph with a tickable checklist, with the formatting row above the keyboard."></div></div></div>
+    <div class="reveal"><div class="pair"><figure class="shot"><div class="phone"><img src="/peggy/shots/ideas.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Ideas tab: a grid of note cards including a packing checklist showing two of six done, above a row of tag filters."></div><figcaption>Notes that look like what they hold.</figcaption></figure><figure class="shot"><div class="phone"><img src="/peggy/shots/editor.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="A note open in the editor, mixing a paragraph with a tickable checklist, with the formatting row above the keyboard."></div><figcaption>Type “[] ” and the line becomes a box.</figcaption></figure></div></div>
   </div>
 </section>
 

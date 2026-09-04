@@ -130,10 +130,11 @@ header.stuck{border-bottom-color:var(--line)}
    height from the manifest, so the ratio comes per image and a shot from a
    differently-shaped device renders correctly instead of being squashed. */
 .phone img{border-radius:32px;background:var(--panel)}
-.shot{display:flex;flex-direction:column;align-items:center;gap:14px}
+.shot{display:flex;flex-direction:column;align-items:center;gap:14px;margin:0}
 .shot figcaption{font-size:.9rem;color:var(--muted);text-align:center;max-width:30ch}
 .pair{display:flex;gap:clamp(14px,3vw,28px);justify-content:center;flex-wrap:wrap}
 .pair .phone{width:min(228px,58vw)}
+.pair .shot{max-width:min(228px,58vw)}
 
 /* claims strip */
 .claims{border-block:1px solid var(--line);background:var(--panel)}
@@ -517,14 +518,14 @@ def landing(shots):
       ("Undo on everything.", "Including emptying the bin.")],
      flip=True)}
 
-{row(f'<div class="pair">{phone(shots["plan-day"])}{phone(shots["plan-week"])}</div>', "Plan",
+{row(f'<div class="pair">{figure(shots["plan-day"])}{figure(shots["plan-week"])}</div>', "Plan",
      "Your day, in the order it happens",
      "Morning, afternoon, evening, and a place for things with no set time. Zoom out to a week, a month, or everything at once.",
      [("Habits stay one row.", "A daily task shows as a single line with the week's progress, not seven copies."),
       ("Reminders that ring.", "On the exact minute, after a reboot, and after you land in another time zone."),
       ("A month at a glance.", "Dots mark the days with something on them.")])}
 
-{row(f'<div class="pair">{phone(shots["ideas"])}{phone(shots["editor"])}</div>', "Ideas",
+{row(f'<div class="pair">{figure(shots["ideas"])}{figure(shots["editor"])}</div>', "Ideas",
      "Notes that keep their shape",
      "A list looks like a list, a stray thought reads as a thought, and a note with a title gets one. Pin what matters and let the rest sit in the grid.",
      [("Checklists you can tick from the grid.", "No need to open the note to cross something off."),
