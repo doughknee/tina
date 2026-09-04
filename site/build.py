@@ -64,8 +64,13 @@ CSS = """
    9px of the Capture eyebrow after "See how it works". On html rather than a
    scroll-margin-top per target, so any anchor added later is covered too. */
 html{-webkit-text-size-adjust:100%;scroll-padding-top:80px}
+/* 1.0625rem is 17px at the default root, so nothing moves for most people --
+   but a px here froze 36 of the 90 text elements, including both hero
+   buttons, the skip link and every FAQ question, while the rem-sized
+   headings around them grew. A reader on a larger font size got a 57.6px
+   headline over 17px answers. Everything else on the page is already rem. */
 body{margin:0;background:var(--bg);color:var(--ink);
-  font:400 17px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  font:400 1.0625rem/1.65 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
   -webkit-font-smoothing:antialiased}
 img{max-width:100%;height:auto;display:block}
 a{color:var(--brand)}
