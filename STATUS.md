@@ -1,8 +1,14 @@
 # Marketing site: where things stand
 
 Written at the point work stopped, so the next session does not have to re-derive any of it.
-`PLAN.md` has what is left. Everything is committed on `site/overnight`. Nothing is deployed —
-no push, no workflow run, by design.
+`PLAN.md` has what is left.
+
+**Shipped 2026-09-04.** `site/overnight` merged fast-forward into `main` and pushed, the Pages
+workflow went green in 38s, and the site is live at https://doughknee.com/peggy/ . The served
+HTML is byte-identical to the built file, `og.png` is a real 1200x630, and `review.py --probe`
+run against the live URL is all clear on all eight checks. PLAN section 8 holds what is left,
+including one thing this push made visible: the app's `ci` workflow is red on a lint error that
+predates the site work entirely.
 
 **Phases 1–5 are complete. This session found no defect.** Session 10 tested five more
 conditions, all clean, written up below so nobody spends an eleventh session on them. Six of

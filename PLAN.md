@@ -113,18 +113,27 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
 
 ## 7. Ship
 
-- [ ] **Build clean and commit.** `python site/build.py` then commit `site/`.
-- [ ] **Push to `main`** and watch the Pages workflow.
+- [x] **Build clean and commit.** `python site/build.py` then commit `site/`.
+- [x] **Push to `main`** and watch the Pages workflow. Merged `site/overnight` fast-forward,
+      pushed 63 commits and the four release tags; the `pages` run went green in 38s.
       *Proves it:* `gh run list --branch main --limit 3` then `gh run watch <id>`.
-- [ ] **Verify live**, not just green: `https://doughknee.com/peggy/`,
+- [x] **Verify live**, not just green: `https://doughknee.com/peggy/`,
       `https://doughknee.com/peggy/privacy/` and `https://doughknee.com/`.
       *Done when:* all three return 200, the screenshots load, and the CTA goes to the testing
       opt-in page.
       *Proves it:* `curl -sI https://doughknee.com/peggy/ | head -1` and a browser load.
-- [ ] **Check the social card.** Paste the URL somewhere that unfurls, or fetch the page and
-      confirm `og:image` resolves to a real 1200×630 PNG.
+      All three return 200, the served HTML is byte-identical to the built file, and
+      `review.py --probe --url https://doughknee.com/peggy/` is all clear on all eight checks.
+- [x] **Check the social card.** `og.png` serves as a real 1200x630 PNG. Paste the URL somewhere that unfurls, or fetch the page and
+
 
 ## 8. After it is up
+
+- [ ] **Fix the red app CI.** Unrelated to the site and older than it: `lintRelease` fails on
+      `TileService#startActivityAndCollapse(Intent)` being deprecated
+      (`CaptureTileService.kt:24`), which has failed every run since 2026-09-03. Either pass a
+      `PendingIntent` or baseline the check.
+      *Proves it:* `gh run list --branch main --limit 1` shows `ci` green.
 
 - [ ] **Add the site link to the Play listing** (Store presence → Main store listing → website).
 - [ ] **Update the Play memory and Linear** with the site URL and the update procedure.
