@@ -53,11 +53,18 @@ CSS = """
   color-scheme:light dark;
   --bg:#fbfbfd; --panel:#fff; --ink:#15151b; --muted:#5c5e6b; --line:#e7e7ef;
   --brand:#4f5fd6; --on-brand:#fff; --tint:#eef0ff; --shadow:0 24px 60px -32px rgb(21 21 27/.28);
+  --bezel:#0d0d12;
   --max:1120px;
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:#0e0e13; --panel:#17171f; --ink:#ececf3; --muted:#a2a4b4; --line:#26262f;
   --brand:#9aa5ff; --on-brand:#14142a; --tint:#1b1c2c; --shadow:0 24px 60px -32px rgb(0 0 0/.7);
+  /* The bezel is the one surface that cannot be shared between the themes.
+     #0d0d12 is 18.75:1 against the light --bg and 1.01:1 against this one --
+     the same colour to within one RGB unit, so the frame vanished and the
+     screenshots floated. Re-chosen here at 1.38:1, a notch above --line
+     (1.28:1) so it reads as a device frame rather than a hairline. */
+  --bezel:#2b2b36;
 }}
 /* The header is sticky and 65px tall, so an anchor jump would otherwise land
    with the target tucked under it -- 17px of the h1 after the skip link at 390,
@@ -133,7 +140,7 @@ header.stuck{border-bottom-color:var(--line)}
 .hero-shot{justify-self:center}
 
 /* phone frame */
-.phone{width:min(272px,70vw);padding:9px;border-radius:40px;background:#0d0d12;
+.phone{width:min(272px,70vw);padding:9px;border-radius:40px;background:var(--bezel);
   box-shadow:var(--shadow),0 0 0 1px rgb(255 255 255/.06) inset}
 /* No aspect-ratio here on purpose: every img carries the real PNG's width and
    height from the manifest, so the ratio comes per image and a shot from a
