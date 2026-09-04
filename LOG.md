@@ -75,3 +75,10 @@ anything. Never retry an approach logged as failed.
   same `python` the build already uses, so it is not a second assumption about
   what is on the runner's PATH. Verified `git status` is clean after a fresh
   build, so the committed WebP/og.png really are what the build produces.
+- **Phase 4, cycle 1.** Scored all eight rubric lines into STATUS.md from
+  captures. Lowest was motion at 3; fixed and re-measured to 4 (before/after in
+  the commit). Lighthouse needed `CHROME_PATH` pointed at the Playwright
+  Chromium -- it finds no Chrome on this machine -- then scored 100 desktop and
+  100 mobile, CLS 0. Everything now scores 4 or higher; the four items still at
+  4 are each blocked on a decision that is Doni's, listed in STATUS.md under
+  "For Doni to decide". No DONE file: that needs every item at 5.
