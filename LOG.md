@@ -171,3 +171,16 @@ anything. Never retry an approach logged as failed.
   3 transitions and exits 1, restored it reports 1 and exits 0. Documented in
   `site/README.md`, with the lesson stated plainly -- breakpoints put the bugs
   between the widths you test.
+- **Swept the other two pages too, and checked for clipped content.** The probe
+  only sweeps `/peggy/`. Ran the same 360-1680 sweep by hand against the home and
+  privacy pages: no overflow at any width. Also ran a stricter check across all
+  three -- any element whose own content is wider than its box -- and there is
+  none at any width. Did not add all three pages to the probe: they share the
+  CSS and the peggy page is the one with the layout.
+- **Reveal re-verified after the caption change.** Wrapping the duo phones in
+  `<figure>` could have moved what the IntersectionObserver watches. It did not:
+  29 `.reveal`, `js-reveal` applied, an element below the fold sits at
+  `translateY(16px)` with opacity untouched and no `.in`, and after scrolling
+  through, zero are left without `.in`.
+- **Phase 5 complete, six 5s and two 4s.** Items 2 and 8 are Doni's decisions and
+  are unchanged from last session. No `DONE` file: that needs all eight at 5.

@@ -76,6 +76,13 @@ was opened and captured — the answers read correctly and there is no overflow 
 `<details>` open. `python site/build.py` leaves `git diff` empty, so the committed output really
 is what the build produces.
 
+The home and privacy pages were swept the same way (360 → 1680, 20 px steps) and are clean, as
+is a stricter check across all three: no element anywhere has content wider than its own box at
+any width. The reveal was re-verified after the caption change, since wrapping the duo phones in
+`<figure>` could have moved what the observer watches — 29 `.reveal` elements, `js-reveal`
+applied, an element below the fold sits at `translateY(16px)` with opacity untouched, and after
+scrolling through, zero elements are left without `.in`.
+
 ## For Doni to decide
 
 Both of these are what stands between a 4 and a 5, and each is a judgement call I should not
