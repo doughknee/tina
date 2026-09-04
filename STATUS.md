@@ -134,8 +134,9 @@ python site/review.py --probe      # overflow, sweep, motion, anchors, text size
 python site/review.py --segments   # the whole page, one readable screenful at a time
 ```
 
-`--probe` takes `--url`, and it was run against **all three pages** this session: home and
-privacy are `all clear` on all eight checks too.
+`--probe` takes `--url`, and it was run against **all three pages** in session 9 as well: home
+and privacy are `all clear` on all eight checks too. A fresh `python site/build.py` still
+leaves `git diff` empty.
 
 Run `--probe` before committing any CSS change. `--segments` is how you look at the page: a
 full-page PNG of this page is over 13,000 px tall and is unreadable once scaled down to view,
