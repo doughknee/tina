@@ -304,3 +304,10 @@ anything. Never retry an approach logged as failed.
   tagline, one Peggy card, footer. The card spans the full content width with
   only one item in the grid, which reads as quiet rather than unfinished, and
   the home page is not what the rubric scores. Left alone.
+- **Checked above the sweep's ceiling.** The probe stops at 1680. At 1920 and
+  2560 the 1120px container just centres, the h1 stays at its 64px cap and
+  529px measure, and nothing is stranded -- looked at 2560 as well as measured
+  it. Not worth extending the sweep: nothing changes past the max-width.
+- **Closing verification.** Fresh `python site/build.py` leaves `git diff`
+  empty, and `--probe` is all clear on all six checks. Six 5s, two 4s, both 4s
+  Doni's decisions. No DONE file.
