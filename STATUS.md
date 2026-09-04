@@ -66,6 +66,25 @@ reports **9** surfaces (the mark and all eight phones) and exits 1; with it, 0 a
 - **Lighthouse re-run against the new CSS**, since item 6 had last been measured in session 6.
   100 on performance, accessibility, best-practices and SEO, desktop *and* mobile; CLS exactly
   0, LCP 0.3 s desktop and 1.1 s mobile, TBT 0. Unchanged.
+- **The copy nobody had read: alt text, captions and the meta description.** Item 4 had only
+  ever been scored on visible copy. All eight `alt` strings describe what is actually on the
+  screen in that shot — "The Plan tab showing a week, with a daily habit rolled into a single
+  row that tracks how many days are done" — and every one is 108–122 characters, so a screen
+  reader user gets the same specifics a sighted reader gets. Captions and the meta description
+  are the same. Nothing generic, nothing filler.
+- **`capture.webp` is used twice**, in the hero and again in the Capture section. Not a defect
+  on inspection: the hero uses it uncaptioned as the lead image, and the Capture section uses
+  the same moment as the evidence for the parse table directly above it, captioned "What Peggy
+  understood, before you hit save." It is the app's signature moment, shown once as a picture
+  and once as a proof. Left alone. (`calendar.webp` is still built and unreferenced, which is
+  deliberate and documented in `site/README.md`.)
+- **The motion check runs at 390 and 1440 but not 820**, the rubric's third width. Sampled it
+  there by hand: 0 of 737 mid-fade, worst 1.000. Structurally it cannot be otherwise — the
+  reveal sets `transform` and never `opacity` at any width — so the probe was left alone rather
+  than made a third slower for a value that is 1.000 by construction.
+- **Looked at 820 light**, which had been measured for overflow and anchors but never read. The
+  hero stacks below the 900 px grid breakpoint: heading, lede, both buttons, the note, then the
+  framed phone. Type scale and framing both hold.
 
 ## Tooling
 
@@ -103,10 +122,10 @@ Scored from captures and measurements of the served page, not from the CSS.
 | 1 | Hero communicates what Peggy is in under 5 s | **5** | What Peggy *is* lands above the fold at every size measured: capture speed in the h1, "an event, a task or a note — three things that usually mean three apps" in the lede, then both buttons. Re-read at 390 dark this session. Note the correction session 6 made and do not undo it: **the brief's third point is above the fold only at 1440×900.** "Works with no signal" sits 154 px below it at 1280×720 and 599 px below at 390×844; at 390 the privacy half is carried above the fold by "no account" in the CTA note alone. Still a 5 — the rubric asks what Peggy is, and a stacked phone layout cannot hold a screenshot and a three-claim strip in one screen. |
 | 2 | Type scale deliberate, has personality | **4** | Clamped scale, −.022em on headings, .14em uppercase eyebrow, 1.65 body leading, a real second voice in the monospace parse table, and since session 6 a scale that moves as a whole with the reader's font size. Capped at 4 by `system-ui`: there is no typeface of its own, because there are deliberately no external requests. **Your call, see below.** |
 | 3 | Screenshots framed in context, never floating | **5** | Scored **3** at the start of this session for the third time in three sessions, and for the same underlying reason each time: the frame is a background plus a shadow, and there are reading conditions that take those away. Dark mode took the background (session 7); Windows high contrast takes both (above), and there all eight shots floated. Fixed with an outline in forced colours — the frame measures 21:1 in both high-contrast palettes, 18.3:1 light and 1.39:1 dark — and looked at in all four. Seven of the eight carry a `<figcaption>`; the hero shot does not, and should not. |
-| 4 | Every line specific to Peggy, zero filler | **5** | The parse table shows literal input strings that `CaptureCorpusTest` proves; the 12 cards each name a mechanic. Session 6 sampled five claims off the rendered copy and found all five in `composeApp/src`. Re-read at 390 dark this session. |
+| 4 | Every line specific to Peggy, zero filler | **5** | The parse table shows literal input strings that `CaptureCorpusTest` proves; the 12 cards each name a mechanic. Session 6 sampled five claims off the rendered copy and found all five in `composeApp/src`. Re-read at 390 dark and 820 light this session, and this session read the copy nobody had scored: all eight `alt` strings are 108-122 characters describing what is actually on that screen, and the captions and meta description match. |
 | 5 | Reads at 390/820/1440, no horizontal scroll | **5** | `--probe` clean: no overflow at any of the 67 widths from 360 to 1680, one duo transition, all four anchors 0.0 px under the sticky header at all three widths. Session 7 extended this below the sweep's floor (340/320/300/280), under forced WCAG text spacing, and at four short/landscape viewports — all clean on all three pages. Above the ceiling, 1920 and 2560 just centre the 1120 px container. |
 | 6 | Lighthouse performance above 95 | **5** | Re-run this session against the changed CSS: 100 on performance, accessibility, best-practices and SEO, desktop and mobile, CLS exactly 0, LCP 0.3 s desktop / 1.1 s mobile, TBT 0. |
-| 7 | Motion purposeful, never delays reading | **5** | The reveal does not touch opacity, so it cannot be caught mid-fade: 0 of 408 samples at 390 and 0 of 718 at 1440, worst 1.000. Motion is a 16 px rise. |
+| 7 | Motion purposeful, never delays reading | **5** | The reveal does not touch opacity, so it cannot be caught mid-fade: 0 of 408 samples at 390, 0 of 737 at 820 and 0 of 718 at 1440, worst 1.000. Motion is a 16 px rise. |
 | 8 | Dark theme designed, not an inversion | **4** | Tokens are separately chosen, not derived — brand lightens #4f5fd6 → #9aa5ff, on-brand flips to near-black, panel #17171f sits distinctly above bg #0e0e13, and the bezel is re-chosen too. The light screenshots really are the only thing left holding this at 4. **Your call, see below.** |
 
 Also verified this session: `python site/build.py` leaves `git diff` empty, so the committed

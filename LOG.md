@@ -410,3 +410,13 @@ anything. Never retry an approach logged as failed.
 - **Phase 5 still open at six 5s and two 4s.** Item 2 (typeface) and item 8
   (dark-theme screenshots) are Doni's decisions. No `DONE` file: that needs all
   eight at 5.
+- **Cycle 3, all clean, no change made.** Read the copy that had never been
+  scored: eight `alt` strings, 108-122 characters each, describing what is
+  actually on that screen ("The Plan tab showing a week, with a daily habit
+  rolled into a single row that tracks how many days are done"), plus the
+  captions and the meta description. Item 4 holds on the copy a screen reader
+  gets, not only the copy on screen. `capture.webp` is used twice -- hero and
+  Capture section -- and that is right: the lead picture and the proof for the
+  parse table above it. Motion sampled at 820, the width the check skips: 0 of
+  737, worst 1.000, and it cannot be otherwise since the reveal never touches
+  opacity. Looked at 820 light, which had been measured but never read.
