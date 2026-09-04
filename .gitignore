@@ -9,3 +9,4 @@ keystore.properties
 # Working images from site/review.py, and the generated demo SQL
 site/review/
 site/demo_data.sql
+.overnight-lock

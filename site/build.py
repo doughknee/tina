@@ -216,9 +216,12 @@ footer a:hover{color:var(--ink);text-decoration:underline}
 .doc code{font:600 .9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 
 /* Hiding is opt-in: only the head script adds .js-reveal, so a page without
-   JavaScript -- or with reduced motion asked for -- never hides anything. */
-.js-reveal .reveal{opacity:0;transform:translateY(14px)}
-.js-reveal .reveal.in{opacity:1;transform:none;transition:opacity .32s ease,transform .32s ease}
+   JavaScript -- or with reduced motion asked for -- never hides anything.
+   The reveal moves but never fades: text mid-fade is text you cannot read, and
+   a fast scroll always outruns the transition. Rising type is legible the whole
+   way, so the motion can never delay reading. */
+.js-reveal .reveal{transform:translateY(16px)}
+.js-reveal .reveal.in{transform:none;transition:transform .32s cubic-bezier(.2,.7,.3,1)}
 @media (prefers-reduced-motion:reduce){.btn:hover{transform:none}}
 """
 
