@@ -52,15 +52,15 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
 
 ## 3. Accessibility and semantics
 
-- [ ] **Add a skip link** to the main content. There is none.
-- [ ] **Add visible focus styles.** The CSS defines no `:focus-visible`; keyboard users currently
+- [x] **Add a skip link** to the main content. There is none.
+- [x] **Add visible focus styles.** The CSS defines no `:focus-visible`; keyboard users currently
       get only the browser default, which is invisible against some of these backgrounds.
-- [ ] **Check heading order.** One `<h1>` per page, no level skipped.
+- [x] **Check heading order.** One `<h1>` per page, no level skipped.
       *Proves it:* read the rendered outline, or run any HTML outline checker.
-- [ ] **Check colour contrast** for `--muted` on `--bg` and `--panel` in both themes, and for
+- [x] **Check colour contrast** for `--muted` on `--bg` and `--panel` in both themes, and for
       `.btn` text on `--brand`.
       *Done when:* body text and UI labels clear 4.5:1, large headings clear 3:1.
-- [ ] **Confirm every screenshot's `alt` describes the screen**, not the file. They are written in
+- [x] **Confirm every screenshot's `alt` describes the screen**, not the file. They are written in
       `site/screenshots.json` and are currently prose; re-read them once the page is final.
 
 ## 4. Content accuracy

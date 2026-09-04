@@ -65,10 +65,24 @@ body{margin:0;background:var(--bg);color:var(--ink);
   -webkit-font-smoothing:antialiased}
 img{max-width:100%;height:auto;display:block}
 a{color:var(--brand)}
+
+/* keyboard access. The outline is offset so that on a brand-coloured button it
+   lands on the page background rather than disappearing into the fill. */
+.skip{position:fixed;left:-9999px;top:0;z-index:100}
+.skip:focus{left:10px;top:10px;padding:11px 18px;border-radius:11px;font-weight:600;
+  background:var(--brand);color:var(--on-brand);text-decoration:none;box-shadow:var(--shadow)}
+:focus-visible{outline:3px solid var(--brand);outline-offset:3px;border-radius:4px}
+/* the skip target itself is focused programmatically; it should not draw a ring
+   around the whole page when it receives that focus */
+main:focus,main:focus-visible{outline:none}
 h1,h2,h3{line-height:1.1;letter-spacing:-.022em;margin:0}
 h1{font-size:clamp(2.4rem,6vw,4rem);font-weight:700}
 h2{font-size:clamp(1.9rem,4vw,2.7rem);font-weight:700}
-h3{font-size:1.12rem;font-weight:650;letter-spacing:-.01em}
+/* A card heading is sized by being a card heading, not by its level. On the
+   Peggy page the cards sit under an h2 and are h3; on the home page there is
+   no h2 above them, so that card is an h2 and must not become a section-sized
+   headline. */
+h3,.card h2{font-size:1.12rem;font-weight:650;letter-spacing:-.01em}
 p{margin:0}
 .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
 .lede{font-size:clamp(1.06rem,2vw,1.3rem);color:var(--muted);max-width:56ch}
@@ -282,8 +296,9 @@ def page(title, description, body, *, path="/peggy/", script=True, doc=False):
 {f'<script>{HEAD_JS}</script>' if script else ''}
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 {nav}
-<main>
+<main id="main" tabindex="-1">
 {inner}
 </main>
 <footer>
@@ -622,7 +637,7 @@ def home():
     <div class="grid" style="margin-top:0">
       <article class="card">
         <div class="ico" style="background:{BRAND}">{mark_svg(19)}</div>
-        <h3><a href="/peggy/" style="text-decoration:none">Peggy</a></h3>
+        <h2><a href="/peggy/" style="text-decoration:none">Peggy</a></h2>
         <p>Two seconds from thought to done. A quick-capture to-do app for Android that keeps
            everything on your phone.</p>
       </article>
