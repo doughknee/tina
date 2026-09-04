@@ -462,3 +462,47 @@ anything. Never retry an approach logged as failed.
 - **Phase 5 still open at six 5s and two 4s.** Item 2 (typeface) and item 8
   (dark-theme screenshots) are Doni's decisions, unchanged. No `DONE` file: that
   needs all eight at 5.
+## Session 10 — 2026-09-04
+
+- **Baseline re-verified before touching anything.** Fresh `python site/build.py`
+  leaves `git diff` empty, and `--probe` is all clear on all eight checks.
+- **Phase 5, cycle 1. Five theories tested, all five clean, nothing changed.**
+  This time each one was a gap in the harness rather than in the page -- a place
+  a check is structurally unable to see. Recorded in STATUS.md so an eleventh
+  session does not re-test them.
+  - **The skip link in forced colours.** `.skip:focus` is a brand background plus
+    a box-shadow, the exact shape of the session-8 bezel defect, and it sits at
+    `left:-9999px` until focused so no check can reach it. Clean anyway:
+    `:focus-visible` matches it too and its outline is kept and recoloured by the
+    forced palette. Tabbed to it and looked at all four palettes.
+  - **The six FAQ answers, which no surface check has ever seen** -- all
+    `<details>` are closed by default and `SURFACE_JS` drops anything under 24px.
+    Opened all six: no overflow at any of 12 widths 320-1680, and 39 surfaces
+    open against 39 closed, so the answers paint no background of their own and
+    the checks were missing nothing. The text-size check was never blind here:
+    computed styles exist on a closed `<details>`, 112 elements either way.
+  - **Whether the links resolve** -- nine sessions checked the four in-page
+    anchors and never that a link goes anywhere. All five local targets 200, the
+    three canonicals and the three sitemap entries agree with the three real
+    pages, CTA identical in all eight places.
+  - **Whether an anchor jump animates.** The anchor check measures where a jump
+    lands, never how long it takes, so a smooth scroll would pass it while doing
+    what item 7 forbids. `scroll-behavior:auto`, 0 changing frames over 1.2s at
+    390 and 1440. The nav uses absolute hrefs (`/peggy/#features`), so those were
+    checked for a re-fetch too: 0 document requests, 0 load events.
+  - **An inner box that scrolls sideways**, which `documentElement.scrollWidth`
+    cannot see because an `overflow-x:auto` wrapper clips. Every element on all
+    three pages at 390/820/1440 with the FAQ open: nothing scrolls past its
+    clientWidth. There is no such wrapper.
+- **Print tested and deliberately not pursued.** No `@media print` exists, so the
+  item-3 shape suggested itself a fifth time -- backgrounds and box-shadow are
+  what a browser drops with "Background graphics" off, and session 8's outline
+  fix is scoped to `@media (forced-colors: active)`. Generated both PDFs: the
+  difference is 11 rect fills of 78, so the frames are not wholesale removed. Did
+  NOT look at the rendered pages -- no PDF renderer on this machine (no poppler,
+  no PyMuPDF, no Ghostscript) and installing one unattended was not worth it.
+  Left there because the rubric scores a screenshot of the served page and print
+  is not one of its reading conditions.
+- **Phase 5 still open at six 5s and two 4s.** Item 2 (typeface) and item 8
+  (dark-theme screenshots) are Doni's decisions, unchanged. No `DONE` file: that
+  needs all eight at 5.

@@ -4,8 +4,8 @@ Written at the point work stopped, so the next session does not have to re-deriv
 `PLAN.md` has what is left. Everything is committed on `site/overnight`. Nothing is deployed —
 no push, no workflow run, by design.
 
-**Phases 1–5 are complete. This session found no defect.** Five theories were tested and all
-five came back clean, which is written up below so nobody spends a sixth session on them. Six of
+**Phases 1–5 are complete. This session found no defect.** Session 10 tested five more
+conditions, all clean, written up below so nobody spends an eleventh session on them. Six of
 the eight rubric items score 5; the two still at 4 are blocked on decisions that are yours,
 below. PLAN sections 7 and 8 are deliberately untouched (out of scope).
 
@@ -87,6 +87,53 @@ time there was nothing there.
   light, dark, forced light and forced dark — identical to three decimal places. That is the
   scaled-capture trap for the third time in nine sessions; the crop was downscaled to be looked
   at, not the page.
+
+## What session 10 tested, all clean
+
+Five more conditions, each one a gap in the harness itself rather than a gap in the page --
+somewhere a check is structurally unable to see. None of them was hiding a defect.
+
+- **The skip link in forced colours.** `.skip:focus` is a brand background plus a `box-shadow`
+  and nothing else, which is the exact shape of the session-8 bezel defect, and no check can see
+  it because the link sits at `left:-9999px` until it is focused. It survives anyway:
+  `:focus-visible` also matches it, and its `outline:3px solid` is kept by the forced palette and
+  forced to a system colour. Tabbed to it and looked at all four palettes -- opaque box, hard
+  outline, legible label in every one.
+- **The FAQ answers, which no surface check has ever seen.** All six `<details>` are closed by
+  default, and `SURFACE_JS` drops anything under 24px, so a closed answer has no rect and is
+  skipped by both the themes join and the contrast join. Opened all six and re-ran everything:
+  no overflow at any of 12 widths from 320 to 1680, and **39 surfaces open, 39 closed** -- the
+  answers paint no background of their own, so what those checks were missing was nothing. The
+  text-size check was never blind here at all: it reads computed styles, which exist on a closed
+  `<details>`, and the count is 112 either way, 0 frozen.
+- **Whether the links resolve.** Nine sessions checked the four in-page anchors and never once
+  checked that a link goes anywhere. Enumerated every `href` on all three pages: the five local
+  targets all return 200 against the server, the three canonicals and the three `sitemap.xml`
+  entries agree with the three real pages, and the CTA is
+  `https://play.google.com/apps/testing/com.peggy.app` in all eight places it appears.
+- **Whether an anchor jump animates.** The anchor check measures where a jump *lands*, never how
+  long it takes to get there, so a smooth scroll over a 13,000px page would pass it while doing
+  precisely what item 7 forbids. `scroll-behavior` computes to `auto` and the jump is instant:
+  sampled every frame for 1.2s, **0 changing frames** at 390 and 1440. The nav on this page uses
+  absolute hrefs (`/peggy/#features`), so they were also checked for a re-fetch: **0 document
+  requests and 0 load events**, same-document navigation, no flash.
+- **An inner box that scrolls sideways.** The sweep reads `documentElement.scrollWidth`, which an
+  `overflow-x:auto` wrapper hides from by clipping -- the page would report no overflow while the
+  reader still got a sideways scrollbar on the parse table. Walked every element on all three
+  pages at 390, 820 and 1440 with the FAQ open: **nothing** has `scrollWidth` past its
+  `clientWidth`. There is no such wrapper to hide behind.
+
+### Tested and deliberately not pursued: print
+
+`@media print` does not exist, so print media computes identically to screen, and the item-3
+failure shape suggested itself a fifth time -- backgrounds and `box-shadow` are exactly what a
+browser drops when "Background graphics" is off, and session 8's outline fix is scoped to
+`@media (forced-colors: active)` so it would not apply. Two PDFs were generated, with background
+graphics on and off; the difference is **11 rect fills out of 78**, so the frames are not
+wholesale removed. **I could not look at the rendered pages** -- there is no PDF renderer on this
+machine (no poppler, no PyMuPDF, no Ghostscript) and installing one unattended was not worth it.
+Left there on purpose: the rubric scores "a screenshot of the served page", and print is not one
+of its reading conditions. If you ever want it judged, that is the missing tool.
 
 ### Theories tested in session 8 that were clean
 
