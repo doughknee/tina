@@ -101,3 +101,21 @@ anything. Never retry an approach logged as failed.
   apps". Verified the claim in the app first (`ItemType { INBOX, TASK, EVENT,
   NOTE }`, one table) so it is not benefit-speak. All three points now land above
   the fold at 1440 and 390.
+- **Home card copy.** The card on doughknee.com called Peggy "a quick-capture to-do
+  app"; the Peggy page's meta description already said "to-do, calendar and notes".
+  Same undersell the hero just fixed, on the line most people see first.
+- **`review.py --probe` added.** Overflow, motion and hidden-content, exiting
+  non-zero on failure -- the three harnesses each of the last three sessions
+  rebuilt in a scratchpad and discarded. Proved it fails as well as passes by
+  re-introducing the opacity fade: 222/414 and 319/722, reproducing the pre-fix
+  baseline exactly, then reverted. Documented in `site/README.md`.
+- **Phase 5 verification.** Lighthouse re-run after the changes: 100 desktop, 100
+  mobile, and 100 on accessibility, best-practices and SEO, CLS 0. All three pages
+  checked at 390 and 1440 in both themes -- no overflow, one h1 each, no heading
+  skips, nothing faded. JS-off and reduced-motion loads hide nothing.
+- **Phase 4 closed at six 5s and two 4s.** Items 2 (typeface) and 8 (dark-theme
+  screenshots) are both decisions for Doni and are written up in STATUS.md. Note
+  for the next session: item 8 is now mechanically possible without the banned
+  `demo_data.py` -- emulator-5554 is up and still seeded, so `screenshots.py`
+  plus `adb shell cmd uimode night yes` would do it. It was not done because it
+  is a design call, not a bug. No DONE file: that needs every item at 5.

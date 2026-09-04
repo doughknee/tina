@@ -4,8 +4,12 @@ Written at the point work stopped, so the next session does not have to re-deriv
 `PLAN.md` has what is left. Everything is committed on `site/overnight`. Nothing is deployed —
 no push, no workflow run, by design.
 
-**Phases 1, 2 and 3 are complete. Phase 4 has had one cycle. Every rubric item now scores 4 or
-higher.** PLAN sections 7 and 8 are deliberately untouched (out of scope).
+**Phases 1, 2 and 3 are complete. Phase 4 has had three cycles. Six of the eight rubric items
+now score 5; the two still at 4 are both blocked on a decision that is yours, below.** PLAN
+sections 7 and 8 are deliberately untouched (out of scope).
+
+There is no `DONE` file, because `DONE` requires every item at 5 and two of them cannot get
+there without you.
 
 ## Tooling
 
@@ -13,90 +17,83 @@ higher.** PLAN sections 7 and 8 are deliberately untouched (out of scope).
 protocol it was not retried. All visual review is Playwright: headless Chromium, `networkidle`
 plus 500 ms, both `prefers-color-scheme` values.
 
-`site/review.py` is the committed harness. Three throwaway probes were used alongside it and
-live in the session scratchpad, not the repo — an overflow measurer, a segmented capture (a
-full-page PNG of a 13,620 px page is illegible once scaled back), and a contrast measurer. If
-you want them permanently, say so and they can be folded into `review.py`.
+`site/review.py` is the committed harness, and it now measures as well as screenshots:
 
-Lighthouse needed `CHROME_PATH` pointed at the Playwright binary
+```bash
+python site/review.py --probe    # overflow, motion and hidden-content, exits non-zero on failure
+```
+
+That replaces the throwaway probes that the last three sessions each rebuilt in a scratchpad
+and threw away. Run it before committing any CSS change. It is documented in `site/README.md`.
+
+Lighthouse needs `CHROME_PATH` pointed at the Playwright binary
 (`~/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe`); it finds no Chrome on
 this machine otherwise.
 
 ## Rubric scores
 
-Scored from captures of the served page, not from the CSS.
+Scored from captures and measurements of the served page, not from the CSS.
 
 | # | Item | Score | Why |
 |---|---|---|---|
-| 1 | Hero communicates what Peggy is in under 5 s | **4** | Headline, lede and the capture shot land "capture anything fast". The one-surface idea — calendar, tasks and notes together — is not in the hero at all; you first meet it at the Tags section, well below the fold. |
-| 2 | Type scale deliberate, has personality | **4** | Clamped scale, −.022em on headings, .14em uppercase eyebrow, 1.65 body leading — chosen, not defaults. Capped at 4 by `system-ui`: there is no typeface of its own, because there are deliberately no external requests. |
-| 3 | Screenshots framed in context, never floating | **5** | Every shot sits in a bezelled `.phone` with a shadow and a caption. None float raw on the background. |
-| 4 | Every line specific to Peggy, zero filler | **5** | The parse table shows literal input strings; claims name mechanics ("one line of text, no forms, no pickers"). Found no benefit-speak. Two claims that were *specific but false* were fixed this session. |
-| 5 | Reads at 390/820/1440, no horizontal scroll | **5** | `documentElement.scrollWidth` equals the viewport at all six width × theme combinations. Hero stacks below 900, `.pair` duos stack at 390, grid reflows 4/3/1. |
-| 6 | Lighthouse performance above 95 | **5** | 100 on the desktop preset and 100 on mobile. Every metric scores 1; CLS is exactly 0. |
-| 7 | Motion purposeful, never delays reading | **4** | Improved from 3 this cycle (see LOG). 34 of 184 samples in the reading band are still mid-fade during a fast scroll, worst 0.54. Zero means deleting the reveal, which the brief wants kept. |
-| 8 | Dark theme designed, not an inversion | **4** | Tokens are separately chosen — brand lightens #4f5fd6 → #9aa5ff, on-brand flips to near-black, panel and line are picked not derived. Held at 4 because all eight app screenshots are light-theme, so the dark page shows light phones. |
+| 1 | Hero communicates what Peggy is in under 5 s | **5** | Raised from 4 this session. All three of the brief's ten-second points now land above the fold: capture speed in the h1, "an event, a task or a note — three things that usually mean three apps" in the lede, and no-account/no-signal in the claims strip. |
+| 2 | Type scale deliberate, has personality | **4** | Clamped scale, −.022em on headings, .14em uppercase eyebrow, 1.65 body leading — chosen, not defaults. Capped at 4 by `system-ui`: there is no typeface of its own, because there are deliberately no external requests. **Your call, see below.** |
+| 3 | Screenshots framed in context, never floating | **5** | Every shot sits in a bezelled `.phone` with a shadow and a caption. Re-checked every section this session; none float raw on the background. |
+| 4 | Every line specific to Peggy, zero filler | **5** | The parse table shows literal input strings; the 12 cards each name a mechanic. The new hero claim was checked against `ItemType { INBOX, TASK, EVENT, NOTE }` before it was written. Also fixed the home card, which still called Peggy "a to-do app". |
+| 5 | Reads at 390/820/1440, no horizontal scroll | **5** | `documentElement.scrollWidth` equals the viewport at all six width × theme combinations, on all three pages. |
+| 6 | Lighthouse performance above 95 | **5** | 100 desktop and 100 mobile, re-run after this session's changes. Mobile also scores 100 on accessibility, best-practices and SEO. CLS exactly 0. |
+| 7 | Motion purposeful, never delays reading | **5** | Raised from 4. The reveal no longer touches opacity, so it cannot be caught mid-fade: 0 of 722 samples at 1440 and 0 of 417 at 390, against 319 and 216 before. Motion is kept as a 16 px rise. |
+| 8 | Dark theme designed, not an inversion | **4** | Tokens are separately chosen — brand lightens #4f5fd6 → #9aa5ff, on-brand flips to near-black, panel and line are picked not derived. Held at 4 because all eight app screenshots are light-theme, so the dark page shows light phones. **Your call, see below.** |
 
 ## For Doni to decide
 
-Each of these is what stands between a 4 and a 5, and each is a judgement call I should not
-make for you.
+Both of these are what stands between a 4 and a 5, and each is a judgement call I should not
+make for you. Nothing else is blocking.
 
-1. **The hero does not say "one surface".** Your brief lists three things a visitor must get in
-   ten seconds; the claims strip covers "under two seconds" and "no account / no signal", which
-   is points 1 and 3 twice over, and never point 2. The obvious fix is to trade one of the three
-   claims for a one-surface claim, but that spends the offline point to buy it. I did not
-   touch it — the hero scores 4, and the rules say do not rewrite a section scoring 4 from
-   scratch.
-2. **Dark-theme screenshots.** Peggy has a real dark theme; the site never shows it. Fixing this
-   means re-seeding and re-shooting, and `demo_data.py` is banned this session for good reason.
-   It is also a design question: light phones on a dark page arguably read fine because the
-   bezel contains them.
-3. **A typeface.** Item 2 is capped at 4 by `system-ui`. A self-hosted font (no CDN, so the
-   no-external-requests promise survives) would lift it, at the cost of bytes and of the
-   restraint the brief asked for.
-4. **`calendar.webp` is built but shown nowhere.** Eight shots are encoded and committed, seven
-   are referenced. It costs nothing at runtime (unreferenced, never fetched) and the manifest is
-   the right place for it if a Calendar section is ever added. Left as is; documented as
-   deliberate in `site/README.md`. Remove it from `screenshots.json` if you disagree.
-5. **The build scripts are served.** `build.py`, `screenshots.py`, `demo_data.py` and `review.py`
-   sit inside the published directory, so Pages will serve them at
-   `doughknee.com/build.py` and so on. Harmless — they hold no secrets — but untidy. Moving them
-   up a level means touching every path in them, which is not a thing to do unreviewed.
+1. **A typeface (item 2).** `system-ui` caps this at 4 — it is a deliberate choice, but it is by
+   definition the least distinctive one. A self-hosted face would lift it and would not break
+   the no-external-requests promise (no CDN), at the cost of bytes, and of some of the restraint
+   the brief asked for. Choosing a face for your product is a taste decision, so I left it.
+2. **Dark-theme screenshots (item 8).** Peggy has a real dark theme — the feature grid even
+   advertises it — and the site never shows it. I checked, and this is now *mechanically*
+   possible: `emulator-5554` is up and still holds the demo data, so `screenshots.py` could
+   re-shoot against it with `adb shell cmd uimode night yes` and **no** run of the banned
+   `demo_data.py`. I did not do it, for three reasons: it doubles the committed image set and
+   needs a `<picture>` per shot, it is the largest change of the night to make unattended, and
+   it is a design question rather than a bug. Light phones on a dark page arguably read fine —
+   I looked at two segments at 1440 dark and the bezel does contain them.
+
+Resolved since the last session, so you do not need to read them again: the hero's missing
+"one surface" point (fixed, in the lede, without spending a claims slot); `calendar.webp` being
+built but unreferenced (documented as deliberate in `site/README.md`); the build scripts being
+served from the published directory (harmless, they hold no secrets).
 
 ## What changed this session
 
 Full detail in `LOG.md`; the short version:
 
-- **Phase 2.** Verified responsive and theme behaviour at all six width × theme combinations.
-  Fixed a footer that stranded its tagline against the right edge once it wrapped (breakpoint
-  measured at exactly 760 px, not guessed). Dropped a hard-coded `aspect-ratio` that would have
-  squashed any future non-1080×2400 shot. Confirmed the nav "Get Peggy" pill renders white on
-  purple after the `:not(.btn)` specificity fix.
-- **Phase 2, accessibility.** Added a skip link and a `:focus-visible` ring — the
-  `outline-offset` is load-bearing, without it a brand ring vanishes into the brand button.
-  Fixed an h1 → h3 skip on the home page. Measured contrast for 16 text roles in both themes;
-  everything passes, worst 5.16:1.
-- **Phase 2, content.** Two claims on the page were false and are now phrasings the corpus test
-  proves: "every second Tuesday" parses to no recurrence at all, and "pay rent on the 1st" is
-  not monthly without "every month". Cut the paid-tier FAQ paragraph per the brief.
-- **Phase 3.** Wrote `site/README.md`, the deliverable that was actually asked for, and pointed
-  the repo README at it. Added Pillow to the Pages workflow so a newly dropped PNG is actually
-  re-encoded on CI instead of silently deploying the old picture.
-- **Phase 4, cycle 1.** Motion 3 → 4: the observer's `rootMargin` was negative, delaying the
-  fade until content was already on screen. Flipped it positive and shortened the fade.
+- **Motion 4 → 5.** The reveal faded opacity 0 → 1 over .32 s, and a fast scroll always outruns
+  that, so text arrived in the reading band still half transparent. Last session's `rootMargin`
+  tuning only made it rarer. Deleting the fade — the reveal now only rises — makes it
+  impossible. Measured before and after.
+- **Hero 4 → 5.** The lede ended on "and files it", leaving the destination unnamed. Named it
+  there rather than trading away one of the three claims. Verified against `ItemType` first.
+- **The home card called Peggy "a to-do app".** It is three things, and the Peggy page's own
+  meta description already said so.
+- **`review.py --probe`.** The three measurements are now in the repo instead of being rebuilt
+  from scratch every session, and are documented in `site/README.md`.
 
 ## Gotchas already paid for
 
-Do not rediscover these. The originals from session 1 still stand — the accessibility dump
-lying mid-animation, the agenda mid-compose race, the calendar being a persisted toggle, demo
-mode needing three separate corrections, ASCII-only `print()` in `build.py`, Pillow being
-absent on CI, `site/demo_data.sql` being generated. Added since:
+Do not rediscover these. The originals still stand — the accessibility dump lying mid-animation,
+the agenda mid-compose race, the calendar being a persisted toggle, demo mode needing three
+separate corrections, ASCII-only `print()` in `build.py`, Pillow being absent on CI,
+`site/demo_data.sql` being generated, and the two in `site/README.md` (lazy images compositing
+blank, and colour being unjudgeable from a scaled capture). Added since:
 
-**Colour cannot be judged from a scaled capture.** A full-page shot of this page is over
-13,000 px tall. Downscaled for review, the dark-theme privacy link read as dark-on-dark and I
-logged it as a contrast bug. It is not: rgb(154,165,255) on rgb(23,23,31), comfortably passing.
-A 2× crop settled it. Crop before believing anything about colour.
+**Do not put the fade back.** `.js-reveal .reveal` deliberately sets `transform` only and never
+`opacity`. It looks like an oversight and it is not: `review.py --probe` will fail if anything
+re-adds it. The number is 300-plus unreadable frames per scroll, not a rounding error.
 
 **Specificity, not the cascade, was eating the nav button.** `.bar nav a` is (0,2,1) and beats
 `.btn` at (0,1,0), so the pill inherited the nav's muted colour *and* its padding and radius.
@@ -106,6 +103,10 @@ A 2× crop settled it. Crop before believing anything about colour.
 and then rebuilding leaves the generated HTML dirty, and the pop aborts. `git checkout --` the
 three generated pages first.
 
+**A fresh build shows the three pages as modified, with an empty diff.** That is line endings
+only — `git checkout` restores LF, Python writes CRLF, and git normalises back on commit.
+`git diff` being empty is the check that matters, not `git status`.
+
 **Lighthouse finds no Chrome here.** Export `CHROME_PATH` to the Playwright Chromium.
 
 ## Environment notes
@@ -114,9 +115,8 @@ three generated pages first.
   `site/demo_data.py` is destructive to that app on that device and has never been pointed at a
   phone. It was **not** run this session, and neither was `screenshots.py`; the eight PNGs are
   untouched inputs.
-- The phone (`10.205.0.144:46743`) still has two stray captures from earlier automation, a
-  ".,vprobe" item in Sort and an "Untitled" note in Ideas. Harmless, safe to delete by hand.
-- A static server may still be running on port 8899 from tonight (`python -m http.server 8899`
-  started in `site/`). Stop it if it is in the way.
-- `adb` is not on the path in Git Bash; the scripts default to
-  `~/AppData/Local/Android/Sdk/platform-tools/adb.exe` and take `--adb` to override.
+- The phone (`10.205.0.144:46743`) is attached and still has two stray captures from earlier
+  automation, a ".,vprobe" item in Sort and an "Untitled" note in Ideas. Harmless, safe to
+  delete by hand. Nothing this session touched it.
+- A static server may still be running on port 8899 (`python -m http.server 8899` started in
+  `site/`). Stop it if it is in the way.
