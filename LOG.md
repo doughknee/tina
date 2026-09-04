@@ -273,3 +273,20 @@ anything. Never retry an approach logged as failed.
 - **Phase 5 still open at six 5s and two 4s.** Items 2 (typeface) and 8
   (dark-theme screenshots) are Doni's decisions, unchanged. No `DONE` file:
   that needs all eight at 5.
+- **Phase 5, cycle 2. No new defect, but two justifications were overstated.**
+  Nothing scored below its recorded value this cycle; both reasons that were
+  wrong are now corrected in STATUS.md, because a false reason is what let the
+  missing figcaptions hide for five sessions.
+  - Item 1 said "all three of the brief's ten-second points land above the
+    fold". Measured: that is true only at 1440x900. "Works with no signal" is
+    154px below the fold at 1280x720 and 599px below at 390x844; at 390 the
+    privacy half of the message is carried above the fold by "no account" in
+    the CTA note alone, and at 360x640 that note is itself 3px under. Still a
+    5 -- the h1 and lede deliver what Peggy is at every size, and a stacked
+    phone layout cannot hold a screenshot and a three-claim strip in one
+    screen -- but the claim as written was false.
+  - Item 3 said all eight shots have a caption. Walked the DOM: all eight sit
+    in a bezelled .phone with a real box-shadow, but only seven have a
+    <figcaption>. The hero shot has none, and should not -- it is bracketed by
+    the h1, lede, buttons and note above and the claims panel below, so it is
+    not floating. Still a 5, with an accurate reason.
