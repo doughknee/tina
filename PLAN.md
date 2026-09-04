@@ -37,14 +37,14 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
 
 ## 2. Responsive and theme QA
 
-- [ ] **Three widths: 390, 820, 1440.** Check the hero stacks, the `.pair` phone duos wrap
+- [x] **Three widths: 390, 820, 1440.** Check the hero stacks, the `.pair` phone duos wrap
       instead of overflowing, the feature grid reflows, and nothing scrolls sideways.
       *Done when:* no horizontal scrollbar at any of the three, and the phone frames never exceed
       the viewport.
-- [ ] **Light and dark.** The CSS is `prefers-color-scheme` only, with no manual toggle.
+- [x] **Light and dark.** The CSS is `prefers-color-scheme` only, with no manual toggle.
       *Done when:* both themes read correctly, especially the `.claims` strip, `.parse` table and
       `.card` borders, which are the places the token swap is most likely to fall down.
-- [ ] **Verify the phone frame against the screenshots.** `.phone img` hard-codes
+- [x] **Verify the phone frame against the screenshots.** `.phone img` hard-codes
       `aspect-ratio:1080/2400`; every current PNG is 1080×2400, so a future shot from a
       differently-shaped device would distort.
       *Done when:* either the aspect ratio is derived per image from the manifest, or
