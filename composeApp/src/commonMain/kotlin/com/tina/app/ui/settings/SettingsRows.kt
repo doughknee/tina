@@ -190,6 +190,19 @@ fun ValueRow(row: SettingsRow.Value) {
     )
 }
 
+/** A read-only fact that still takes taps (the version row counts them toward Developer options). */
+@Composable
+fun TapValueRow(title: String, supporting: String?, onClick: () -> Unit) {
+    ListItem(
+        headlineContent = { RowText(title) },
+        supportingContent = supporting?.let { { RowSupporting(it) } },
+        colors = transparentListItem,
+        modifier = Modifier.clickable(onClick = onClick).semantics(mergeDescendants = true) {
+            supporting?.let { stateDescription = it }
+        },
+    )
+}
+
 @Composable
 fun TimePickerRow(row: SettingsRow.TimeRow) {
     ListItem(

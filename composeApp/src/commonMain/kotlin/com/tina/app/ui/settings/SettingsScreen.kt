@@ -151,11 +151,26 @@ import com.tina.app.resources.reminder_at_time
 import com.tina.app.resources.reminder_hour_before
 import com.tina.app.resources.reminder_min_before
 import com.tina.app.resources.sec_about
+import com.tina.app.resources.dev_unlocked
+import com.tina.app.resources.dev_review_reset_done
+import com.tina.app.resources.dev_review_unavailable
+import com.tina.app.resources.dev_review_requested
+import com.tina.app.resources.dev_review_reset_sub
+import com.tina.app.resources.dev_review_reset
+import com.tina.app.resources.dev_review_sub
+import com.tina.app.resources.dev_review
+import com.tina.app.resources.dev_onboarding_sub
+import com.tina.app.resources.dev_onboarding
+import com.tina.app.resources.dev_build
+import com.tina.app.resources.sec_developer
 import com.tina.app.resources.sec_pro
 import com.tina.app.resources.pro_title
 import com.tina.app.resources.pro_plan_active
 import com.tina.app.resources.pro_plan_free
 import com.tina.app.pro.label
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import org.koin.compose.koinInject
 import androidx.compose.material.icons.outlined.WorkspacePremium
 import com.tina.app.resources.sec_ai
@@ -355,7 +370,17 @@ fun SettingsScreen(
     var timeTarget by remember { mutableStateOf<TimeTarget?>(null) }
 
     val actions = rememberPlatformActions()
+    // seven taps on Version, as on Android itself; the dev build never needs them
+    var versionTaps by rememberSaveable { mutableIntStateOf(0) }
+    val devUnlockedText = stringResource(Res.string.dev_unlocked)
     val sections = rememberSettingsSections(
+        devUnlocked = versionTaps >= 7,
+        onVersionTap = {
+            if (versionTaps < 7) {
+                versionTaps++
+                if (versionTaps == 7) scope.launch { snackbarHostState.showSnackbar(devUnlockedText) }
+            }
+        },
         settings = settings,
         actions = actions,
         stats = stats,
@@ -472,7 +497,7 @@ private val HUB_GROUPS = listOf(
     listOf("general", "appearance"),
     listOf("capture", "datetime", "notifications", "ai"),
     listOf("organisation", "privacy", "data", "desktop"),
-    listOf("pro", "about"),
+    listOf("pro", "about", "developer"),
 )
 
 private val HUE_BLUE = Color(0xFF5B8DEF)
@@ -644,6 +669,8 @@ private fun rememberSettingsSections(
     onExport: () -> Unit,
     onImport: () -> Unit,
     snackbarHostState: SnackbarHostState,
+    devUnlocked: Boolean,
+    onVersionTap: () -> Unit,
 ): List<SettingsSection> {
     val weekdayNames = stringArrayResource(Res.array.weekdays_full)
     val use24h = settings.use24h
@@ -1224,11 +1251,11 @@ private fun rememberSettingsSections(
         icon = Icons.Outlined.Info,
         hue = HUE_GREY,
         rows = listOf(
-            SettingsRow.Value(
+            SettingsRow.Custom(
                 id = "version",
                 title = stringResource(Res.string.set_version),
-                supporting = appVersionName(),
                 keywords = listOf("build", "release"),
+                content = { TapValueRow(stringResource(Res.string.set_version), appVersionName(), onVersionTap) },
             ),
             SettingsRow.Navigation(
                 id = "whatsNew",
@@ -1253,9 +1280,61 @@ private fun rememberSettingsSections(
         ),
     )
 
+    val reviewPrompter = koinInject<com.tina.app.ui.ReviewPrompter>()
+    val settingsScope = rememberCoroutineScope()
+    val reviewRequested = stringResource(Res.string.dev_review_requested)
+    val reviewUnavailable = stringResource(Res.string.dev_review_unavailable)
+    val reviewReset = stringResource(Res.string.dev_review_reset_done)
+    val developer = SettingsSection(
+        id = "developer",
+        title = stringResource(Res.string.sec_developer),
+        icon = Icons.Outlined.Code,
+        hue = HUE_SLATE,
+        // the dev build type always; a Play build after seven taps on Version
+        visible = Platform.isDevBuild || devUnlocked,
+        rows = listOf(
+            SettingsRow.Value(
+                id = "devBuild",
+                title = stringResource(Res.string.dev_build),
+                supporting = if (Platform.isDevBuild) "dev" else "release",
+                keywords = listOf("variant", "debug"),
+            ),
+            SettingsRow.Navigation(
+                id = "devOnboarding",
+                title = stringResource(Res.string.dev_onboarding),
+                supporting = stringResource(Res.string.dev_onboarding_sub),
+                keywords = listOf("onboarding", "setup", "wizard", "welcome"),
+                onClick = viewModel::resetOnboarding,
+            ),
+            SettingsRow.Navigation(
+                id = "devReview",
+                title = stringResource(Res.string.dev_review),
+                supporting = stringResource(Res.string.dev_review_sub),
+                keywords = listOf("rating", "review", "play"),
+                onClick = {
+                    settingsScope.launch {
+                        val launched = reviewPrompter.promptNow()
+                        snackbarHostState.showSnackbar(if (launched) reviewRequested else reviewUnavailable)
+                    }
+                },
+            ),
+            SettingsRow.Navigation(
+                id = "devReviewReset",
+                title = stringResource(Res.string.dev_review_reset),
+                supporting = stringResource(Res.string.dev_review_reset_sub, com.tina.app.ui.REVIEW_AFTER_CAPTURES_UI),
+                keywords = listOf("rating", "review", "counter"),
+                onClick = {
+                    settingsScope.launch {
+                        reviewPrompter.resetAsk()
+                        snackbarHostState.showSnackbar(reviewReset)
+                    }
+                },
+            ),
+        ),
+    )
     return listOf(
         general, appearance, capture, dateTime, notifications,
-        ai, organisation, privacy, data, desktop, pro, about,
+        ai, organisation, privacy, data, desktop, pro, about, developer,
     )
 }
 

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -119,9 +120,12 @@ fun App() {
                 // after the shell, so it takes back presses first
                 BackHandler(enabled = pagesVisible && pages.size == 1) { pagesVisible = false }
                 if (!onboardingSeen) {
-                    com.tina.app.ui.onboarding.OnboardingScreen(
-                        onDone = { appScope.launch { settingsRepository.setOnboardingSeen() } },
-                    )
+                    // above the pages too, so Developer options can show it from inside Settings
+                    Box(Modifier.fillMaxSize().zIndex(1f)) {
+                        com.tina.app.ui.onboarding.OnboardingScreen(
+                            onDone = { appScope.launch { settingsRepository.setOnboardingSeen() } },
+                        )
+                    }
                 }
                 AnimatedVisibility(
                     visible = pagesVisible,

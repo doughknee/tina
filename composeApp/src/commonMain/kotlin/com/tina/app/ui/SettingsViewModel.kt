@@ -174,4 +174,7 @@ class SettingsViewModel(
     fun applyBackupSettings(settings: com.tina.app.data.BackupSettings) {
         viewModelScope.launch { repository.applyBackup(settings) }
     }
+
+    /** Developer options: the first-run cards show again immediately (App collects the flag). */
+    fun resetOnboarding() = viewModelScope.launch { repository.resetOnboarding() }
 }

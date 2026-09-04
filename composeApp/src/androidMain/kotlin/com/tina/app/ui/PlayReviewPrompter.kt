@@ -17,7 +17,7 @@ private val KEY_CAPTURES = intPreferencesKey("captureCount")
 private val KEY_REVIEW_ASKED = booleanPreferencesKey("reviewAsked")
 
 /** The twentieth capture is the first moment the app has proven itself; ask then, and only then. */
-const val REVIEW_AFTER_CAPTURES = 20
+const val REVIEW_AFTER_CAPTURES = REVIEW_AFTER_CAPTURES_UI
 
 class PlayReviewPrompter(
     private val app: Application,
@@ -26,13 +26,28 @@ class PlayReviewPrompter(
     override suspend fun onCapture() {
         val prefs = store.edit { it[KEY_CAPTURES] = (it[KEY_CAPTURES] ?: 0) + 1 }
         if (prefs[KEY_REVIEW_ASKED] == true || (prefs[KEY_CAPTURES] ?: 0) != REVIEW_AFTER_CAPTURES) return
-        val activity = ForegroundActivity.current ?: return
         // asked once, whatever Play decides to show; Play applies its own quota on top
         store.edit { it[KEY_REVIEW_ASKED] = true }
-        runCatching {
+        launch()
+        store.data.first()
+    }
+
+    override suspend fun promptNow(): Boolean = launch()
+
+    override suspend fun resetAsk() {
+        store.edit {
+            it.remove(KEY_REVIEW_ASKED)
+            it.remove(KEY_CAPTURES)
+        }
+    }
+
+    /** Play only shows its sheet for apps it installed; elsewhere the request completes silently. */
+    private suspend fun launch(): Boolean {
+        val activity = ForegroundActivity.current ?: return false
+        return runCatching {
             val manager = ReviewManagerFactory.create(app)
             manager.launchReview(activity, manager.requestReview())
-        }.onFailure { Log.d("peggy.review", "review flow unavailable: ${it.message}") }
-        store.data.first()
+            true
+        }.onFailure { Log.d("peggy.review", "review flow unavailable: ${it.message}") }.getOrDefault(false)
     }
 }

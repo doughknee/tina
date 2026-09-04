@@ -65,6 +65,14 @@ Desktop data lives in `~\.tina\` (`tina.db`, `settings.preferences_pb`).
 
 ## Development
 
+### Developer options
+
+Settings → Developer (always visible in the `dev` build; in a Play build tap Version seven
+times) re-runs the first-run cards, asks for a store review on the spot, or resets the
+once-only review ask so the real trigger fires again on the twentieth capture. Play only
+shows its review sheet for apps it installed, so on a sideload the row reports
+"unavailable" and the flow is exercised up to that point. Desktop: run with `-Dtina.dev=true`.
+
 ### Keeping Settings honest
 
 Settings copy drifts when features change. `/settings-audit` (a project skill in

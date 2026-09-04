@@ -8,6 +8,8 @@ package com.tina.app.ui.settings
 expect object Platform {
     val isAndroid: Boolean
     val isDesktop: Boolean
+    /** The side-loadable dev build type (Android) or `-Dtina.dev=true` (desktop): developer rows show without the unlock. */
+    val isDevBuild: Boolean
 }
 
 /** The build's version name; never a constant that drifts from Gradle. */

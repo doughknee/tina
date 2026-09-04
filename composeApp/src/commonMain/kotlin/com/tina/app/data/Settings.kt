@@ -289,6 +289,7 @@ class SettingsRepository(
     /** True once the first-run cards were seen or skipped. Not part of [settings]: it is not a preference. */
     val onboardingSeen: Flow<Boolean> = store.data.map { it[KEY_ONBOARDING_SEEN] ?: false }
     suspend fun setOnboardingSeen() = store.edit { it[KEY_ONBOARDING_SEEN] = true }
+    suspend fun resetOnboarding() = store.edit { it[KEY_ONBOARDING_SEEN] = false }
 
     /** The zone all-day events were last anchored in; see [syncTimeZone]. */
     suspend fun lastTimeZoneId(): String? = store.data.first()[KEY_LAST_TIME_ZONE]

@@ -19,6 +19,7 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 - The bar at the bottom of a tag page captures straight into that tag.
 
 ### Small things
+- A Developer section in Settings: show the first-run cards again, ask for a store review now, or reset the review ask. Always there in the dev build; in a Play build, tap Version seven times.
 - Settings caught up with the app: “Open app to” now offers Plan, Sort, Ideas or the last screen and is honoured; the Sort reminder, day sections and completed-items rows say Plan and Sort; widget and shortcut descriptions match what ships; What’s new has a 1.8 entry.
 - The onboarding Sort card describes the decisions page.
 - The capture bar and nav bar ride the keyboard cleanly again after you dismiss the suggestions by dragging or tapping outside. They used to climb out from under it on the next open.
