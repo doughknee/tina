@@ -370,15 +370,19 @@ fun SettingsScreen(
     var timeTarget by remember { mutableStateOf<TimeTarget?>(null) }
 
     val actions = rememberPlatformActions()
-    // seven taps on Version, as on Android itself; the dev build never needs them
+    // seven taps on Version, as on Android itself; the unlock is persisted, because the hub and
+    // the About page are separate screens and the taps happen on one while the card is on the other
     var versionTaps by rememberSaveable { mutableIntStateOf(0) }
     val devUnlockedText = stringResource(Res.string.dev_unlocked)
     val sections = rememberSettingsSections(
-        devUnlocked = versionTaps >= 7,
+        devUnlocked = settings.devOptions,
         onVersionTap = {
-            if (versionTaps < 7) {
+            if (!settings.devOptions) {
                 versionTaps++
-                if (versionTaps == 7) scope.launch { snackbarHostState.showSnackbar(devUnlockedText) }
+                if (versionTaps >= 7) {
+                    viewModel.setDevOptions(true)
+                    scope.launch { snackbarHostState.showSnackbar(devUnlockedText) }
+                }
             }
         },
         settings = settings,

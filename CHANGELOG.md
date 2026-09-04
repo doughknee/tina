@@ -2,6 +2,10 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
+## v1.8.1 (internal testing, 2026-09-03)
+
+- The seven-tap unlock for Developer options now sticks: it is saved, so the section shows in the hub and after a restart.
+
 ## v1.8.0 (internal testing, 2026-09-03)
 
 ### Ideas, redesigned

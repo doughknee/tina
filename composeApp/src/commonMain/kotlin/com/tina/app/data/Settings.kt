@@ -56,6 +56,8 @@ data class Settings(
     /** Ideas grid: NotesSort / NotesLayout names. */
     val notesSort: String = "EDITED",
     val notesLayout: String = "GRID",
+    /** Developer options unlocked (seven taps on Version); the dev build never needs it. */
+    val devOptions: Boolean = false,
     val haptics: Boolean = true,
     val reduceMotion: ReduceMotionMode = ReduceMotionMode.SYSTEM,
     // Appearance
@@ -122,6 +124,7 @@ private val KEY_AGENDA_RANGE = stringPreferencesKey("agendaRange")
 private val KEY_AGENDA_CALENDAR = stringPreferencesKey("agendaCalendar")
 private val KEY_NOTES_SORT = stringPreferencesKey("notesSort")
 private val KEY_NOTES_LAYOUT = stringPreferencesKey("notesLayout")
+private val KEY_DEV_OPTIONS = booleanPreferencesKey("devOptions")
 private val KEY_HAPTICS = booleanPreferencesKey("haptics")
 private val KEY_REDUCE_MOTION = stringPreferencesKey("reduceMotion")
 private val KEY_CONTRAST = stringPreferencesKey("contrast")
@@ -185,6 +188,7 @@ class SettingsRepository(
             agendaRange = p[KEY_AGENDA_RANGE] ?: "DAY",
             notesSort = p[KEY_NOTES_SORT] ?: "EDITED",
             notesLayout = p[KEY_NOTES_LAYOUT] ?: "GRID",
+            devOptions = p[KEY_DEV_OPTIONS] ?: false,
             agendaCalendar = p[KEY_AGENDA_CALENDAR] ?: "WEEK",
             openAppTo = p[KEY_OPEN_APP_TO]?.let { v -> OpenAppTo.entries.firstOrNull { it.name == v } }
                 ?: OpenAppTo.CAPTURE,
@@ -254,6 +258,7 @@ class SettingsRepository(
     suspend fun setAgendaCalendar(value: String) = store.edit { it[KEY_AGENDA_CALENDAR] = value }
     suspend fun setNotesSort(value: String) = store.edit { it[KEY_NOTES_SORT] = value }
     suspend fun setNotesLayout(value: String) = store.edit { it[KEY_NOTES_LAYOUT] = value }
+    suspend fun setDevOptions(enabled: Boolean) = store.edit { it[KEY_DEV_OPTIONS] = enabled }
     suspend fun setHaptics(enabled: Boolean) = store.edit { it[KEY_HAPTICS] = enabled }
     suspend fun setReduceMotion(mode: ReduceMotionMode) = store.edit { it[KEY_REDUCE_MOTION] = mode.name }
     suspend fun setContrast(mode: ContrastMode) = store.edit { it[KEY_CONTRAST] = mode.name }

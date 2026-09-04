@@ -177,4 +177,5 @@ class SettingsViewModel(
 
     /** Developer options: the first-run cards show again immediately (App collects the flag). */
     fun resetOnboarding() = viewModelScope.launch { repository.resetOnboarding() }
+    fun setDevOptions(enabled: Boolean) = viewModelScope.launch { repository.setDevOptions(enabled) }
 }
