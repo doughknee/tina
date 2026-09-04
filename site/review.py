@@ -1,11 +1,26 @@
-"""Screenshots the built site for visual review.
+"""Screenshots the built site for visual review, and measures the three things
+a screenshot cannot tell you.
 
     python site/review.py --widths 1280 --scheme light
     python site/review.py --full            # all three widths, both themes
     python site/review.py --nojs            # JS disabled, to prove nothing is hidden
+    python site/review.py --probe           # the numbers behind the rubric
 
 Writes PNGs to site/review/. That directory is gitignored: these are working
 images for a review pass, not site content.
+
+--probe answers the rubric lines that cannot be scored by eye, and prints
+numbers you can paste into STATUS.md:
+
+  overflow  documentElement.scrollWidth against the viewport, every width x
+            theme. Anything over the viewport is a sideways scrollbar.
+  motion    fast-scrolls the page and samples the computed opacity of every
+            .reveal overlapping the middle 20-80% of the viewport -- where a
+            reader's eye is. Any value below 1.0 there is the animation
+            delaying reading. This is why the reveal moves but does not fade.
+  hidden    loads with JavaScript off and with reduced motion asked for, and
+            fails if any .reveal is transparent or displaced in either. Hiding
+            is opt-in, so both of those loads must show everything.
 """
 import argparse
 import pathlib
@@ -32,6 +47,84 @@ def scroll_through(page, step):
     page.wait_for_timeout(400)
 
 
+# Scrolls the page for 240 frames and records the opacity of every .reveal in
+# the reading band. Runs in the page because it has to sample per frame; doing
+# it from Python would miss the frames that matter.
+MOTION_JS = """
+() => new Promise(resolve => {
+  const samples = [];
+  const band = [innerHeight * 0.20, innerHeight * 0.80];
+  let frames = 0;
+  const tick = () => {
+    for (const el of document.querySelectorAll('.reveal')) {
+      const r = el.getBoundingClientRect();
+      if (r.bottom < band[0] || r.top > band[1] || r.height === 0) continue;
+      samples.push(+getComputedStyle(el).opacity);
+    }
+    if (++frames < 240) { scrollBy(0, 42); requestAnimationFrame(tick); }
+    else resolve(samples);
+  };
+  requestAnimationFrame(tick);
+})
+"""
+
+# A .reveal that is transparent or displaced is content the reader cannot have.
+HIDDEN_JS = """() => [...document.querySelectorAll('.reveal')].filter(el => {
+  const cs = getComputedStyle(el);
+  return +cs.opacity < 0.999 || cs.transform !== 'none';
+}).length"""
+
+
+def probe(url):
+    """Prints the measurements behind the rubric. Returns 1 if anything fails."""
+    bad = 0
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+
+        print("overflow  (scrollWidth must equal the viewport)")
+        for scheme in ("light", "dark"):
+            ctx = browser.new_context(color_scheme=scheme)
+            page = ctx.new_page()
+            for w, h in ((390, 844), (820, 1180), (1440, 900)):
+                page.set_viewport_size({"width": w, "height": h})
+                page.goto(url, wait_until="networkidle")
+                page.wait_for_timeout(400)
+                sw = page.evaluate("document.documentElement.scrollWidth")
+                ok = sw <= w
+                bad += not ok
+                print(f"    {w:>4} {scheme:<5} scrollWidth={sw:<5} {'ok' if ok else 'OVERFLOW'}")
+            ctx.close()
+
+        print("motion    (.reveal opacity in the middle 20-80% during a fast scroll)")
+        for w, h in ((390, 844), (1440, 900)):
+            ctx = browser.new_context(viewport={"width": w, "height": h})
+            page = ctx.new_page()
+            page.goto(url, wait_until="networkidle")
+            page.wait_for_timeout(500)
+            s = page.evaluate(MOTION_JS)
+            faded = [x for x in s if x < 0.995]
+            bad += bool(faded)
+            print(f"    {w:>4}       {len(faded):>4} of {len(s):<5} mid-fade, "
+                  f"worst {min(s) if s else 1:.3f} {'ok' if not faded else 'DELAYS READING'}")
+            ctx.close()
+
+        print("hidden    (nothing may be transparent or displaced without JS)")
+        for label, kw in (("js-off", {"java_script_enabled": False}),
+                          ("reduced", {"reduced_motion": "reduce"})):
+            ctx = browser.new_context(viewport={"width": 1440, "height": 900}, **kw)
+            page = ctx.new_page()
+            page.goto(url, wait_until="networkidle")
+            page.wait_for_timeout(600)
+            n = page.evaluate(HIDDEN_JS)
+            bad += bool(n)
+            print(f"    {label:<9} {n:>4} hidden or displaced {'ok' if not n else 'CONTENT LOST'}")
+            ctx.close()
+
+        browser.close()
+    print("FAILURES:", bad) if bad else print("all clear")
+    return 1 if bad else 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--url", default="http://127.0.0.1:8899/peggy/")
@@ -40,7 +133,11 @@ def main():
     ap.add_argument("--tag", default="", help="suffix for the filenames")
     ap.add_argument("--full-page", action="store_true", help="whole page, not just the fold")
     ap.add_argument("--nojs", action="store_true", help="load with JavaScript disabled")
+    ap.add_argument("--probe", action="store_true", help="measure instead of screenshot")
     a = ap.parse_args()
+
+    if a.probe:
+        return probe(a.url)
 
     widths = [int(w) for w in a.widths.split(",")]
     schemes = a.scheme.split(",")
