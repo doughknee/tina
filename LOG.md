@@ -311,3 +311,56 @@ anything. Never retry an approach logged as failed.
 - **Closing verification.** Fresh `python site/build.py` leaves `git diff`
   empty, and `--probe` is all clear on all six checks. Six 5s, two 4s, both 4s
   Doni's decisions. No DONE file.
+
+## Session 7 — 2026-09-04
+
+- **Chrome available, not used for scoring.** `tabs_context_mcp` answered without
+  error (no tab group; offers to create one). The finding was a dark-theme colour
+  measurement and Chrome cannot be given a colour scheme, a viewport or a root
+  font size, so Playwright supplied every number as usual.
+- **Phase 5, cycle 1. Four theories tested, all wrong.** Below the sweep's 360
+  floor (340/320/300/280 — 320 is 400% zoom on a 1280 viewport, a WCAG AA
+  reading condition; 280 is a Fold cover screen): clean on all three pages.
+  Forced WCAG 1.4.12 text spacing (line-height 1.5, letter .12em, word .16em,
+  paragraph 2em): nothing clipped or outside the viewport at 390/820/1440 with
+  every `<details>` open. Short and landscape viewports (844x390, 740x360,
+  932x430, 1280x600): bar takes 16-18% of the screen, all four anchors still
+  land 0.0px clear. The sticky header over large heading type: the blur is
+  working, the heading dissolves and the wordmark stays crisp at 3x — the
+  scaled-capture trap again, not a defect. Recorded in STATUS.md so nobody
+  re-tests them.
+- **Item 3 was not a 5, and had not been for three sessions. Dark-mode bezel,
+  FIXED, 5 -> 3 -> 5.** `.phone` was the one component on a fully tokenised page
+  with a hardcoded colour: `background:#0d0d12`, chosen against the light `--bg`
+  (#fbfbfd) where it measures 18.75:1 and reads as a solid device frame. The
+  dark `--bg` is #0e0e13 — the same colour to within one RGB unit — so in dark
+  mode it measured **1.01:1 and the frame did not exist**. All eight screenshots
+  were bright rectangles on an empty background, which is precisely what item 3
+  forbids. Found by looking at a 1440 dark segment and then not trusting it:
+  cropped the phone edge at 4x in both themes and sampled the pixels.
+- **Fixed with a `--bezel` token re-chosen per theme**, the way every other
+  surface already works. Dark is #2b2b36, 1.38:1 against the bg — one notch
+  above `--line` (1.28:1) so it reads as a device frame, not a hairline. Light
+  is unchanged by construction and proved so: all ten 1440 light segments are
+  pixel-identical before and after (ImageChops bbox None). Looked at the result
+  at 1440 dark (hero and the Plan duo) and 390 dark, not only measured it.
+- **Seventh `--probe` check: themes.** Measures every opaque painted surface
+  against whatever is actually behind it, in both colour schemes, joins the two
+  runs by document order, and fails on any surface 3:1 or better in one and
+  under 1.05:1 in the other. Translucent surfaces are skipped on purpose — the
+  sticky header is 82% of the bg by design. Proved it fails as well as passes:
+  #0d0d12 restored gives 8 surfaces (all eight phones) and exits 1; #2b2b36
+  gives 0 and exits 0. Documented in site/README.md beside the other six.
+- **The lesson, beside "three good widths" and "default settings".** A theme is
+  not checked by looking at one theme: the light page was right, the dark page
+  was wrong, and each looked deliberate in isolation. Any colour written outside
+  the two `:root` blocks was chosen against exactly one background. There are
+  now none.
+- **Item 8's stated reason was wrong and is corrected.** It said the light
+  screenshots were "the only thing" holding it at 4 while a whole component was
+  collapsing into the background. Fixed, so that sentence is finally true. Score
+  unchanged at 4 — re-shooting in dark is still Doni's call.
+- **Closing verification.** Fresh `python site/build.py` leaves `git diff` empty,
+  and `--probe` is all clear on all seven checks on all three pages.
+- **Phase 5 still open at seven 5s and one 4.** Item 2 (typeface) is Doni's
+  decision. No `DONE` file: that needs all eight at 5.
