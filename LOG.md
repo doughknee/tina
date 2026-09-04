@@ -184,3 +184,45 @@ anything. Never retry an approach logged as failed.
   through, zero are left without `.in`.
 - **Phase 5 complete, six 5s and two 4s.** Items 2 and 8 are Doni's decisions and
   are unchanged from last session. No `DONE` file: that needs all eight at 5.
+
+## Session 5 — 2026-09-04
+
+- **Chrome got further than ever and still errored.** `tabs_context_mcp` created a
+  group, navigated and returned one screenshot; the next `Page.captureScreenshot`
+  timed out at 30 s, as in session 4. Protocol says that is an error: tab closed,
+  Playwright for the rest, no retries.
+- **The one Chrome screenshot showed an empty hero phone, and it was not a bug.**
+  Taken before first paint. Settled it by drawing the img to a canvas and
+  sampling rather than by staring at the capture: `complete:true`,
+  `naturalWidth:640`, average luminance 212/255. Recorded in STATUS.md so nobody
+  spends a session fixing it.
+- **Item 5 was wrong again, and again only at 390. Anchor jumps landed under the
+  sticky header, FIXED.** The header is `sticky;top:0` at 65px and there was no
+  `scroll-margin-top` or `scroll-padding-top` anywhere in the CSS. `#main` (the
+  skip link, so the keyboard path) buried 17px of the `<h1>`; `#features` (nav)
+  buried 8.5px of its eyebrow; `#how` ("See how it works") buried 9px of the
+  CAPTURE eyebrow. `#privacy` was clear only because its section opens with a
+  padded panel. 820 and 1440 were clean at every anchor, which is why six
+  sessions of scoring missed it.
+- **Fixed with one line: `html{scroll-padding-top:80px}`.** On the root rather
+  than a `scroll-margin-top` per target, so an anchor added later is covered
+  without remembering to. Confirmed by looking, not only measuring: at 390 the
+  Capture eyebrow and full heading now sit clear of the bar with breathing room.
+- **Added as the fifth `--probe` check, and proved it fails as well as passes.**
+  Rule removed: 17.0/8.5/9.0px, exits 1. Rule in place: 0.0px at all three
+  widths, exits 0. First cut of the check hardcoded `("#main","#how")` and so
+  missed the two nav links, which are written `/peggy/#features` — it now
+  collects same-page anchors from the DOM instead. Do not go back to matching
+  `href^="#"`.
+- **`--segments` added to review.py.** One viewport-sized PNG per screenful.
+  Sessions 2, 3 and 4 each built this in a scratchpad and threw it away, and a
+  scaled full-page capture is what hid the missing figcaptions for five
+  sessions. Documented in `site/README.md` alongside the anchors check.
+- **Re-verified the rest rather than trusting the table.** Lighthouse re-run on
+  the changed build: 100 desktop and 100 mobile across all four categories, CLS
+  0, LCP 1.1s. Every internal link and fragment on all three pages resolves (0
+  broken). Home and privacy pages read at 390 in both themes, not just swept.
+  Build still leaves `git diff` empty.
+- **Phase 5 still open at six 5s and two 4s.** Items 2 (typeface) and 8
+  (dark-theme screenshots) are Doni's decisions, unchanged. No `DONE` file: that
+  needs all eight at 5.
