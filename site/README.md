@@ -63,7 +63,18 @@ not distort.
 
 ## 2. Retaking all of them from a device
 
-Two scripts, in this order:
+One command does the whole thing — install the dev build on the emulator, seed,
+shoot both themes, rebuild, probe — and stops at the first step that fails:
+
+```bash
+python site/refresh.py
+```
+
+About ten minutes, unattended. `--only sort ideas` for a subset, `--theme dark`
+for one pass, `--skip-install` when the emulator already has the build you want.
+Then look at the shots and commit `site/screenshots/` and `site/peggy/`.
+
+Underneath it is two scripts, in this order:
 
 ```bash
 python site/demo_data.py     # writes the demo content into the app's database
