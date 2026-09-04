@@ -91,10 +91,14 @@ HIDDEN_JS = """() => [...document.querySelectorAll('.reveal')].filter(el => {
 }).length"""
 
 
-# Every in-page link on the page. Both land at the top of something that the
-# sticky header would otherwise cover: #main is where the skip link puts a
-# keyboard user, #how is the hero's "See how it works".
-HREFS = ("#main", "#how")
+# Every link that lands somewhere on this same page, collected from the page
+# rather than listed here: the nav writes "/peggy/#features", not "#features",
+# so a list of hrefs starting with "#" quietly misses half of them.
+SAME_PAGE_JS = """
+() => [...new Set([...document.querySelectorAll('a[href*="#"]')]
+  .filter(a => a.pathname === location.pathname && a.hash.length > 1)
+  .map(a => a.hash))]
+"""
 
 # How far the target's own label is tucked under the sticky header after the
 # jump. An empty anchor div stands in front of the section it marks, so measure
@@ -213,7 +217,7 @@ def probe(url):
             page = ctx.new_page()
             page.goto(url, wait_until="networkidle")
             page.wait_for_timeout(400)
-            for href in HREFS:
+            for href in page.evaluate(SAME_PAGE_JS):
                 page.goto(url, wait_until="networkidle")
                 page.wait_for_timeout(250)
                 page.evaluate(f"location.hash={href!r}")
