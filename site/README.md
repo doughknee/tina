@@ -166,7 +166,7 @@ python site/review.py --segments      # the whole page, one readable screenful a
 missing caption survived five sessions of "checked the full-page capture". One
 viewport-sized PNG per screenful is readable at 1:1.
 
-`--probe` is the one to run before committing a CSS change. It measures six
+`--probe` is the one to run before committing a CSS change. It measures seven
 things and exits non-zero if any of them fail:
 
 - **overflow** — `scrollWidth` against the viewport at 390, 820 and 1440 in both
@@ -198,6 +198,16 @@ things and exits non-zero if any of them fail:
 - **hidden** — loads with JavaScript off and with reduced motion asked for, and
   fails if anything is transparent or displaced in either. Hiding is opt-in
   (`html.js-reveal`), so both of those loads must show everything.
+- **themes** — measures every opaque painted surface against whatever is
+  actually behind it, in both colour schemes, and joins the two runs element
+  by element. It fails on any surface that is solid in one theme (3:1 or
+  better) and invisible in the other (under 1.05:1) — the signature of a
+  colour that was chosen once and never re-chosen. `.phone` was a hardcoded
+  `#0d0d12` on an otherwise fully tokenised page: 18.75:1 against the light
+  `--bg` and 1.01:1 against the dark one, the same colour to within one RGB
+  unit. In dark mode the bezel simply was not there and all eight
+  screenshots floated. Neither theme looks wrong on its own, which is why
+  this compares them rather than scoring each.
 
 Two things it has already caught, worth knowing before you trust an image from
 it:
@@ -210,6 +220,11 @@ it:
   passed while every width from 900 to 1060 was visibly broken. Breakpoints put
   the bugs *between* the widths you test, which is why `sweep` walks the range
   instead of sampling it.
+- **A theme is not checked by looking at one theme.** The light page was
+  right and the dark page was wrong, and each looked deliberate in
+  isolation — the defect only exists in the comparison. Any colour written
+  outside the two `:root` token blocks is a colour that was chosen against
+  exactly one background.
 - **A sticky header eats anchor landings, and only at some widths.** At 820 and
   1440 both in-page links landed fine; at 390 the skip link put 17 px of the
   `<h1>` under the bar and "See how it works" put 9 px of the Capture eyebrow

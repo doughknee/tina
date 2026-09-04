@@ -132,6 +132,46 @@ FONTSIZE_JS = r"""
 """
 
 
+# Every opaque painted surface, and the contrast it has against whatever is
+# actually behind it. Indexed by document order, which is identical in both
+# colour schemes, so the two runs can be joined element by element.
+SURFACE_JS = r"""
+() => {
+  const rgb = s => {
+    const m = (s || '').match(/[\d.]+/g);
+    return m && m.length >= 3 ? [+m[0], +m[1], +m[2], m.length > 3 ? +m[3] : 1] : null;
+  };
+  const lum = c => {
+    const f = v => (v /= 255) <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
+  };
+  const ratio = (a, b) => {
+    const x = lum(a), y = lum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  };
+  const all = [...document.querySelectorAll('body *')];
+  return all.map((el, i) => {
+    const cs = getComputedStyle(el);
+    const own = rgb(cs.backgroundColor);
+    // Only surfaces that actually paint. A translucent backdrop (the sticky
+    // header) is deliberate and is judged by looking, not by this check.
+    if (!own || own[3] < 0.99) return null;
+    const r = el.getBoundingClientRect();
+    if (r.width < 24 || r.height < 24) return null;
+    let p = el.parentElement, behind = null;
+    while (p) {
+      const c = rgb(getComputedStyle(p).backgroundColor);
+      if (c && c[3] >= 0.99) { behind = c; break; }
+      p = p.parentElement;
+    }
+    if (!behind) return null;
+    return [i, el.tagName + (el.className ? '.' + String(el.className).trim().split(/\s+/).join('.') : ''),
+            +ratio(own, behind).toFixed(2)];
+  }).filter(Boolean);
+}
+"""
+
+
 def shoot_segments(page, w, vh, scheme, tag):
     """One viewport-sized PNG per screenful, top to bottom.
 
@@ -257,6 +297,41 @@ def probe(url):
             for a in frozen[:4]:
                 print(f"          {a[1]:>7}  {a[0][:32]:32} | {a[2]}")
             ctx.close()
+
+        # A colour picked against one theme's background and never re-chosen
+        # for the other collapses into it. .phone was #0d0d12: 18.75:1 against
+        # the light bg and 1.01:1 against the dark one, so in dark mode the
+        # frame vanished and every screenshot floated. Comparing the two
+        # themes element by element is what catches that shape -- a single
+        # theme looks fine on its own, because the light one really is fine.
+        print("themes    (a surface visible in one theme must not vanish in the other)")
+        seen = {}
+        for scheme in ("light", "dark"):
+            ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                                      color_scheme=scheme)
+            page = ctx.new_page()
+            page.goto(url, wait_until="networkidle")
+            page.wait_for_timeout(400)
+            for i, name, c in page.evaluate(SURFACE_JS):
+                seen.setdefault(i, {})[scheme] = (name, c)
+            ctx.close()
+        collapsed = []
+        for i, d in sorted(seen.items()):
+            if len(d) != 2:
+                continue
+            lo = min(d["light"][1], d["dark"][1])
+            hi = max(d["light"][1], d["dark"][1])
+            # Solid in one theme, gone in the other. A surface that is subtle
+            # in both is a design choice; one that is 3:1 here and 1.05:1
+            # there is a value that was only ever chosen once.
+            if hi >= 3.0 and lo < 1.05:
+                collapsed.append((d["light"][0], d["light"][1], d["dark"][1]))
+        bad += bool(collapsed)
+        print(f"    1440       {len(collapsed):>4} surface{'' if len(collapsed) == 1 else 's'} "
+              f"solid in one theme and invisible in the other "
+              f"{'ok' if not collapsed else 'ONLY CHOSEN ONCE'}")
+        for name, l, d in collapsed[:4]:
+            print(f"          {name[:36]:36} light {l}:1  dark {d}:1")
 
         print("hidden    (nothing may be transparent or displaced without JS)")
         for label, kw in (("js-off", {"java_script_enabled": False}),
