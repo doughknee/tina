@@ -227,8 +227,10 @@ Scored from captures and measurements of the served page, not from the CSS.
 | 7 | Motion purposeful, never delays reading | **5** | The reveal does not touch opacity, so it cannot be caught mid-fade: 0 of 408 samples at 390, 0 of 737 at 820 and 0 of 718 at 1440, worst 1.000. Motion is a 16 px rise. |
 | 8 | Dark theme designed, not an inversion | **4** | Tokens are separately chosen, not derived — brand lightens #4f5fd6 → #9aa5ff, on-brand flips to near-black, panel #17171f sits distinctly above bg #0e0e13, and the bezel is re-chosen too. The light screenshots really are the only thing left holding this at 4. **Your call, see below.** |
 
-Also verified this session: `python site/build.py` leaves `git diff` empty, so the committed
-output really is what the build produces.
+Also verified at the close of session 10: `python site/build.py` leaves `git diff` empty on
+`site/`, so the committed output really is what the build produces, and `--probe` is **all
+clear on all eight checks on all three pages**. No site file was changed this session --
+the two commits are STATUS.md and LOG.md only.
 
 ## For Doni to decide
 
