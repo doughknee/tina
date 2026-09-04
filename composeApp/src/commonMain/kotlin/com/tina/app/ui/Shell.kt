@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -261,12 +261,13 @@ fun Shell(
     }
 
     NavigationSuiteScaffold(
-        // the whole shell (bar and nav included) is padded for the keyboard, and it jumps to the
-        // keyboard's final height the moment the keyboard starts showing rather than easing there:
-        // on the Pixel the keyboard window pops in fully drawn ~60 ms after the tap and shrinks
-        // away on hide, ignoring the 300 ms inset ease, so anything that eases climbs out from
-        // under it. imeAnimationTarget is the end value from the first frame of the animation.
-        modifier = Modifier.windowInsetsPadding(keyboardTarget()),
+        // the whole shell (bar and nav included) rides the platform's keyboard inset animation.
+        // Nothing hand-rolled: when the keyboard slides in sync with that animation (the Android
+        // design since 11) the bar is glued to it; when a keyboard ignores it and pops in on its
+        // own clock, as Gboard on Android 17 did, the bar lags it and there is nothing the app
+        // can read to do better. Padding by imeAnimationTarget (jump to the end value) was tried
+        // and works for the pop-in case at the cost of the ride; the user chose the ride.
+        modifier = Modifier.imePadding(),
         navigationSuiteItems = {
             TinaTab.entries.forEach { tab ->
                 val selected = selectedTab == tab && !askVisible && !searchOpen
