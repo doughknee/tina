@@ -94,3 +94,10 @@ anything. Never retry an approach logged as failed.
   sample can be mid-fade. 0/722 and 0/417 after. Reveal still fires (verified an
   element two viewports down sits at translateY(16px), opacity 1, and settles to
   none on scroll). No overflow regression at any of the six width x theme combos.
+- **Phase 4, cycle 3. Hero 4 -> 5.** The hero delivered two of the brief's three
+  ten-second points and never said "one surface". Named the destination on the
+  clause that already dangled ("and files it") rather than trading away a claims
+  slot: "as an event, a task or a note -- three things that usually mean three
+  apps". Verified the claim in the app first (`ItemType { INBOX, TASK, EVENT,
+  NOTE }`, one table) so it is not benefit-speak. All three points now land above
+  the fold at 1440 and 390.

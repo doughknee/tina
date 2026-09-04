@@ -643,8 +643,8 @@ def home():
       <article class="card">
         <div class="ico" style="background:{BRAND}">{mark_svg(19)}</div>
         <h2><a href="/peggy/" style="text-decoration:none">Peggy</a></h2>
-        <p>Two seconds from thought to done. A quick-capture to-do app for Android that keeps
-           everything on your phone.</p>
+        <p>Two seconds from thought to done. A quick-capture to-do, calendar and notes app for
+           Android that keeps everything on your phone.</p>
       </article>
     </div>
   </div>
