@@ -134,6 +134,11 @@ fun ItemRow(
     /** Overrides for the two swipes; null keeps complete (right) and delete (left). */
     swipeRight: SwipeAction? = null,
     swipeLeft: SwipeAction? = null,
+    /**
+     * Extra words for a screen reader when the title alone repeats — the date of a repeating
+     * task's occurrence, say, where four rows would otherwise all read "Call Nigel".
+     */
+    semanticsContext: String? = null,
 )
 {
     val haptic = LocalHapticFeedback.current
@@ -215,6 +220,7 @@ fun ItemRow(
             trailing = trailing,
             extraContent = extraContent,
             accessibilityActions = accessibilityActions,
+            semanticsContext = semanticsContext,
         )
     }
 }
@@ -239,6 +245,7 @@ private fun RowContent(
     trailing: (@Composable () -> Unit)?,
     extraContent: (@Composable () -> Unit)?,
     accessibilityActions: List<CustomAccessibilityAction> = emptyList(),
+    semanticsContext: String? = null,
 ) {
     val haptic = LocalHapticFeedback.current
     var editing by remember(item.id) { mutableStateOf(false) }
@@ -265,6 +272,9 @@ private fun RowContent(
             // swipes have no gesture for a screen reader: expose them as actions on the row
             .semantics(mergeDescendants = true) {
                 customActions = accessibilityActions
+                if (semanticsContext != null) {
+                    contentDescription = listOfNotNull(semanticsContext, item.title, timeText).joinToString(", ")
+                }
             }
             .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
@@ -284,12 +294,15 @@ private fun RowContent(
                     )
                 }
             } else if (onToggleComplete != null) {
+                val checkLabel = listOfNotNull(semanticsContext, item.title).joinToString(", ")
                 Checkbox(
                     checked = item.completed,
                     onCheckedChange = {
                         haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         onToggleComplete()
                     },
+                    // an unlabelled box reads as "checkbox" on every row; name the thing it completes
+                    modifier = Modifier.semantics { contentDescription = checkLabel },
                 )
             } else {
                 val eventText = stringResource(Res.string.type_event)
@@ -422,7 +435,7 @@ private fun RowContent(
                 IconButton(onClick = onOpen) {
                     Icon(
                         Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                        stringResource(Res.string.open_details),
+                        listOfNotNull(stringResource(Res.string.open_details), semanticsContext, item.title).joinToString(", "),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

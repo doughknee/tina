@@ -632,6 +632,10 @@ private fun AgendaRowContent(
         today = today,
         timeText = timeText,
         dateText = if (overdue) item.dueLocalDate?.let { dateLabel(it, today) } else null,
+        // several days on screen means several rows can share a title; the day tells them apart
+        // out loud. Today's rows say nothing extra: on a single-day view there is nothing to confuse.
+        semanticsContext = ((row as? AgendaRow.Single)?.date ?: item.dueLocalDate)
+            ?.takeIf { it != today }?.let { dateLabel(it, today) },
         badge = (row as? AgendaRow.Duplicate)?.let { "×${it.count}" },
         badgeDescription = (row as? AgendaRow.Duplicate)?.let { stringResource(Res.string.duplicate_copies, it.count) },
         onToggleComplete = when {
@@ -1002,7 +1006,8 @@ private fun WeekdayHeader(firstDayOfWeekIso: Int) {
             val iso = ((firstDayOfWeekIso - 1 + offset) % 7)
             Text(
                 names[iso].take(1),
-                modifier = Modifier.weight(1f),
+                // "T" and "S" appear twice; a screen reader hears the whole weekday instead
+                modifier = Modifier.weight(1f).semantics { contentDescription = names[iso] },
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

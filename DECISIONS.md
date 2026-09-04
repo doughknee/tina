@@ -459,3 +459,10 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 
 - `dumpsys gfxinfo` over six capture-field opens and closes on the Pixel 9 Pro XL: 446 frames, 1.1 % janky, p90 10 ms, p95 12 ms. The 2024 profile that motivated the hand-rolled lift (31 % janky, 46–61 ms p90) does not reproduce on this hardware with this Compose; `imePadding` stays.
 
+### Accessibility Scanner sweep (v1.8.3)
+
+- Run on the Pixel 9 Pro XL against the dev build: Plan, Sort, Ideas, the note editor and Settings. Sort, Ideas and Settings were already clean.
+- Plan had six: the weekday header repeats "T" and "S" (now a full weekday name as `contentDescription`), and four rows sharing the title "Call Nigel" on different days, along with their checkboxes and chevrons. `ItemRow` gained `semanticsContext`, which the agenda fills with the row's day when it is not today, so a repeated title reads "Sun 6, Call Nigel". The checkbox is named after the item it completes rather than announcing a bare "checkbox".
+- The editor had six: every format-toolbar button was 40dp. They are 48dp now and the row scrolls, because nine 48dp targets do not fit a phone's width.
+- Every screen still reports one "Unsupported item type" against the whole window. That is Scanner not understanding a Compose root, not a defect; it appears on every Compose app.
+

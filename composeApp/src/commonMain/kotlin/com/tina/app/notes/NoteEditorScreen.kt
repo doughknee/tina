@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -395,7 +396,8 @@ fun NoteEditorScreen(
 /** Three clusters split by hairlines: B I U S · H1 H2 · bullet number. */
 @Composable
 private fun FormatToolbar(state: RichTextState, modifier: Modifier = Modifier) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+    // 48dp targets do not all fit a phone's width, so the row scrolls rather than shrinking them
+    Row(modifier.horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
         FormatButton(
             active = state.currentSpanStyle.fontWeight == FontWeight.Bold &&
                 state.currentSpanStyle.fontSize != HEADING.fontSize &&
@@ -522,7 +524,7 @@ private fun FormatButton(active: Boolean, onClick: () -> Unit, icon: @Composable
     IconToggleButton(
         checked = active,
         onCheckedChange = { onClick() },
-        modifier = Modifier.size(40.dp).semantics { stateDescription = stateText },
+        modifier = Modifier.size(48.dp).semantics { stateDescription = stateText },
         colors = IconButtonDefaults.iconToggleButtonColors(
             checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer,

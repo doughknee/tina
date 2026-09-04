@@ -2,6 +2,13 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
+## v1.8.3 (dev)
+
+### Accessibility
+- The calendar's weekday letters are read out in full, so "T" and "S" are no longer ambiguous.
+- On multi-day views, a task's row, its checkbox and its details arrow say which day they belong to, so repeated titles are told apart out loud.
+- The note editor's formatting buttons are large enough to hit reliably; the row scrolls when they don't all fit.
+
 ## v1.8.2 (internal testing, 2026-09-04)
 
 ### Ideas
