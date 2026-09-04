@@ -145,3 +145,29 @@ anything. Never retry an approach logged as failed.
   wraps under its own phone. Measured after: duo still one row at 1440 and 820,
   stacks at 390, probe all clear. Single shots unchanged in a before/after
   capture.
+- **Item 6 re-verified on the changed page.** Lighthouse 100 on performance,
+  accessibility, best-practices and SEO, desktop and mobile, CLS 0. Note for
+  next time: the run now ends in `EPERM ... destroyTmp` while deleting its temp
+  profile. That is cleanup *after* the report is written -- check for the JSON
+  before believing the error.
+- **Structural pass, all three pages.** One h1 each, no heading skips, every
+  image has alt text and explicit width/height, skip link and `main#main`
+  present. Alt text re-read against the shots: the Sort alt names New, Overdue
+  and Snoozed and the Today/Someday/Tomorrow/This week chips, and that is what
+  the screenshot shows. FAQ opened and captured -- answers read correctly and
+  no overflow with every `<details>` open.
+- **Item 5 was wrong, and three widths is why. 900-1060 reflow, FIXED.** Swept
+  every width 360-1680 instead of the three the rubric names. `.row-grid` goes
+  two-column at 900, but the shot column is 404px there and does not fit two
+  228px phones until 1080, so across the whole band the duo wrapped into a
+  1073px tower beside a ~350px text block. 1024 is a common laptop width and it
+  looked broken. Confirmed pre-existing by running the same sweep against
+  d87f2ab -- identical 900-1060 band, so it was not the caption change. Fixed
+  with `20.5vw` in that band only: widest that fits two-up at 900 (188px
+  available) and hands over to 228px at 1080. Pair height at 1024 1073px ->
+  506px, and the duo now has exactly one transition across the whole range.
+- **The sweep is now in `review.py --probe`.** Fourth check beside overflow,
+  motion and hidden. Proved it fails as well as passes: rule disabled it reports
+  3 transitions and exits 1, restored it reports 1 and exits 0. Documented in
+  `site/README.md`, with the lesson stated plainly -- breakpoints put the bugs
+  between the widths you test.
