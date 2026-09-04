@@ -12,13 +12,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.navigationBarsIgnoringVisibility
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -157,7 +158,6 @@ fun Shell(
     val captureFocus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboardShift = rememberKeyboardShift()
-
     // the capture sheet rises while the field has focus and stays while there is a draft:
     // starters when empty, parse chips while typing, and it survives the keyboard going away
     val hasDraft = captureViewModel.text.isNotBlank()
@@ -267,10 +267,16 @@ fun Shell(
     }
 
     NavigationSuiteScaffold(
-        // the whole shell (bar and nav included) rides above the keyboard
-        // lifted above the keyboard as one layer instead of padded for it: padding re-measured
-        // and re-placed the whole shell on every frame of the keyboard animation
-        modifier = Modifier.offset { IntOffset(0, -keyboardShift.value()) },
+        // the whole shell (bar and nav included) rides above the keyboard: lifted as one layer
+        // instead of padded for it, because padding re-measured and re-placed the whole shell on
+        // every frame of the keyboard animation.
+        // The bar inset is padded here, as the stable (ignoring-visibility) value, and consumed
+        // for the subtree: the M3 nav bar inside would otherwise pad itself with the *visible*
+        // inset, which only updates when the keyboard settles, a frame after the lift (which
+        // subtracts the same constant) has finished. That one-frame disagreement was a ~4px snap.
+        modifier = Modifier
+            .windowInsetsPadding(stableNavigationBars().only(WindowInsetsSides.Bottom))
+            .offset { IntOffset(0, -keyboardShift.value()) },
         navigationSuiteItems = {
             TinaTab.entries.forEach { tab ->
                 val selected = selectedTab == tab && !askVisible && !searchOpen
@@ -528,13 +534,12 @@ private class KeyboardShift(private val ime: WindowInsets, private val bars: Win
     fun value(): Int = (ime.getBottom(density) - bars.getBottom(density)).coerceAtLeast(0)
 }
 
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun rememberKeyboardShift(): KeyboardShift {
     val ime = WindowInsets.ime
     // the stable inset: during a keyboard animation the visible nav-bar inset sometimes reads 0,
     // so the shell overshot by the bar's height and snapped back on the last frame
-    val bars = WindowInsets.navigationBarsIgnoringVisibility
+    val bars = stableNavigationBars()
     val density = LocalDensity.current
     return remember(ime, bars, density) { KeyboardShift(ime, bars, density) }
 }
