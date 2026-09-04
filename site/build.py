@@ -488,7 +488,8 @@ def landing(shots):
     <div>
       <h1>Two seconds from<br>thought to done.</h1>
       <p class="lede">Peggy catches the thing you would otherwise forget on the way to the kitchen.
-        Type it the way you would say it. Peggy reads the date, the time and the repeat, and files it.</p>
+        Type it the way you would say it. Peggy reads the date, the time and the repeat, and files it
+        as an event, a task or a note &mdash; three things that usually mean three apps.</p>
       <div class="cta">
         <a class="btn" href="{PRIMARY_URL}">{PRIMARY_LABEL}</a>
         <a class="btn ghost" href="#how">See how it works</a>

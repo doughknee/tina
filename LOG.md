@@ -82,3 +82,15 @@ anything. Never retry an approach logged as failed.
   100 mobile, CLS 0. Everything now scores 4 or higher; the four items still at
   4 are each blocked on a decision that is Doni's, listed in STATUS.md under
   "For Doni to decide". No DONE file: that needs every item at 5.
+
+## Session 3 — 2026-09-04
+
+- **Phase 4, cycle 2. Motion 4 -> 5.** Rebuilt the motion probe (scratchpad,
+  `motion_probe.py`): 240 frames of scrolling, sampling computed opacity of every
+  `.reveal` overlapping the middle 20-80% of the viewport. Baseline was worse than
+  last session's cruder probe reported -- 319/722 mid-fade at 1440, 216/416 at 390,
+  worst 0.54. Last cycle's rootMargin tuning only reduced the odds. Deleted the
+  opacity half of the reveal instead: it now rises 16px and never fades, so no
+  sample can be mid-fade. 0/722 and 0/417 after. Reveal still fires (verified an
+  element two viewports down sits at translateY(16px), opacity 1, and settles to
+  none on scroll). No overflow regression at any of the six width x theme combos.
