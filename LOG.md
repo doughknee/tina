@@ -226,3 +226,50 @@ anything. Never retry an approach logged as failed.
 - **Phase 5 still open at six 5s and two 4s.** Items 2 (typeface) and 8
   (dark-theme screenshots) are Doni's decisions, unchanged. No `DONE` file: that
   needs all eight at 5.
+
+## Session 6 — 2026-09-04
+
+- **Chrome worked, for the first time in six sessions.** `tabs_context_mcp`
+  reported no group, `navigate` made one and loaded the page, and two
+  `screenshot` calls in a row both returned -- no 30 s `captureScreenshot`
+  timeout as in sessions 4 and 5. Hero and Capture section both render
+  correctly in real Chrome at 1400 dark. Tab closed after. STATUS.md now says
+  `chrome: available`. Playwright still supplies every number, being the only
+  one that can set a viewport, a scheme and a root font size.
+- **Phase 5, cycle 1. Item 2 was not the 4 it had carried for three sessions.**
+  Every font-size on the page is `rem` or `clamp()` except one: `body{font:400
+  17px/1.65 ...}`. At root 24px (Chrome's "Very large") 36 of the 90 text
+  elements on /peggy/ did not move -- both hero buttons, the skip link, "Read
+  the privacy policy", the six FAQ questions and their answers, the claim spans
+  -- under an h1 grown to 57.6px and a lede at 28.8px. Looked at it as well:
+  the FAQ reads as a different page's typography from the CTA beneath it.
+  Scored 3.
+- **Fixed with one value, 3 -> 4.** `1.0625rem` is 17px at the default root, so
+  nothing moves for a reader who has not changed the setting: the 390 dark
+  segment captures are pixel-identical before and after (ImageChops bbox None).
+  After: 0 of 90 frozen on /peggy/, 0 of 13 on the home page, 0 of 32 on
+  privacy, scrollWidth still 390/1440 at root 24. Still 4, not 5 -- system-ui
+  is the cap and the typeface is Doni's call.
+- **Sixth `--probe` check: text size.** Reads every element's computed size,
+  sets the root to 24px, reads again, fails on any that did not move, and
+  re-checks scrollWidth at that size. Proved it fails as well as passes: 17px
+  restored gives 36 of 112 frozen at 390 and 1440 and exits 1; 1.0625rem gives
+  0 of 112 and exits 0. Documented in site/README.md beside the other five.
+  The lesson beside "three good widths are not a responsive check": default
+  settings are not a reading check, because at the default a frozen 17px is
+  exactly the right 17px.
+- **Rescored the other seven from captures, no other change.** Lighthouse re-run
+  on the changed build: 100 on performance, accessibility, best-practices and
+  SEO, desktop and mobile, CLS 0, LCP 1.1 s mobile / 0.3 s desktop. Probe clean
+  on all six checks. Clipping check at root 16 and 24 across all three pages at
+  390/820/1440 with every `<details>` open: nothing clipped or outside the
+  viewport but the deliberately parked skip link. Item 3 re-checked at 820 light
+  and 390 dark, every phone bezelled and captioned.
+- **Item 8: tested one dark-theme theory and it was wrong.** The sticky header
+  is 82% of the bg plus a blur, and it passes over near-white phone screenshots
+  in dark mode; it does not wash out at 390 or 1440, the bar stays dark and the
+  wordmark legible. So the light screenshots are genuinely the only thing
+  holding item 8 at 4, and that remains Doni's call.
+- **Phase 5 still open at six 5s and two 4s.** Items 2 (typeface) and 8
+  (dark-theme screenshots) are Doni's decisions, unchanged. No `DONE` file:
+  that needs all eight at 5.
