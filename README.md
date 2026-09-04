@@ -71,7 +71,11 @@ Settings → Developer (always visible in the `dev` build; in a Play build tap V
 times) re-runs the first-run cards, asks for a store review on the spot, or resets the
 once-only review ask so the real trigger fires again on the twentieth capture. Play only
 shows its review sheet for apps it installed, so on a sideload the row reports
-"unavailable" and the flow is exercised up to that point. Desktop: run with `-Dtina.dev=true`.
+"unavailable" and the flow is exercised up to that point. Even on a Play install the
+request can return with nothing shown: Play applies its own quota and never reports the
+decision (logcat shows `PlayCoreDialogWrapperActivity` open and close within ~30 ms). To see
+the sheet reliably, install the build through Internal app sharing, where the quota does
+not apply. Desktop: run with `-Dtina.dev=true`.
 
 ### Keeping Settings honest
 

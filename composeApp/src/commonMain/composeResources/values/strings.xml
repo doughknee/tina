@@ -280,7 +280,7 @@
     <string name="dev_review_sub">Play shows its sheet only for apps it installed</string>
     <string name="dev_review_reset">Reset the review ask</string>
     <string name="dev_review_reset_sub">Fires again on capture %1$d</string>
-    <string name="dev_review_requested">Review flow requested</string>
+    <string name="dev_review_requested">Requested. Play decides whether to show the sheet; it gives no answer either way</string>
     <string name="dev_review_unavailable">Review flow unavailable here</string>
     <string name="dev_review_reset_done">Review ask reset</string>
     <string name="dev_unlocked">Developer options unlocked</string>
