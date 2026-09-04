@@ -1,20 +1,10 @@
 <resources>
-    <string name="app_title">Peggy</string>
     <string name="tab_agenda">Plan</string>
     <string name="tab_sort">Sort</string>
     <string name="tab_notes">Ideas</string>
     <string name="mode_capture">Plan</string>
     <string name="mode_idea">Idea</string>
     <string name="mode_ask">Ask</string>
-    <string name="filter_all">All</string>
-    <string name="filter_inbox">Inbox</string>
-    <string name="filter_tasks">Tasks</string>
-    <string name="filter_events">Events</string>
-    <string name="filter_notes">Notes</string>
-    <string name="filter_done">Done</string>
-    <string name="library_triage">Needs triage</string>
-    <string name="library_everything">Everything else</string>
-    <string name="library_empty">Nothing here</string>
     <string name="inbox_waiting">%1$d to sort</string>
     <string name="section_series">Repeating</string>
     <string name="span_day_of">Day %1$d of %2$d</string>
@@ -48,7 +38,6 @@
     <string name="back">Back</string>
 
     <string name="settings">Settings</string>
-    <string name="settings_theme">Theme</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
@@ -73,9 +62,6 @@
     <string name="date_none">No date</string>
 
     <string name="inbox">Inbox</string>
-    <string name="inbox_count">%1$d in inbox</string>
-    <string name="inbox_empty">Inbox zero</string>
-    <string name="inbox_empty_sub">Everything is filed</string>
     <string name="inbox_captured">captured %1$s</string>
     <string name="triage_this_week">This week</string>
     <string name="triage_someday">Someday</string>
@@ -126,7 +112,6 @@
 
     <string name="calendar_jump_today">Today</string>
     <string name="calendar_nothing">Nothing on %1$s</string>
-    <string name="calendar_capture_hint">Long-press a day to capture for that date</string>
 
     <string name="event_all_day">All-day</string>
     <string name="event_starts">Starts</string>
@@ -166,7 +151,6 @@
     <string name="ai_test_fail">AI test failed — check URL, model, and key</string>
     <string name="ai_refined">Refined by AI</string>
 
-    <string name="settings_data">Data</string>
     <string name="export_data">Export backup</string>
     <string name="import_data">Import backup</string>
     <string name="export_done">Backup saved</string>
@@ -236,7 +220,6 @@
     <string name="tag_create">Create “#%1$s”</string>
     <string name="tag_new">New tag</string>
     <string name="tag_overview">Overview</string>
-    <string name="tag_set_overview">Set as overview</string>
     <string name="tag_open_tasks">Open tasks</string>
     <string name="tag_coming_up">Coming up</string>
     <string name="tag_ideas">Ideas</string>
@@ -250,7 +233,6 @@
     <string name="capture_placeholder">What’s on your mind?</string>
     <string name="capture_save">Save</string>
     <string name="capture_voice">Voice capture</string>
-    <string name="capture_try">Try</string>
     <string name="capture_start">Start with</string>
     <string name="capture_idea_placeholder">What’s the idea?</string>
     <string name="capture_idea_body">Add details…</string>
@@ -264,11 +246,7 @@
     <string name="starter_every_day">Every day</string>
     <string name="starter_at_9">9 AM</string>
     <string name="capture_recent">Recent</string>
-    <string name="capture_try_1">lunch with sam tomorrow at noon</string>
-    <string name="capture_try_2">#home !! fix the gate</string>
-    <string name="capture_try_3">water plants every friday</string>
     <string name="ai_improve">AI improve</string>
-    <string name="search_tags">Tags</string>
 
     <!-- Settings: sections -->
     <string name="sec_general">General</string>
@@ -294,7 +272,6 @@
     <string name="dev_review_unavailable">Review flow unavailable here</string>
     <string name="dev_review_reset_done">Review ask reset</string>
     <string name="dev_unlocked">Developer options unlocked</string>
-    <string name="dev_taps_left">%1$d taps to developer options</string>
     <string name="sec_pro">Peggy Pro</string>
     <string name="onb_skip">Skip</string>
     <string name="onb_next">Next</string>
@@ -413,6 +390,7 @@
     <string name="set_import_sub">Merges, never overwrites</string>
     <string name="set_auto_backup">Auto-backup</string>
     <string name="set_auto_backup_sub">Weekly, keeps the last 4</string>
+    <string name="set_auto_backup_last">Weekly, keeps the last 4 · last backup %1$s</string>
     <string name="set_trash">Trash</string>
     <string name="set_trash_sub">%1$d in trash · kept %2$s</string>
     <string name="set_clear_completed">Clear completed</string>
@@ -498,7 +476,6 @@
     <string name="ask_pending_deletes">Apply %1$d proposed change(s)? %2$d would delete items (recoverable from Trash).</string>
     <string name="ask_apply">Apply</string>
     <string name="ask_not_now">Not now</string>
-    <string name="ask_clear">Clear chat</string>
     <string name="ask_reason_quick">Quick</string>
     <string name="ask_reason_balanced">Balanced</string>
     <string name="ask_reason_thorough">Thorough</string>
@@ -522,7 +499,6 @@
     <string name="refine_suggest">Suggest</string>
     <string name="refine_manual">Manual</string>
     <string name="settings_ai_instructions">Improvement instructions</string>
-    <string name="ai_instructions_hint">Standing guidance for AI improve, e.g. “work stuff gets #work; always set reminders on events”</string>
     <string name="fld_title">Title</string>
     <string name="fld_type">Type</string>
     <string name="fld_date">Date</string>
@@ -534,7 +510,6 @@
     <string name="fld_notes">Notes</string>
     <string name="fld_reminder">Reminder</string>
     <string name="ai_workspace_id">Workspace ID (optional)</string>
-    <string name="ai_workspace_id_hint">Only needed for identity-linked keys that span multiple workspaces</string>
     <string name="state_on">On</string>
     <string name="state_off">Off</string>
     <string name="capture_type_state">Type: %1$s, tap to change</string>

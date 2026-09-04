@@ -88,6 +88,8 @@ data class Settings(
     val quietEndMinutes: Int = 7 * 60,
     val inboxReminder: Boolean = false,
     val inboxReminderDays: Int = 3,
+    /** When the Sort reminder checks, on its own clock rather than the agenda's. */
+    val inboxReminderMinutes: Int = 9 * 60,
     // Organisation
     val showCompletedInToday: Boolean = true,
     val searchCompleted: Boolean = true,
@@ -97,6 +99,8 @@ data class Settings(
     val hideInAppSwitcher: Boolean = false,
     // Data
     val autoBackup: Boolean = false,
+    /** Epoch millis of the last successful silent backup; 0 until one has run. */
+    val lastAutoBackupAt: Long = 0,
     val trashRetention: TrashRetention = TrashRetention.DAYS_30,
     // Desktop
     val launchAtLogin: Boolean = false,
@@ -149,6 +153,8 @@ private val KEY_QUIET_START = intPreferencesKey("quietStartMinutes")
 private val KEY_QUIET_END = intPreferencesKey("quietEndMinutes")
 private val KEY_INBOX_REMINDER = booleanPreferencesKey("inboxReminder")
 private val KEY_INBOX_REMINDER_DAYS = intPreferencesKey("inboxReminderDays")
+private val KEY_INBOX_REMINDER_MIN = intPreferencesKey("inboxReminderMinutes")
+private val KEY_LAST_AUTO_BACKUP = androidx.datastore.preferences.core.longPreferencesKey("lastAutoBackupAt")
 private val KEY_SHOW_COMPLETED = booleanPreferencesKey("showCompletedInToday")
 private val KEY_SEARCH_COMPLETED = booleanPreferencesKey("searchCompleted")
 private val KEY_APP_LOCK = booleanPreferencesKey("appLock")
@@ -220,6 +226,8 @@ class SettingsRepository(
             quietEndMinutes = p[KEY_QUIET_END] ?: (7 * 60),
             inboxReminder = p[KEY_INBOX_REMINDER] ?: false,
             inboxReminderDays = p[KEY_INBOX_REMINDER_DAYS] ?: 3,
+            inboxReminderMinutes = p[KEY_INBOX_REMINDER_MIN] ?: 9 * 60,
+            lastAutoBackupAt = p[KEY_LAST_AUTO_BACKUP] ?: 0L,
             showCompletedInToday = p[KEY_SHOW_COMPLETED] ?: true,
             searchCompleted = p[KEY_SEARCH_COMPLETED] ?: true,
             appLock = p[KEY_APP_LOCK] ?: false,
@@ -286,6 +294,8 @@ class SettingsRepository(
     suspend fun setQuietEndMinutes(minutes: Int) = store.edit { it[KEY_QUIET_END] = minutes }
     suspend fun setInboxReminder(enabled: Boolean) = store.edit { it[KEY_INBOX_REMINDER] = enabled }
     suspend fun setInboxReminderDays(days: Int) = store.edit { it[KEY_INBOX_REMINDER_DAYS] = days }
+    suspend fun setInboxReminderMinutes(minutes: Int) = store.edit { it[KEY_INBOX_REMINDER_MIN] = minutes }
+    suspend fun setLastAutoBackupAt(millis: Long) = store.edit { it[KEY_LAST_AUTO_BACKUP] = millis }
     suspend fun setShowCompletedInToday(enabled: Boolean) = store.edit { it[KEY_SHOW_COMPLETED] = enabled }
     suspend fun setSearchCompleted(enabled: Boolean) = store.edit { it[KEY_SEARCH_COMPLETED] = enabled }
     suspend fun setAppLock(enabled: Boolean) = store.edit { it[KEY_APP_LOCK] = enabled }

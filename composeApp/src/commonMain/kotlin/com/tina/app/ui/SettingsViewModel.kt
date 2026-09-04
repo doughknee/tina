@@ -116,6 +116,7 @@ class SettingsViewModel(
     fun setQuietEndMinutes(v: Int) = launchEdit { repository.setQuietEndMinutes(v) }
     fun setInboxReminder(v: Boolean) = launchEdit { repository.setInboxReminder(v) }
     fun setInboxReminderDays(v: Int) = launchEdit { repository.setInboxReminderDays(v) }
+    fun setInboxReminderMinutes(minutes: Int) = viewModelScope.launch { repository.setInboxReminderMinutes(minutes) }
     fun setShowCompletedInToday(v: Boolean) = launchEdit { repository.setShowCompletedInToday(v) }
     fun setSearchCompleted(v: Boolean) = launchEdit { repository.setSearchCompleted(v) }
     fun setAppLock(v: Boolean) = launchEdit { repository.setAppLock(v) }

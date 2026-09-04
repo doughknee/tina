@@ -57,7 +57,7 @@ class TinaApp : Application(), KoinComponent {
         // digest alarms follow the settings that describe them
         scope.launch {
             settingsRepository.settings
-                .map { listOf(it.dailyAgenda, it.dailyAgendaMinutes, it.overdueNudge, it.overdueNudgeMinutes, it.inboxReminder) }
+                .map { listOf(it.dailyAgenda, it.dailyAgendaMinutes, it.overdueNudge, it.overdueNudgeMinutes, it.inboxReminder, it.inboxReminderMinutes) }
                 .distinctUntilChanged()
                 .collect {
                     com.tina.app.notifications.DigestScheduler.sync(

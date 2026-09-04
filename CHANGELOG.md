@@ -10,6 +10,10 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 
 ### Small things
 - After an update, a short what’s-new sheet appears once per feature release. Developer options can show it again.
+- The Sort reminder has its own time instead of riding the morning agenda.
+- Auto-backup says when it last ran.
+- Ask’s “Thinking…” line is announced to screen readers.
+- 26 unused strings removed.
 
 ## v1.8.1 (internal testing, 2026-09-03)
 

@@ -54,6 +54,7 @@ class AutoBackupWorker(
                 ?.drop(KEEP_BACKUPS)
                 ?.forEach { it.delete() }
 
+            settingsRepository.setLastAutoBackupAt(kotlin.time.Clock.System.now().toEpochMilliseconds())
             Result.success()
         }.getOrElse { Result.retry() }
     }

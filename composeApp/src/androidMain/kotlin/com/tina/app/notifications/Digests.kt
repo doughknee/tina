@@ -97,8 +97,8 @@ object DigestScheduler {
 
         apply(settings.dailyAgenda, settings.dailyAgendaMinutes, ACTION_DAILY_AGENDA, AGENDA_ID)
         apply(settings.overdueNudge, settings.overdueNudgeMinutes, ACTION_OVERDUE_NUDGE, OVERDUE_ID)
-        // the inbox check rides the agenda time; it only fires when something is stale
-        apply(settings.inboxReminder, settings.dailyAgendaMinutes, ACTION_INBOX_REMINDER, INBOX_ID)
+        // the Sort check has its own time; it only fires when something has waited long enough
+        apply(settings.inboxReminder, settings.inboxReminderMinutes, ACTION_INBOX_REMINDER, INBOX_ID)
     }
 }
 

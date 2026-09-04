@@ -189,6 +189,7 @@ import com.tina.app.resources.set_afternoon
 import com.tina.app.resources.set_app_lock
 import com.tina.app.resources.set_app_lock_sub
 import com.tina.app.resources.set_auto_backup
+import com.tina.app.resources.set_auto_backup_last
 import com.tina.app.resources.set_auto_backup_sub
 import com.tina.app.resources.set_clear
 import com.tina.app.resources.set_clear_completed
@@ -312,7 +313,7 @@ enum class SettingsDestination {
 }
 
 /** Which time a [SettingsRow.TimeRow] edits. */
-private enum class TimeTarget { MORNING, AFTERNOON, EVENING, DAILY_AGENDA, OVERDUE_NUDGE, QUIET_START, QUIET_END }
+private enum class TimeTarget { MORNING, AFTERNOON, EVENING, DAILY_AGENDA, OVERDUE_NUDGE, QUIET_START, QUIET_END, INBOX_REMINDER }
 
 @Composable
 private fun minutesLabel(minutes: Int, use24h: Boolean): String =
@@ -414,6 +415,7 @@ fun SettingsScreen(
             TimeTarget.OVERDUE_NUDGE -> settings.overdueNudgeMinutes
             TimeTarget.QUIET_START -> settings.quietStartMinutes
             TimeTarget.QUIET_END -> settings.quietEndMinutes
+            TimeTarget.INBOX_REMINDER -> settings.inboxReminderMinutes
         }
         SettingsTimePicker(
             initialMinutes = current,
@@ -428,6 +430,7 @@ fun SettingsScreen(
                     TimeTarget.OVERDUE_NUDGE -> viewModel.setOverdueNudgeMinutes(minutes)
                     TimeTarget.QUIET_START -> viewModel.setQuietStartMinutes(minutes)
                     TimeTarget.QUIET_END -> viewModel.setQuietEndMinutes(minutes)
+                    TimeTarget.INBOX_REMINDER -> viewModel.setInboxReminderMinutes(minutes)
                 }
                 timeTarget = null
             },
@@ -1011,6 +1014,14 @@ private fun rememberSettingsSections(
                 checked = settings.inboxReminder,
                 onCheckedChange = viewModel::setInboxReminder,
             ),
+            SettingsRow.TimeRow(
+                id = "inboxReminderTime",
+                title = stringResource(Res.string.set_inbox_reminder),
+                keywords = listOf("sort time"),
+                visible = settings.inboxReminder,
+                timeLabel = minutesLabel(settings.inboxReminderMinutes, use24h),
+                onClick = { onPickTime(TimeTarget.INBOX_REMINDER) },
+            ),
             SettingsRow.External(
                 id = "sound",
                 title = stringResource(Res.string.set_sound),
@@ -1155,8 +1166,10 @@ private fun rememberSettingsSections(
             SettingsRow.Switch(
                 id = "autoBackup",
                                 title = stringResource(Res.string.set_auto_backup),
-                supporting = stringResource(Res.string.set_auto_backup_sub),
-                keywords = listOf("backup", "weekly", "automatic"),
+                supporting = if (settings.lastAutoBackupAt > 0) {
+                    stringResource(Res.string.set_auto_backup_last, com.tina.app.ui.relativeAge(kotlin.time.Clock.System.now().toEpochMilliseconds() - settings.lastAutoBackupAt))
+                } else stringResource(Res.string.set_auto_backup_sub),
+                keywords = listOf("backup", "weekly", "automatic", "last"),
                 visible = Platform.isAndroid,
                 checked = settings.autoBackup,
                 onCheckedChange = viewModel::setAutoBackup,
