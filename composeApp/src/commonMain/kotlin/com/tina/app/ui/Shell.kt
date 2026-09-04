@@ -152,6 +152,14 @@ fun Shell(
     }
     val captureFocus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    // Android: hide the keyboard and keep the focus; CaptureBar drops focus once the keyboard is
+    // gone. Clearing focus first ended the input session, and the next show after that popped in
+    // without its slide on the Pixel, while back and Gboard's own button (hide first) never did.
+    // Desktop has no keyboard, so there the field must lose focus for the bare-key shortcuts.
+    fun putKeyboardAway() {
+        if (com.tina.app.ui.settings.Platform.isAndroid) keyboard?.hide() else focusManager.clearFocus()
+    }
     // the capture sheet rises while the field has focus and stays while there is a draft:
     // starters when empty, parse chips while typing, and it survives the keyboard going away
     val hasDraft = captureViewModel.text.isNotBlank()
@@ -162,7 +170,7 @@ fun Shell(
     // closes the overlay only; the pill stays on Ask until it is tapped back to Plan
     fun closeAsk() {
         askSheetOpen = false
-        focusManager.clearFocus()
+        putKeyboardAway()
     }
 
     fun setAskMode(on: Boolean) {
@@ -179,7 +187,7 @@ fun Shell(
 
     fun closeSearch() {
         searchOpen = false
-        focusManager.clearFocus()
+        putKeyboardAway()
     }
 
     // reads the view model at call time: this reference gets memoised across recompositions,
@@ -189,7 +197,7 @@ fun Shell(
             discardPrompt = true
         } else {
             captureSheetOpen = false
-            focusManager.clearFocus()
+            putKeyboardAway()
         }
     }
 
@@ -199,7 +207,7 @@ fun Shell(
         askSheetOpen = false
         searchOpen = false
         captureSheetOpen = false
-        focusManager.clearFocus()
+        putKeyboardAway()
     }
     val sortRequested by OpenSortRequests.pending.collectAsState()
     LaunchedEffect(sortRequested) {
@@ -248,7 +256,7 @@ fun Shell(
                     discardPrompt = false
                     captureViewModel.discard()
                     captureSheetOpen = false
-                    focusManager.clearFocus()
+                    putKeyboardAway()
                 }) { Text(stringResource(Res.string.draft_discard)) }
             },
             dismissButton = {

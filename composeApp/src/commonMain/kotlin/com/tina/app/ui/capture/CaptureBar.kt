@@ -231,9 +231,10 @@ fun CaptureBar(
         val savedIdea = viewModel.ideaMode
         viewModel.save {
             haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+            // Android hides only and drops focus once the keyboard is gone (imeVisible below);
+            // desktop has no keyboard, so the field itself must let go
             if (!settings.keepKeyboardUp) {
-                focusManager.clearFocus()
-                keyboard?.hide()
+                if (com.tina.app.ui.settings.Platform.isAndroid) keyboard?.hide() else focusManager.clearFocus()
             }
             scope.launch {
                 val id = viewModel.lastSavedId

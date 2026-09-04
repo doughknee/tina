@@ -19,6 +19,7 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 - The bar at the bottom of a tag page captures straight into that tag.
 
 ### Small things
+- The capture bar and nav bar ride the keyboard cleanly again after you dismiss the suggestions by dragging or tapping outside. They used to climb out from under it on the next open.
 - Emptying the trash can be undone for a few seconds, like everything else.
 - The week view says "4 more repeats" instead of "4 occurrences hidden".
 
