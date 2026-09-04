@@ -364,3 +364,49 @@ anything. Never retry an approach logged as failed.
   and `--probe` is all clear on all seven checks on all three pages.
 - **Phase 5 still open at seven 5s and one 4.** Item 2 (typeface) is Doni's
   decision. No `DONE` file: that needs all eight at 5.
+
+## Session 8 — 2026-09-04
+
+- **Item 3 was not a 5 in a third reading condition. Windows high contrast,
+  FIXED, 5 -> 3 -> 5.** `.phone` is a background plus a box-shadow and nothing
+  else, and `forced-colors: active` replaces every background with a system
+  colour and drops box-shadow outright. Session 7's `--bezel` token made the
+  frame correct in both themes and left it at **1.0:1 with no shadow in both
+  high-contrast palettes**, so all eight screenshots floated on the Canvas
+  again. Same defect as the dark bezel, one condition further out. Found by
+  asking what else takes a background away, measured at 4x off the rendered
+  pixels, and looked at at 1440 in forced colours before and after.
+- **The brand mark collapsed harder.** `.badge` is a brand tile holding a
+  white-filled SVG pin. Forced colours takes the tile to Canvas and a white pin
+  on white Canvas is gone, so the lockup rendered as a lone tick with a gap
+  where the logo was. The home page's Peggy card repeats the same mark and had
+  the same collapse.
+- **One media block fixes both.** `outline:2px solid CanvasText` on `.phone` —
+  an outline survives the forced palette, follows the 40px radius and costs no
+  layout; frame now 21:1 in both palettes. `forced-color-adjust:none` on
+  `.badge` — a logo is what that property is for. The home card's tile got the
+  `badge` class so one rule covers both; nothing outside forced colours matches
+  a bare `.badge`, and the whole generated diff outside the media block is that
+  single class token, so normal rendering is untouched by construction.
+- **Eighth `--probe` check: contrast.** Loads with `forced_colors="active"`,
+  joins by document order against the normal run, and fails on any surface that
+  is solid where it was designed (3:1+) but in the forced palette is neither
+  distinguishable from what is behind it nor drawn with a border or outline.
+  Proved to fail as well as pass: 9 surfaces without the fix (the mark and all
+  eight phones), 0 with it. Replaced elements are skipped — an `<img>` paints
+  over its own background, and counting the eight `.phone img` placeholders
+  made the check report collapsed surfaces while the pictures were on screen.
+- **Tested and clean: the colour checks only running at 1440.** That is "three
+  good widths" aimed at the harness, so it was worth checking. Ran both the
+  themes join and the contrast join at 390 and 820 on all three pages: 0 and 0
+  everywhere. The page paints the same 39 surfaces at every width, so 1440
+  covers them and extending the probe would triple its runtime for nothing.
+  Deliberately left at 1440.
+- **Item 6 re-measured against the changed CSS**, since it had last been run in
+  session 6: 100/100/100/100 desktop and mobile, CLS 0, LCP 0.3s desktop and
+  1.1s mobile, TBT 0.
+- **Closing verification.** Fresh `python site/build.py` leaves `git diff`
+  empty, and `--probe` is all clear on all eight checks on all three pages.
+- **Phase 5 still open at six 5s and two 4s.** Item 2 (typeface) and item 8
+  (dark-theme screenshots) are Doni's decisions. No `DONE` file: that needs all
+  eight at 5.
