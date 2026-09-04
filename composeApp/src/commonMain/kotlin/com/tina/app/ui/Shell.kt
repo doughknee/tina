@@ -12,14 +12,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -60,13 +57,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.tina.app.LocalSettings
@@ -157,7 +152,6 @@ fun Shell(
     }
     val captureFocus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
-    val keyboardShift = rememberKeyboardShift()
     // the capture sheet rises while the field has focus and stays while there is a draft:
     // starters when empty, parse chips while typing, and it survives the keyboard going away
     val hasDraft = captureViewModel.text.isNotBlank()
@@ -267,16 +261,11 @@ fun Shell(
     }
 
     NavigationSuiteScaffold(
-        // the whole shell (bar and nav included) rides above the keyboard: lifted as one layer
-        // instead of padded for it, because padding re-measured and re-placed the whole shell on
-        // every frame of the keyboard animation.
-        // The bar inset is padded here, as the stable (ignoring-visibility) value, and consumed
-        // for the subtree: the M3 nav bar inside would otherwise pad itself with the *visible*
-        // inset, which only updates when the keyboard settles, a frame after the lift (which
-        // subtracts the same constant) has finished. That one-frame disagreement was a ~4px snap.
-        modifier = Modifier
-            .windowInsetsPadding(stableNavigationBars().only(WindowInsetsSides.Bottom))
-            .offset { IntOffset(0, -keyboardShift.value()) },
+        // the whole shell (bar and nav included) is padded for the keyboard by the platform's
+        // own inset animation; imePadding consumes the inset, so the nav bar inside pads nothing
+        // extra. A hand-rolled lift (offset by ime minus nav-bar inset) was faster on paper but
+        // drifted from the keyboard on device; see DECISIONS "The keyboard lifts the shell".
+        modifier = Modifier.imePadding(),
         navigationSuiteItems = {
             TinaTab.entries.forEach { tab ->
                 val selected = selectedTab == tab && !askVisible && !searchOpen
@@ -333,9 +322,7 @@ fun Shell(
             Box(Modifier.fillMaxSize().padding(padding)) {
                 AnimatedContent(
                     targetState = selectedTab,
-                    // the page does not ride up with the shell: it stays put and the bar, nav and
-                    // sheet cover its bottom. Its own layer, so it is neither measured nor re-recorded
-                    modifier = Modifier.fillMaxSize().offset { IntOffset(0, keyboardShift.value()) }.graphicsLayer(),
+                    modifier = Modifier.fillMaxSize(),
                     transitionSpec = { motion.lateral(targetState.ordinal > initialState.ordinal) },
                 ) { tab ->
                     when (tab) {
@@ -394,7 +381,7 @@ fun Shell(
                 ShellSheet(
                     visible = askVisible,
                     onDismiss = ::closeAsk,
-                    modifier = Modifier.align(Alignment.BottomCenter).visibleHeight(0.72f, keyboardShift),
+                    modifier = Modifier.align(Alignment.BottomCenter).fractionHeight(0.72f),
                 ) {
                     AskSheet(viewModel = askViewModel, snackbarHostState = snackbarHostState)
                 }
@@ -403,7 +390,7 @@ fun Shell(
                 ShellSheet(
                     visible = searchOpen,
                     onDismiss = ::closeSearch,
-                    modifier = Modifier.align(Alignment.BottomCenter).visibleHeight(0.88f, keyboardShift),
+                    modifier = Modifier.align(Alignment.BottomCenter).fractionHeight(0.88f),
                 ) {
                     SearchSheet(
                         viewModel = searchViewModel,
@@ -524,29 +511,9 @@ private fun ShellSheet(
 
 private val SHEET_TAIL = 32.dp
 
-/**
- * How far the shell is lifted for the keyboard: the keyboard's height minus the gesture-bar
- * inset the nav bar already pads for, so the nav bar lands flush on the keyboard. Read
- * inside offset/layout lambdas only, never in composition, so a keyboard frame moves two
- * layers and measures nothing.
- */
-private class KeyboardShift(private val ime: WindowInsets, private val bars: WindowInsets, private val density: Density) {
-    fun value(): Int = (ime.getBottom(density) - bars.getBottom(density)).coerceAtLeast(0)
-}
-
-@Composable
-private fun rememberKeyboardShift(): KeyboardShift {
-    val ime = WindowInsets.ime
-    // the stable inset: during a keyboard animation the visible nav-bar inset sometimes reads 0,
-    // so the shell overshot by the bar's height and snapped back on the last frame
-    val bars = stableNavigationBars()
-    val density = LocalDensity.current
-    return remember(ime, bars, density) { KeyboardShift(ime, bars, density) }
-}
-
-/** A sheet that fills a fraction of the height still visible above the keyboard. */
-private fun Modifier.visibleHeight(fraction: Float, shift: KeyboardShift): Modifier = layout { measurable, constraints ->
-    val height = ((constraints.maxHeight - shift.value()) * fraction).toInt().coerceAtLeast(0)
+/** A sheet that fills a fraction of the height above the keyboard (the shell is already padded for it). */
+private fun Modifier.fractionHeight(fraction: Float): Modifier = layout { measurable, constraints ->
+    val height = (constraints.maxHeight * fraction).toInt().coerceAtLeast(0)
     val placeable = measurable.measure(constraints.copy(minHeight = height, maxHeight = height))
     layout(placeable.width, placeable.height) { placeable.place(0, 0) }
 }
