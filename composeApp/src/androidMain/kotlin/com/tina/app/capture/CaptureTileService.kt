@@ -1,5 +1,6 @@
 package com.tina.app.capture
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
@@ -10,6 +11,9 @@ import com.tina.app.MainActivity
 open class CaptureTileService : TileService() {
     protected open val idea: Boolean = false
 
+    // lint flags the Intent overload wherever it appears, without reading the version guard
+    // below it. The deprecated call only ever runs on 33 and under, where it is the only one.
+    @SuppressLint("StartActivityAndCollapseDeprecated")
     override fun onClick() {
         val intent = Intent(this, MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)

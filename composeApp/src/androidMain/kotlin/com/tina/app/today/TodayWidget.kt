@@ -160,9 +160,14 @@ private fun WidgetBody(context: Context, entries: List<WidgetEntry>) {
                 )
             }
         }
-        // the same second line Plan shows under Today
+        // the same second line Plan shows under Today. The locale comes from the context rather
+        // than Locale.getDefault() so the widget follows the app's own language setting.
         Text(
-            java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("EEEE, MMMM d", java.util.Locale.getDefault())),
+            java.time.LocalDate.now().format(
+                java.time.format.DateTimeFormatter.ofPattern(
+                    "EEEE, MMMM d", context.resources.configuration.locales[0],
+                ),
+            ),
             style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = 12.sp),
             modifier = GlanceModifier.padding(bottom = 8.dp),
         )
