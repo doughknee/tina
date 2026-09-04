@@ -6,6 +6,10 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 
 ### Ideas
 - Checklists: type “[] ” at the start of a line, or use the new toolbar button, and the line becomes a box you can tick. Cards show the boxes, strike through what’s done, and say “2 of 6 done”. Tick items straight from the card.
+- Share a note, or copy it as Markdown, from the editor menu. Checklists come out as task lists.
+
+### Small things
+- After an update, a short what’s-new sheet appears once per feature release. Developer options can show it again.
 
 ## v1.8.1 (internal testing, 2026-09-03)
 

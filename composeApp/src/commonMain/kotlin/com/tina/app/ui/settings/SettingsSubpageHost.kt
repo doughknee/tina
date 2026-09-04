@@ -100,36 +100,7 @@ fun SettingsSubpageHost(
         SettingsDestination.WHATS_NEW -> InfoSubpage(
             title = stringResource(Res.string.whats_new_title),
             onBack = onBack,
-            entries = listOf(
-                "1.8 — Ideas and decisions" to
-                    "Ideas rebuilt: cards that read like notes, a pinned section, a tag rail, " +
-                        "long-press selection, sort and layout, a paper-like editor, and a tag page " +
-                        "that gathers notes, tasks and events. Sort became the decisions page. " +
-                        "Capture understands far more phrasings. Widgets, quiet hours, and undo everywhere.",
-                "1.7 — Trust" to
-                    "Repeating reminders ring every time, backups carry everything, your AI key is " +
-                        "encrypted, Ask asks before big changes, Peggy Pro groundwork, and a real icon.",
-                "1.6 — Swipe to sort" to
-                    "Swipe triage on Sort, the settings hub, series editing, empty states and a " +
-                        "quick-settings tile for ideas.",
-                "1.5 — Plan, Sort, Ideas" to
-                    "Pages named for what you do there, Idea mode for notes, one calendar for every " +
-                        "zoom level, search as a sheet, and a smoother keyboard.",
-                "1.4 — Three places, four zoom levels" to
-                    "Agenda, Library and Ask; capture from anywhere; Day / Week / Month / All with " +
-                        "repeats rolled up and completed per day.",
-                "1.3.1 — Capture, out of your way" to
-                    "The keyboard no longer opens with the app, the composer moved to the " +
-                        "bottom, and pages slide instead of zooming.",
-                "1.3 — Settings, rebuilt" to
-                    "Grouped and searchable settings, Trash with restore, tag manager, " +
-                        "daily summaries, app lock, auto-backup.",
-                "1.2 — Ask your app anything" to
-                    "Chat with your data, optional write access, saved conversations, browsable tags.",
-                "1.1 — AI parsing" to
-                    "Ollama / Claude / OpenAI refinement, AI improve, and the Material 3 redesign.",
-                "1.0" to "Capture, Today, Calendar, Notes, reminders, widgets, backup.",
-            ),
+            entries = com.tina.app.ui.settings.WHATS_NEW.map { (version, text) -> version to text },
         )
         SettingsDestination.TAGS -> com.tina.app.ui.settings.subpages.TagManagerScreen(onBack = onBack)
         SettingsDestination.PRO -> com.tina.app.pro.PaywallScreen(onBack = onBack)

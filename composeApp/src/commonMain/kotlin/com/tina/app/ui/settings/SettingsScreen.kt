@@ -151,6 +151,8 @@ import com.tina.app.resources.reminder_at_time
 import com.tina.app.resources.reminder_hour_before
 import com.tina.app.resources.reminder_min_before
 import com.tina.app.resources.sec_about
+import com.tina.app.resources.dev_whats_new_sub
+import com.tina.app.resources.dev_whats_new
 import com.tina.app.resources.dev_unlocked
 import com.tina.app.resources.dev_review_reset_done
 import com.tina.app.resources.dev_review_unavailable
@@ -1309,6 +1311,13 @@ private fun rememberSettingsSections(
                 supporting = stringResource(Res.string.dev_onboarding_sub),
                 keywords = listOf("onboarding", "setup", "wizard", "welcome"),
                 onClick = viewModel::resetOnboarding,
+            ),
+            SettingsRow.Navigation(
+                id = "devWhatsNew",
+                title = stringResource(Res.string.dev_whats_new),
+                supporting = stringResource(Res.string.dev_whats_new_sub),
+                keywords = listOf("changelog", "upgrade", "sheet"),
+                onClick = viewModel::resetWhatsNew,
             ),
             SettingsRow.Navigation(
                 id = "devReview",

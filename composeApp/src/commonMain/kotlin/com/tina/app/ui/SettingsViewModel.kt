@@ -178,4 +178,6 @@ class SettingsViewModel(
     /** Developer options: the first-run cards show again immediately (App collects the flag). */
     fun resetOnboarding() = viewModelScope.launch { repository.resetOnboarding() }
     fun setDevOptions(enabled: Boolean) = viewModelScope.launch { repository.setDevOptions(enabled) }
+    /** Developer options: forget the last shown release so the upgrade sheet appears again. */
+    fun resetWhatsNew() = viewModelScope.launch { repository.setWhatsNewSeen("") }
 }

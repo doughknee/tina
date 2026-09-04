@@ -223,6 +223,12 @@
     <string name="note_duplicate">Duplicate</string>
     <string name="note_to_task">Make it a task</string>
     <string name="note_copy">Copy</string>
+    <string name="note_share">Share</string>
+    <string name="note_copy_markdown">Copy as Markdown</string>
+    <string name="whats_new_in">What’s new in %1$s</string>
+    <string name="whats_new_got_it">Got it</string>
+    <string name="dev_whats_new">Show what’s new</string>
+    <string name="dev_whats_new_sub">The upgrade sheet, right now</string>
     <string name="note_more">More</string>
     <string name="note_open_tag">Open tag</string>
     <string name="tag_sheet_title">Tag %1$d ideas</string>

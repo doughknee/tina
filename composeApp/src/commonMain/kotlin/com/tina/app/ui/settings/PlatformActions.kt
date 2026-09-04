@@ -19,9 +19,13 @@ interface PlatformActions {
     /** Writes recent logs to a file the user picks. */
     fun exportDiagnostics()
 
+    /** The system share sheet with plain text (a note as Markdown). */
+    fun share(title: String, text: String)
+
     val supportsLanguageSettings: Boolean
     val supportsQuickTile: Boolean
     val supportsDiagnostics: Boolean
+    val supportsShare: Boolean
 }
 
 @Composable

@@ -42,6 +42,7 @@ actual fun rememberPlatformActions(): PlatformActions {
             override val supportsLanguageSettings = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
             override val supportsQuickTile = true
             override val supportsDiagnostics = true
+            override val supportsShare = true
 
             override fun openLanguageSettings() {
                 if (!supportsLanguageSettings) return
@@ -77,6 +78,14 @@ actual fun rememberPlatformActions(): PlatformActions {
 
             override fun exportDiagnostics() {
                 diagnosticsLauncher.launch("tina-diagnostics.txt")
+            }
+
+            override fun share(title: String, text: String) {
+                val send = Intent(Intent.ACTION_SEND)
+                    .setType("text/plain")
+                    .putExtra(Intent.EXTRA_SUBJECT, title)
+                    .putExtra(Intent.EXTRA_TEXT, text)
+                runCatching { context.startActivity(Intent.createChooser(send, title).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
             }
         }
     }

@@ -10,10 +10,12 @@ actual fun rememberPlatformActions(): PlatformActions = remember {
         override val supportsLanguageSettings = false
         override val supportsQuickTile = false
         override val supportsDiagnostics = false
+        override val supportsShare = false
 
         override fun openLanguageSettings() = Unit
         override fun openNotificationSettings() = Unit
         override fun setQuickTileEnabled(enabled: Boolean) = Unit
         override fun exportDiagnostics() = Unit
+        override fun share(title: String, text: String) = Unit
     }
 }

@@ -27,6 +27,8 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.ContentPaste
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FormatBold
@@ -68,6 +70,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontStyle
@@ -94,6 +97,8 @@ import com.tina.app.resources.fmt_strike
 import com.tina.app.resources.fmt_subheading
 import com.tina.app.resources.fmt_underline
 import com.tina.app.resources.note_add_tag
+import com.tina.app.resources.note_share
+import com.tina.app.resources.note_copy_markdown
 import com.tina.app.resources.note_duplicate
 import com.tina.app.resources.note_edited
 import com.tina.app.resources.note_more
@@ -139,6 +144,9 @@ fun NoteEditorScreen(
     var showMenu by remember { mutableStateOf(false) }
     var showTags by remember { mutableStateOf(false) }
     val bodyInteraction = remember { MutableInteractionSource() }
+    val actions = com.tina.app.ui.settings.rememberPlatformActions()
+    val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
+    val untitledText = stringResource(Res.string.note_untitled)
     val bodyFocused by bodyInteraction.collectIsFocusedAsState()
 
     // Load once; afterwards the editor is the source of truth and autosaves.
@@ -225,6 +233,24 @@ fun NoteEditorScreen(
                             Icon(Icons.Outlined.MoreVert, stringResource(Res.string.note_more))
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                            if (actions.supportsShare) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(Res.string.note_share)) },
+                                    leadingIcon = { Icon(Icons.Outlined.Share, null) },
+                                    onClick = {
+                                        showMenu = false
+                                        actions.share(titleText.ifBlank { untitledText }, noteMarkdown(titleText, richTextState))
+                                    },
+                                )
+                            }
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.note_copy_markdown)) },
+                                leadingIcon = { Icon(Icons.Outlined.ContentPaste, null) },
+                                onClick = {
+                                    showMenu = false
+                                    clipboard.setText(AnnotatedString(noteMarkdown(titleText, richTextState)))
+                                },
+                            )
                             DropdownMenuItem(
                                 text = { Text(stringResource(Res.string.note_duplicate)) },
                                 leadingIcon = { Icon(Icons.Outlined.ContentCopy, null) },
@@ -503,4 +529,18 @@ private fun FormatButton(active: Boolean, onClick: () -> Unit, icon: @Composable
         ),
         content = icon,
     )
+}
+
+
+/** Title as a heading, body from the editor, checklist markers as task-list syntax. */
+private fun noteMarkdown(title: String, state: RichTextState): String {
+    val body = state.toMarkdown()
+        .replace("- $UNCHECKED ", "- [ ] ")
+        .replace("- $CHECKED ", "- [x] ")
+        .replace("* $UNCHECKED ", "- [ ] ")
+        .replace("* $CHECKED ", "- [x] ")
+    return buildString {
+        if (title.isNotBlank()) append("# ").append(title.trim()).append("\n\n")
+        append(body.trim())
+    }
 }

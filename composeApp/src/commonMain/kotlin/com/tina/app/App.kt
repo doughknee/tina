@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.flow.map
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.zIndex
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -30,6 +33,8 @@ import com.tina.app.data.Item
 import com.tina.app.data.ItemType
 import com.tina.app.data.Settings
 import com.tina.app.data.SettingsRepository
+import com.tina.app.resources.whats_new_got_it
+import com.tina.app.resources.whats_new_in
 import com.tina.app.detail.DetailScreen
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -119,6 +124,7 @@ fun App() {
                 }
                 // after the shell, so it takes back presses first
                 BackHandler(enabled = pagesVisible && pages.size == 1) { pagesVisible = false }
+                WhatsNewOnUpgrade(settingsRepository, onboardingSeen)
                 if (!onboardingSeen) {
                     // above the pages too, so Developer options can show it from inside Settings
                     Box(Modifier.fillMaxSize().zIndex(1f)) {
@@ -199,6 +205,46 @@ fun App() {
                 }
             }
         }
+        }
+    }
+}
+
+
+/**
+ * Once per feature release, after an update: the top What's new entry as a sheet. A fresh
+ * install records the current release silently, so only upgrades see it. Developer options
+ * clear the record to show it again.
+ */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun WhatsNewOnUpgrade(settingsRepository: SettingsRepository, onboardingSeen: Boolean) {
+    val current = com.tina.app.ui.settings.featureVersion(com.tina.app.ui.settings.appVersionName())
+    val seen by settingsRepository.settings.map { it.whatsNewSeen }.collectAsState(initial = null)
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val entry = com.tina.app.ui.settings.WHATS_NEW.firstOrNull { it.first == current } ?: return
+    val seenVersion = seen ?: return
+    // the store has answered: a fresh install (cards still to show) just records this release
+    if (!onboardingSeen) {
+        androidx.compose.runtime.LaunchedEffect(seenVersion) { if (seenVersion != current) settingsRepository.setWhatsNewSeen(current) }
+        return
+    }
+    if (seenVersion == current) return
+    androidx.compose.material3.ModalBottomSheet(onDismissRequest = { scope.launch { settingsRepository.setWhatsNewSeen(current) } }) {
+        androidx.compose.foundation.layout.Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
+            androidx.compose.material3.Text(
+                org.jetbrains.compose.resources.stringResource(com.tina.app.resources.Res.string.whats_new_in, entry.first),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            androidx.compose.material3.Text(
+                entry.second,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 12.dp, bottom = 20.dp),
+            )
+            androidx.compose.material3.Button(
+                onClick = { scope.launch { settingsRepository.setWhatsNewSeen(current) } },
+                modifier = Modifier.align(androidx.compose.ui.Alignment.End),
+            ) { androidx.compose.material3.Text(org.jetbrains.compose.resources.stringResource(com.tina.app.resources.Res.string.whats_new_got_it)) }
         }
     }
 }
