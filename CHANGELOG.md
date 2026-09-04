@@ -2,7 +2,7 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## v1.8.2 (dev)
+## v1.8.2 (internal testing, 2026-09-04)
 
 ### Ideas
 - Checklists: type “[] ” at the start of a line, or use the new toolbar button, and the line becomes a box you can tick. Cards show the boxes, strike through what’s done, and say “2 of 6 done”. Tick items straight from the card.
