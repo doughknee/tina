@@ -166,7 +166,7 @@ python site/review.py --segments      # the whole page, one readable screenful a
 missing caption survived five sessions of "checked the full-page capture". One
 viewport-sized PNG per screenful is readable at 1:1.
 
-`--probe` is the one to run before committing a CSS change. It measures seven
+`--probe` is the one to run before committing a CSS change. It measures eight
 things and exits non-zero if any of them fail:
 
 - **overflow** — `scrollWidth` against the viewport at 390, 820 and 1440 in both
@@ -208,6 +208,18 @@ things and exits non-zero if any of them fail:
   unit. In dark mode the bezel simply was not there and all eight
   screenshots floated. Neither theme looks wrong on its own, which is why
   this compares them rather than scoring each.
+- **contrast** — loads the page again with `forced_colors="active"`, Windows
+  high contrast, and fails on any surface that is solid where it was designed
+  (3:1 or better) but in the forced palette is neither distinguishable from
+  what is behind it nor drawn with a border or an outline. High contrast
+  replaces every background with a system colour and drops `box-shadow`
+  outright, and those two were the whole of the bezel: after `--bezel` fixed
+  dark mode, `.phone` was still 1.0:1 there with no shadow, so all eight shots
+  floated again in the third reading condition. The brand mark went the same
+  way — a white pin on a brand tile is a white pin on the Canvas once the tile
+  is gone, leaving the tick alone beside the wordmark. Replaced elements are
+  skipped: an `<img>` paints over its own background, so `--panel` behind a
+  screenshot is a loading placeholder, not a surface.
 
 Two things it has already caught, worth knowing before you trust an image from
 it:
@@ -225,6 +237,10 @@ it:
   isolation — the defect only exists in the comparison. Any colour written
   outside the two `:root` token blocks is a colour that was chosen against
   exactly one background.
+- **A theme check is not a contrast check.** Both themes were right and both
+  were still wrong in Windows high contrast, which is neither of them: it keeps
+  borders and outlines and throws away backgrounds and shadows. A surface
+  built out of only a background and a shadow has nothing left there.
 - **A sticky header eats anchor landings, and only at some widths.** At 820 and
   1440 both in-page links landed fine; at 390 the skip link put 17 px of the
   `<h1>` under the bar and "See how it works" put 9 px of the Capture eyebrow

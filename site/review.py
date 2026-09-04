@@ -151,6 +151,11 @@ SURFACE_JS = r"""
   };
   const all = [...document.querySelectorAll('body *')];
   return all.map((el, i) => {
+    // A replaced element paints its own pixels over its background, so its
+    // background-color is a loading placeholder rather than a surface. Every
+    // .phone img carries --panel and would otherwise read as eight surfaces
+    // that vanish in forced colours while the picture is plainly still there.
+    if (/^(IMG|VIDEO|CANVAS|SVG|IFRAME)$/.test(el.tagName)) return null;
     const cs = getComputedStyle(el);
     const own = rgb(cs.backgroundColor);
     // Only surfaces that actually paint. A translucent backdrop (the sticky
@@ -165,8 +170,13 @@ SURFACE_JS = r"""
       p = p.parentElement;
     }
     if (!behind) return null;
+    // An edge that forced colours keeps: a border or an outline. A shadow is
+    // not one -- forced colours drops box-shadow, which is half of what the
+    // bezel was made of.
+    const edge = (cs.borderTopStyle !== 'none' && parseFloat(cs.borderTopWidth) > 0) ||
+                 (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0);
     return [i, el.tagName + (el.className ? '.' + String(el.className).trim().split(/\s+/).join('.') : ''),
-            +ratio(own, behind).toFixed(2)];
+            +ratio(own, behind).toFixed(2), edge];
   }).filter(Boolean);
 }
 """
@@ -312,7 +322,7 @@ def probe(url):
             page = ctx.new_page()
             page.goto(url, wait_until="networkidle")
             page.wait_for_timeout(400)
-            for i, name, c in page.evaluate(SURFACE_JS):
+            for i, name, c, _edge in page.evaluate(SURFACE_JS):
                 seen.setdefault(i, {})[scheme] = (name, c)
             ctx.close()
         collapsed = []
@@ -332,6 +342,38 @@ def probe(url):
               f"{'ok' if not collapsed else 'ONLY CHOSEN ONCE'}")
         for name, l, d in collapsed[:4]:
             print(f"          {name[:36]:36} light {l}:1  dark {d}:1")
+
+        # Windows high contrast replaces every background with the system
+        # palette and drops box-shadow, so a surface built out of only those
+        # two has nothing left. The bezel was exactly that: solid in both
+        # themes after --bezel, and still gone in forced colours, where all
+        # eight screenshots floated on the Canvas. Same defect as the dark
+        # bezel, a third reading condition.
+        print("contrast  (a surface must still have an edge in forced colours)")
+        both = {}
+        for label, kw in (("normal", {}), ("forced", {"forced_colors": "active"})):
+            ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                                      color_scheme="light", **kw)
+            page = ctx.new_page()
+            page.goto(url, wait_until="networkidle")
+            page.wait_for_timeout(400)
+            for i, name, c, edge in page.evaluate(SURFACE_JS):
+                both.setdefault(i, {})[label] = (name, c, edge)
+            ctx.close()
+        edgeless = []
+        for i, d in sorted(both.items()):
+            if len(d) != 2:
+                continue
+            # Solid where it was designed, and in forced colours neither
+            # distinguishable from what is behind it nor drawn with an edge.
+            if d["normal"][1] >= 3.0 and d["forced"][1] < 1.05 and not d["forced"][2]:
+                edgeless.append((d["normal"][0], d["normal"][1], d["forced"][1]))
+        bad += bool(edgeless)
+        print(f"    1440       {len(edgeless):>4} surface{'' if len(edgeless) == 1 else 's'} "
+              f"solid normally and edgeless in forced colours "
+              f"{'ok' if not edgeless else 'GONE IN HIGH CONTRAST'}")
+        for name, n, f in edgeless[:4]:
+            print(f"          {name[:36]:36} normal {n}:1  forced {f}:1")
 
         print("hidden    (nothing may be transparent or displaced without JS)")
         for label, kw in (("js-off", {"java_script_enabled": False}),
