@@ -166,6 +166,24 @@ of its reading conditions. If you ever want it judged, that is the missing tool.
   hero stacks below the 900 px grid breakpoint: heading, lede, both buttons, the note, then the
   framed phone. Type scale and framing both hold.
 
+### Cycle 2: the screenshots themselves, and a look
+
+- **Every served WebP still matches its PNG source.** The eight PNGs are treated as untouchable
+  inputs and nobody had ever checked that what the page actually serves still matches them -- a
+  stale WebP would show an out-of-date app in the one place the brief calls the hero. Compared
+  all eight, source against served, upscaled back to 1080x2400: mean absolute difference
+  **1.48-2.38** of 255, which is lossy WebP plus the downscale to 640 and nothing more. None is
+  stale.
+- **And they cannot go stale**, which is the better answer: with Pillow present `process_images`
+  re-encodes unconditionally on every run, so `site/README.md`'s headline instruction (drop a PNG
+  over the old one, run the build, commit) is sound. The reuse-the-existing-WebP branch only runs
+  when Pillow is absent, which is exactly what the PLAN 5.2 CI step covers.
+- **Looked at the hero at 1440 light and 390 dark**, to ground this session's scores in a capture
+  rather than in inherited ones. Both read: headline, lede, both buttons, the note, the framed
+  phone, and at 1440 the claims strip beginning below the fold line. The 390 dark capture is also
+  the clearest statement of the item-8 ceiling there is -- a light-mode app screenshot sitting on
+  a properly designed near-black page, which is the decision below, not a bug.
+
 ## Tooling
 
 **chrome: available.** `tabs_context_mcp` answered without error again in session 9 (no tab group; offers to create one). Not used for scoring, for the same reason as session 7 and

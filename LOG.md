@@ -503,6 +503,19 @@ anything. Never retry an approach logged as failed.
   no PyMuPDF, no Ghostscript) and installing one unattended was not worth it.
   Left there because the rubric scores a screenshot of the served page and print
   is not one of its reading conditions.
+- **Phase 5, cycle 2. Two checks and a look, all clean, nothing changed.**
+  - **Every served WebP still matches its PNG source.** Never checked in ten
+    sessions, and a stale one would show an out-of-date app in the hero.
+    All eight compared source against served: mean |d| 1.48-2.38 of 255, which
+    is lossy WebP plus the 640 downscale and nothing more.
+  - **They cannot go stale anyway.** With Pillow present `process_images`
+    re-encodes unconditionally every run, so README's headline instruction is
+    sound; the reuse branch only runs without Pillow, which is what the PLAN 5.2
+    CI step covers.
+  - **Looked at the hero at 1440 light and 390 dark** to ground the scores in a
+    capture taken this session. Both read. The 390 dark shot is the clearest
+    statement of the item-8 ceiling: a light-mode screenshot on a properly
+    designed near-black page.
 - **Phase 5 still open at six 5s and two 4s.** Item 2 (typeface) and item 8
   (dark-theme screenshots) are Doni's decisions, unchanged. No `DONE` file: that
   needs all eight at 5.
