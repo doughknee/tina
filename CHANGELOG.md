@@ -2,7 +2,7 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## v1.8.3 (dev)
+## v1.8.3 (internal testing, 2026-09-04)
 
 ### Accessibility
 - The calendar's weekday letters are read out in full, so "T" and "S" are no longer ambiguous.
