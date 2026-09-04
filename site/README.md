@@ -166,7 +166,7 @@ python site/review.py --segments      # the whole page, one readable screenful a
 missing caption survived five sessions of "checked the full-page capture". One
 viewport-sized PNG per screenful is readable at 1:1.
 
-`--probe` is the one to run before committing a CSS change. It measures five
+`--probe` is the one to run before committing a CSS change. It measures six
 things and exits non-zero if any of them fail:
 
 - **overflow** — `scrollWidth` against the viewport at 390, 820 and 1440 in both
@@ -187,6 +187,14 @@ things and exits non-zero if any of them fail:
   target's own eyebrow or heading lands under the 65 px sticky header. There is
   no `scroll-margin-top` per target; `html{scroll-padding-top:80px}` covers
   every anchor, including ones added later.
+- **text size** — reads every text element's computed size, sets the root to
+  24 px (Chrome's “Very large”), and reads them again. Anything that did not
+  move ignores the reader's own font-size setting. It also re-checks
+  `scrollWidth` at that size, because bigger text is where overflow would
+  appear. Every size on the page is `rem` or `clamp()`; a single `px` in the
+  `font:` shorthand on `body` froze 36 of the 90 lines on `/peggy/` — both
+  hero buttons, the skip link and the whole FAQ — under headings that grew
+  1.5×. No capture taken at default settings can show this.
 - **hidden** — loads with JavaScript off and with reduced motion asked for, and
   fails if anything is transparent or displaced in either. Hiding is opt-in
   (`html.js-reveal`), so both of those loads must show everything.
