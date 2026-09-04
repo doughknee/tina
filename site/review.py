@@ -121,6 +121,16 @@ ANCHOR_JS = """
 }
 """
 
+# Every text-bearing element, so a size that ignores the root font-size shows up
+# as one that did not move when the root did. A reader who sets a larger default
+# is the only person who ever sees this, and no capture at default settings can.
+FONTSIZE_JS = """
+() => [...document.querySelectorAll('p,li,summary,a,span,figcaption,td,th,h1,h2,h3')]
+  .filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
+  .map(e => [e.tagName + (e.className ? '.' + String(e.className).trim().split(/\s+/).join('.') : ''),
+             getComputedStyle(e).fontSize, e.textContent.trim().slice(0, 32)])
+"""
+
 
 def shoot_segments(page, w, vh, scheme, tag):
     """One viewport-sized PNG per screenful, top to bottom.
@@ -227,6 +237,25 @@ def probe(url):
                 print(f"    {w:>5} {href:<7} {worst['under']:>5.1f}px under the bar "
                       f"{'ok' if worst['under'] <= 1 else 'HIDDEN BY HEADER'}"
                       f"  {worst['what']}")
+            ctx.close()
+
+        print("text size (the reader's own font size must move every line)")
+        for w, h in ((390, 844), (1440, 900)):
+            ctx = browser.new_context(viewport={"width": w, "height": h})
+            page = ctx.new_page()
+            page.goto(url, wait_until="networkidle")
+            page.wait_for_timeout(400)
+            base = page.evaluate(FONTSIZE_JS)
+            page.add_style_tag(content="html{font-size:24px}")
+            page.wait_for_timeout(300)
+            frozen = [a for a, b in zip(base, page.evaluate(FONTSIZE_JS)) if a[1] == b[1]]
+            sw = page.evaluate("document.documentElement.scrollWidth")
+            ok = not frozen and sw <= w
+            bad += not ok
+            print(f"    {w:>5}      {len(frozen):>4} of {len(base):<5} frozen at root 24px, "
+                  f"scrollWidth={sw:<5} {'ok' if ok else 'IGNORES THE READER'}")
+            for a in frozen[:4]:
+                print(f"          {a[1]:>7}  {a[0][:32]:32} | {a[2]}")
             ctx.close()
 
         print("hidden    (nothing may be transparent or displaced without JS)")
