@@ -119,3 +119,29 @@ anything. Never retry an approach logged as failed.
   `demo_data.py` -- emulator-5554 is up and still seeded, so `screenshots.py`
   plus `adb shell cmd uimode night yes` would do it. It was not done because it
   is a design call, not a bug. No DONE file: that needs every item at 5.
+
+## Session 4 — 2026-09-04
+
+- **Chrome tried once and it errored.** `tabs_context_mcp` was present this
+  session (unlike sessions 1-3), navigated and took one screenshot, then
+  `Page.captureScreenshot` timed out at 30 s and left the tab at a broken zoom.
+  Per the protocol that is an error: closed the tab, Playwright for the rest of
+  the run, no retries. Chrome is still "unavailable" for scoring purposes.
+- **Phase 4 -> 5.** Every item was 4 or higher at the start, so phase 4 closed.
+  Phase 5 is the final rubric pass: fresh build (`git diff` empty, so the
+  committed output is what the build produces), `review.py --probe` all clear,
+  then every item rescored from segmented captures at 1440 and 390 in both
+  themes.
+- **Item 3 was not a 5, and STATUS.md's reason for it was false.** It claimed
+  every shot sits in a bezel "and a caption". Four do not: the `.pair` duos in
+  Plan and Ideas render through `phone()`, which has no `<figcaption>`. Caught
+  it in a 390 capture, not by reading the CSS -- the duo stacks there, so it is
+  two unlabelled near-identical phones on empty background a screen below the
+  heading that explains them. Rescored 4.
+- **Item 3 fixed, 4 -> 5.** The captions were already in `screenshots.json` and
+  already specific; only the render dropped them. Swapped the four to the
+  existing `figure()` helper, reset the UA `figure` margin that would otherwise
+  push the duo apart, and capped `.pair .shot` at the phone width so a caption
+  wraps under its own phone. Measured after: duo still one row at 1440 and 820,
+  stacks at 390, probe all clear. Single shots unchanged in a before/after
+  capture.

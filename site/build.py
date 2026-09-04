@@ -135,6 +135,14 @@ header.stuck{border-bottom-color:var(--line)}
 .pair{display:flex;gap:clamp(14px,3vw,28px);justify-content:center;flex-wrap:wrap}
 .pair .phone{width:min(228px,58vw)}
 .pair .shot{max-width:min(228px,58vw)}
+/* .row-grid goes two-column at 900, but the shot column is not wide enough for
+   two 228px phones until 1080, so the duo stacked into a 1073px tower beside a
+   350px text block. 20.5vw is the widest that fits two-up across the whole band
+   (404px column at 900) and hands over to 228px at 1080. */
+@media (min-width:900px) and (max-width:1079px){
+  .pair .phone{width:min(228px,20.5vw)}
+  .pair .shot{max-width:min(228px,20.5vw)}
+}
 
 /* claims strip */
 .claims{border-block:1px solid var(--line);background:var(--panel)}
