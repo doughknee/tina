@@ -2,7 +2,7 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## v1.8.0 (dev)
+## v1.8.0 (internal testing, 2026-09-03)
 
 ### Ideas, redesigned
 - Cards render by what they hold: a titled note, a bare thought with no bold headline, or a list with its first four items and "+2 items". The pin only shows on pinned notes.
