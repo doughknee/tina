@@ -158,9 +158,15 @@ gitignored `site/review/`:
 python site/review.py --full          # 390, 820 and 1440, light and dark
 python site/review.py --nojs          # JavaScript off, to prove nothing is hidden
 python site/review.py --probe         # the numbers a screenshot cannot show you
+python site/review.py --segments      # the whole page, one readable screenful at a time
 ```
 
-`--probe` is the one to run before committing a CSS change. It measures four
+`--segments` is how you look at the page. A full-page PNG of this page is over
+13,000 px tall and is unreadable once it is scaled down to view, which is how a
+missing caption survived five sessions of "checked the full-page capture". One
+viewport-sized PNG per screenful is readable at 1:1.
+
+`--probe` is the one to run before committing a CSS change. It measures five
 things and exits non-zero if any of them fail:
 
 - **overflow** — `scrollWidth` against the viewport at 390, 820 and 1440 in both
@@ -176,6 +182,11 @@ things and exits non-zero if any of them fail:
   reader is looking. Any value below 1 there means the animation is delaying
   reading. This is why the reveal moves but does not fade: a fade always loses
   the race against a fast scroll, and half-transparent text is unreadable text.
+- **anchors** — follows every in-page link (`#main` from the skip link, `#how`
+  from the hero's "See how it works") at all three widths and fails if the
+  target's own eyebrow or heading lands under the 65 px sticky header. There is
+  no `scroll-margin-top` per target; `html{scroll-padding-top:80px}` covers
+  every anchor, including ones added later.
 - **hidden** — loads with JavaScript off and with reduced motion asked for, and
   fails if anything is transparent or displaced in either. Hiding is opt-in
   (`html.js-reveal`), so both of those loads must show everything.
@@ -191,6 +202,10 @@ it:
   passed while every width from 900 to 1060 was visibly broken. Breakpoints put
   the bugs *between* the widths you test, which is why `sweep` walks the range
   instead of sampling it.
+- **A sticky header eats anchor landings, and only at some widths.** At 820 and
+  1440 both in-page links landed fine; at 390 the skip link put 17 px of the
+  `<h1>` under the bar and "See how it works" put 9 px of the Capture eyebrow
+  under it. The two widths that pass are not evidence about the third.
 - **Colour cannot be judged from a scaled capture.** A full-page PNG of this page
   is over 13,000 px tall, and downscaling it shifted the dark-theme link colour
   enough to look like a contrast bug that was not there. Crop at

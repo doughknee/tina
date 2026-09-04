@@ -59,7 +59,11 @@ CSS = """
   --bg:#0e0e13; --panel:#17171f; --ink:#ececf3; --muted:#a2a4b4; --line:#26262f;
   --brand:#9aa5ff; --on-brand:#14142a; --tint:#1b1c2c; --shadow:0 24px 60px -32px rgb(0 0 0/.7);
 }}
-html{-webkit-text-size-adjust:100%}
+/* The header is sticky and 65px tall, so an anchor jump would otherwise land
+   with the target tucked under it -- 17px of the h1 after the skip link at 390,
+   9px of the Capture eyebrow after "See how it works". On html rather than a
+   scroll-margin-top per target, so any anchor added later is covered too. */
+html{-webkit-text-size-adjust:100%;scroll-padding-top:80px}
 body{margin:0;background:var(--bg);color:var(--ink);
   font:400 17px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
   -webkit-font-smoothing:antialiased}

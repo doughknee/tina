@@ -91,6 +91,63 @@ HIDDEN_JS = """() => [...document.querySelectorAll('.reveal')].filter(el => {
 }).length"""
 
 
+# Every in-page link on the page. Both land at the top of something that the
+# sticky header would otherwise cover: #main is where the skip link puts a
+# keyboard user, #how is the hero's "See how it works".
+HREFS = ("#main", "#how")
+
+# How far the target's own label is tucked under the sticky header after the
+# jump. An empty anchor div stands in front of the section it marks, so measure
+# the section, not the div.
+ANCHOR_JS = """
+(href) => {
+  const bar = document.querySelector('header').getBoundingClientRect().height;
+  const t = document.querySelector(href);
+  const sec = (t.tagName === 'DIV' && !t.children.length) ? t.nextElementSibling : t;
+  let worst = {under: 0, what: ''};
+  for (const sel of ['.eyebrow', 'h1', 'h2']) {
+    const e = sec.querySelector(sel);
+    if (!e) continue;
+    const r = e.getBoundingClientRect();
+    const under = Math.max(0, Math.min(bar, r.bottom) - r.top);
+    if (under > worst.under)
+      worst = {under, what: sel + ' ' + JSON.stringify(e.innerText.trim().slice(0, 26))};
+  }
+  return worst;
+}
+"""
+
+
+def shoot_segments(page, w, vh, scheme, tag):
+    """One viewport-sized PNG per screenful, top to bottom.
+
+    A full-page PNG of a 13,000px page is unreadable once it is scaled back
+    down to look at, which is how a caption went missing for five sessions.
+    The wheel is used rather than scrollTo so this still works with --nojs.
+    """
+    names = []
+    page.mouse.wheel(0, -vh * 60)
+    page.wait_for_timeout(400)
+    for i in range(40):
+        name = f"{w}-{scheme}{tag}-seg{i:02d}.png"
+        page.screenshot(path=str(OUT / name))
+        names.append(name)
+        before = _scroll_y(page)
+        page.mouse.wheel(0, vh)
+        page.wait_for_timeout(350)
+        if before is not None and _scroll_y(page) == before:
+            break
+    return names
+
+
+def _scroll_y(page):
+    """None with --nojs, where evaluate has no engine to run in."""
+    try:
+        return page.evaluate("scrollY")
+    except Exception:
+        return None
+
+
 def probe(url):
     """Prints the measurements behind the rubric. Returns 1 if anything fails."""
     bad = 0
@@ -150,6 +207,24 @@ def probe(url):
                   f"worst {min(s) if s else 1:.3f} {'ok' if not faded else 'DELAYS READING'}")
             ctx.close()
 
+        print("anchors   (an anchor jump must clear the sticky header)")
+        for w, h in ((390, 844), (820, 1180), (1440, 900)):
+            ctx = browser.new_context(viewport={"width": w, "height": h})
+            page = ctx.new_page()
+            page.goto(url, wait_until="networkidle")
+            page.wait_for_timeout(400)
+            for href in HREFS:
+                page.goto(url, wait_until="networkidle")
+                page.wait_for_timeout(250)
+                page.evaluate(f"location.hash={href!r}")
+                page.wait_for_timeout(700)
+                worst = page.evaluate(ANCHOR_JS, href)
+                bad += bool(worst["under"] > 1)
+                print(f"    {w:>5} {href:<7} {worst['under']:>5.1f}px under the bar "
+                      f"{'ok' if worst['under'] <= 1 else 'HIDDEN BY HEADER'}"
+                      f"  {worst['what']}")
+            ctx.close()
+
         print("hidden    (nothing may be transparent or displaced without JS)")
         for label, kw in (("js-off", {"java_script_enabled": False}),
                           ("reduced", {"reduced_motion": "reduce"})):
@@ -174,6 +249,8 @@ def main():
     ap.add_argument("--scheme", default="light,dark", help="light, dark or both")
     ap.add_argument("--tag", default="", help="suffix for the filenames")
     ap.add_argument("--full-page", action="store_true", help="whole page, not just the fold")
+    ap.add_argument("--segments", action="store_true",
+                    help="the whole page a screenful at a time, readable at 1:1")
     ap.add_argument("--nojs", action="store_true", help="load with JavaScript disabled")
     ap.add_argument("--probe", action="store_true", help="measure instead of screenshot")
     a = ap.parse_args()
@@ -195,9 +272,13 @@ def main():
             for w in widths:
                 page.set_viewport_size({"width": w, "height": SIZES.get(w, 900)})
                 page.goto(a.url, wait_until="networkidle")
-                if a.full_page:
-                    scroll_through(page, SIZES.get(w, 900))
+                vh = SIZES.get(w, 900)
+                if a.full_page or a.segments:
+                    scroll_through(page, vh)
                 page.wait_for_timeout(500)
+                if a.segments:
+                    written += shoot_segments(page, w, vh, scheme, a.tag)
+                    continue
                 name = f"{w}-{scheme}{'-nojs' if a.nojs else ''}{a.tag}.png"
                 page.screenshot(path=str(OUT / name), full_page=a.full_page)
                 written.append(name)
