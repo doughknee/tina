@@ -66,6 +66,12 @@ python site/review.py --probe      # overflow, sweep, motion, anchors, text size
 python site/review.py --segments   # the whole page, one readable screenful at a time
 ```
 
+`--probe` takes `--url`, and this session it was run against **all three pages**, not only
+`/peggy/`: the home page and the privacy page are `all clear` on all six checks too. Session 4
+skipped that on the reasoning that the three share a stylesheet, and the `px` body font is
+exactly the kind of defect that would have hit all three — it costs two minutes, so run it on
+all three.
+
 Run `--probe` before committing any CSS change. `--segments` is how you look at the page: a
 full-page PNG of this page is over 13,000 px tall and is unreadable once scaled down to view,
 which is how a missing caption survived five sessions of "checked the full-page capture". Both

@@ -124,7 +124,7 @@ ANCHOR_JS = """
 # Every text-bearing element, so a size that ignores the root font-size shows up
 # as one that did not move when the root did. A reader who sets a larger default
 # is the only person who ever sees this, and no capture at default settings can.
-FONTSIZE_JS = """
+FONTSIZE_JS = r"""
 () => [...document.querySelectorAll('p,li,summary,a,span,figcaption,td,th,h1,h2,h3')]
   .filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
   .map(e => [e.tagName + (e.className ? '.' + String(e.className).trim().split(/\s+/).join('.') : ''),

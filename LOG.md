@@ -290,3 +290,17 @@ anything. Never retry an approach logged as failed.
     <figcaption>. The hero shot has none, and should not -- it is bracketed by
     the h1, lede, buttons and note above and the claims panel below, so it is
     not floating. Still a 5, with an accurate reason.
+- **Phase 5, cycle 3. Item 4 re-verified by sampling the app, not re-reading
+  the page.** Five claims picked off the rendered copy and looked for in
+  composeApp/src: FLAG_SECURE ("blank the app-switcher preview"), quiet hours,
+  Ollama, accessibility semantics and AutoBackup all exist. Copy stays 5.
+- **`--probe` run against all three pages, not just /peggy/.** `--url` already
+  took one; the home and privacy pages are `all clear` on all six checks.
+  Session 4 skipped this because the three share a stylesheet -- which is
+  precisely why the px body font hit all three. Two minutes, so do it.
+- **review.py: made FONTSIZE_JS a raw string.** The `\s` in the class-name
+  split raised a SyntaxWarning on every run of a committed harness.
+- **Looked at the home page at 1440 for the first time.** Clean: wordmark,
+  tagline, one Peggy card, footer. The card spans the full content width with
+  only one item in the grid, which reads as quiet rather than unfinished, and
+  the home page is not what the rubric scores. Left alone.
