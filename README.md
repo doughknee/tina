@@ -65,6 +65,13 @@ Desktop data lives in `~\.tina\` (`tina.db`, `settings.preferences_pb`).
 
 ## Development
 
+### Keeping Settings honest
+
+Settings copy drifts when features change. `/settings-audit` (a project skill in
+`.claude/skills/`) rebuilds the truth from the code each run — rows, subpages, What's new,
+onboarding cards — cross-checks it, fixes the drift, and proves it with a build and
+screenshots. It names no rows or features itself, so it does not go stale.
+
 ### Trying a change on your phone without Play
 
 The Play build is signed by Google, so an upload-key APK cannot install over it. Build the `dev` variant instead: same release code, package `com.peggy.app.dev`, shown as "Peggy dev" next to the real app with its own data.
