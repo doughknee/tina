@@ -129,13 +129,16 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
 
 ## 8. After it is up
 
-- [ ] **Fix the red app CI.** Unrelated to the site and older than it: `lintRelease` fails on
+- [x] **Fix the red app CI.** Done 2026-09-04 (run 33900429580 green).
+      Original note: Unrelated to the site and older than it: `lintRelease` fails on
       `TileService#startActivityAndCollapse(Intent)` being deprecated
       (`CaptureTileService.kt:24`), which has failed every run since 2026-09-03. Either pass a
       `PendingIntent` or baseline the check.
       *Proves it:* `gh run list --branch main --limit 1` shows `ci` green.
 
-- [ ] **Add the site link to the Play listing** (Store presence → Main store listing → website).
+- [x] **Add the site link to the Play listing.** Already set: Store settings → Store listing
+      contact details → Website is https://doughknee.com/peggy/ (checked 2026-09-04).
 - [ ] **Update the Play memory and Linear** with the site URL and the update procedure.
+      Memory done; Linear needs the connector authorised first.
 - [ ] **When Peggy reaches production**, flip `PRIMARY_URL` to `STORE_URL` and change
       `PRIMARY_LABEL` to "Get it on Google Play", then rebuild and push.
