@@ -2,9 +2,10 @@
 
     python site/build.py
 
-Screenshots come from site/screenshots.json and site/screenshots/*.png. The build resizes and
-re-encodes them into site/peggy/shots/, so the only thing you ever touch to change a picture
-is the PNG itself. See site/README.md.
+Screenshots come from site/screenshots.json and site/screenshots/*.png, with the dark-theme
+twin of each under site/screenshots/dark/. The build resizes and re-encodes them into
+site/peggy/shots/, so the only thing you ever touch to change a picture is the PNG itself.
+See site/README.md.
 
 Standard library only, except Pillow for the image step — and that step is skipped (with the
 existing output reused) when Pillow is not installed, so the page always builds.
@@ -384,37 +385,61 @@ def png_size(path):
 DISPLAY_WIDTH = 640  # ~2x the widest the phone frame is ever drawn
 
 
+def encode(src, out):
+    """Down-scale and re-encode one PNG as WebP. Returns the source's own pixel size."""
+    with Image.open(src) as im:
+        im = im.convert("RGB")
+        size = im.size
+        scale = DISPLAY_WIDTH / im.width
+        if scale < 1:
+            im = im.resize((DISPLAY_WIDTH, round(im.height * scale)), Image.LANCZOS)
+        im.save(out, "WEBP", quality=82, method=6)
+    return size
+
+
 def process_images(shots):
-    """Down-scale and re-encode each screenshot into site/peggy/shots/."""
+    """Down-scale and re-encode each screenshot into site/peggy/shots/.
+
+    A shot with a same-named twin in site/screenshots/dark/ also gets a -dark.webp, which
+    phone() offers to readers whose system is set to dark. The dark set is optional: drop the
+    folder and the site still builds, every shot just stays light.
+    """
     SHOTS_OUT.mkdir(parents=True, exist_ok=True)
     for shot in shots.values():
         src = SHOTS_SRC / shot["file"]
-        out = SHOTS_OUT / (pathlib.Path(shot["file"]).stem + ".webp")
+        stem = pathlib.Path(shot["file"]).stem
+        out = SHOTS_OUT / f"{stem}.webp"
+        dark_src = SHOTS_SRC / "dark" / shot["file"]
+        dark_out = SHOTS_OUT / f"{stem}-dark.webp"
         shot["out"] = f"/peggy/shots/{out.name}"
+        shot["dark"] = f"/peggy/shots/{dark_out.name}" if dark_src.exists() else None
         if Image is None:
-            if not out.exists():
-                raise SystemExit(
-                    f"{out.name} has not been generated and Pillow is not installed.\n"
-                    "Install it (`pip install pillow`) and run the build again."
-                )
+            for need in (out,) + ((dark_out,) if shot["dark"] else ()):
+                if not need.exists():
+                    raise SystemExit(
+                        f"{need.name} has not been generated and Pillow is not installed.\n"
+                        "Install it (`pip install pillow`) and run the build again."
+                    )
             shot["w"], shot["h"] = png_size(src)
             continue
-        with Image.open(src) as im:
-            im = im.convert("RGB")
-            shot["w"], shot["h"] = im.size
-            scale = DISPLAY_WIDTH / im.width
-            if scale < 1:
-                im = im.resize((DISPLAY_WIDTH, round(im.height * scale)), Image.LANCZOS)
-            im.save(out, "WEBP", quality=82, method=6)
+        shot["w"], shot["h"] = encode(src, out)
+        if shot["dark"]:
+            encode(dark_src, dark_out)
     return shots
 
 
 def phone(shot, *, eager=False):
     loading = "eager" if eager else "lazy"
-    return (
-        f'<div class="phone"><img src="{shot["out"]}" width="{shot["w"]}" height="{shot["h"]}" '
-        f'loading="{loading}" decoding="async" alt="{html.escape(shot["alt"])}"></div>'
+    img = (
+        f'<img src="{shot["out"]}" width="{shot["w"]}" height="{shot["h"]}" '
+        f'loading="{loading}" decoding="async" alt="{html.escape(shot["alt"])}">'
     )
+    if shot["dark"]:
+        # The reader's own theme picks the screenshot, and only the matching file downloads.
+        # No JS and no toggle: a dark-mode reader should not be shown a light-mode phone.
+        img = (f'<picture><source media="(prefers-color-scheme: dark)" '
+               f'srcset="{shot["dark"]}">{img}</picture>')
+    return f'<div class="phone">{img}</div>'
 
 
 def figure(shot, *, eager=False):
@@ -759,7 +784,9 @@ def build():
     print("built:")
     for p in built:
         print(f"  {p.relative_to(ROOT)}  ({p.stat().st_size // 1024} KB)")
-    print(f"  {len(shots)} screenshots in {SHOTS_OUT.relative_to(ROOT)}")
+    dark = sum(1 for s in shots.values() if s["dark"])
+    print(f"  {len(shots)} screenshots ({dark} with a dark twin) "
+          f"in {SHOTS_OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

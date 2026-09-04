@@ -240,23 +240,53 @@ the two commits are STATUS.md and LOG.md only.
 
 ## For Doni to decide
 
-Nothing else is blocking. Both are unchanged in substance from earlier sessions.
+Nothing else is blocking. One open taste decision is left.
 
-1. **A typeface (item 2).** `system-ui` caps this at 4 — it is a deliberate choice, but it is by
-   definition the least distinctive one. A self-hosted face would lift it and would not break
-   the no-external-requests promise (no CDN), at the cost of bytes, and of some of the restraint
-   the brief asked for. Choosing a face for your product is a taste decision, so I left it.
-2. **Dark-theme screenshots (item 8).** Peggy has a real dark theme — the feature grid card
-   "Material You" even advertises it — and the site never shows it. This is *mechanically*
-   possible without the banned `demo_data.py`: `emulator-5554` is up and still holds the demo
-   data, so `screenshots.py` could re-shoot with `adb shell cmd uimode night yes`. I did not do
-   it, for three reasons: it doubles the committed image set and needs a `<picture>` per shot,
-   it is the largest change to make unattended, and it is a design question rather than a bug.
+**A typeface (item 2).** `system-ui` caps this at 4 — it is a deliberate choice, but it is by
+definition the least distinctive one. A self-hosted face would lift it and would not break the
+no-external-requests promise (no CDN), at the cost of bytes, and of some of the restraint the
+brief asked for. Choosing a face for your product is a taste decision, so I left it.
+
+Dark-theme screenshots, open here for two sessions, are **done**: `screenshots.py --theme`
+shoots both passes, the dark set lives in `site/screenshots/dark/`, and `build.py` pairs them by
+file name into a `<picture>`.
 
 Resolved in earlier sessions, so you do not need to read them again: the hero's missing "one
 surface" point; `calendar.webp` being built but unreferenced (deliberate, documented in
 `site/README.md`); the build scripts being served from the published directory (harmless); the
 anchor jumps landing under the sticky header at 390 (fixed, and now the fourth probe check).
+
+## Scroll performance: measured, no cause found
+
+Doni reported the mobile site felt laggy. It was measured on the real phone
+(`10.205.0.144`, GrapheneOS, Firefox from F-Droid — there is no Chrome on it) by recording the
+screen at 60fps during scripted flings and counting frames where the picture barely moved.
+Every candidate was A/B'd against the shipped build on that device, three runs each:
+
+| Change tested | Shipped | Variant |
+|---|---|---|
+| `backdrop-filter` removed from the header | 5.5% stalled | 5.8% |
+| `content-visibility:auto` on every section | 5.5% | 5.8% |
+| all JavaScript stripped (reveal + sticky toggle) | 5.9% | 6.0% |
+| a plain-text page with no images at all | 6.1% | 4.2% |
+
+Nothing on the page is responsible. About 6% stalled frames is this device and browser's floor;
+images account for roughly two points of it and 247 KB is already small. **Do not ship a perf
+"fix" for this** — five hypotheses have now been disproven on the actual hardware, and shipping
+one anyway would be cargo cult. `scratchpad/device_ab.py` is the rig if it needs re-running.
+
+Two traps in that rig, both of which produced confident wrong answers before they were caught:
+
+- **Chromium can't measure this.** Headless reports a flat 16.7ms for every condition because
+  nothing composites. Headed with 6x CPU throttling reports every condition identical. Neither
+  is evidence; only the device recording is.
+- **Serve each variant from its own document root.** Serving them under `/a/` and `/b/` prefixes
+  broke the absolute `/peggy/shots/` image paths, so an entire evening of A/Bs ran on pages with
+  no images. It looked like clean data. Extract frames from the recording and *look* at them
+  before believing any run.
+
+The one honest observation left is length, not frame rate: the page is 13,805px at 390px wide,
+about 16 screens. If it still feels slow, that is the thing to question.
 
 ## Gotchas already paid for
 

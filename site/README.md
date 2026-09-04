@@ -11,7 +11,7 @@ Three pages, built by one script from the files in this directory:
 Everything under `peggy/`, plus `index.html`, `robots.txt` and `sitemap.xml`, is
 **generated**. Do not hand-edit them; they are overwritten on every build. The
 things you actually edit are `build.py`, `screenshots.json`, the PNGs in
-`screenshots/`, and `../docs/PRIVACY.md`.
+`screenshots/` and `screenshots/dark/`, and `../docs/PRIVACY.md`.
 
 Build it:
 
@@ -40,11 +40,19 @@ Drop the new PNG over the old one, keeping the file name, and rebuild:
 
 ```bash
 cp new-sort.png site/screenshots/sort.png
+cp new-sort-dark.png site/screenshots/dark/sort.png
 python site/build.py
 ```
 
-Commit both the PNG and the regenerated `site/peggy/shots/sort.webp`. That is
-the whole procedure — no manifest edit, no HTML edit.
+Commit the PNGs and the regenerated `site/peggy/shots/sort.webp` and
+`sort-dark.webp`. That is the whole procedure — no manifest edit, no HTML edit.
+
+Every shot exists twice under the same file name: the light one in
+`site/screenshots/`, the dark one in `site/screenshots/dark/`. The build pairs
+them by name and wraps the `<img>` in a `<picture>`, so a reader whose system is
+set to dark gets the dark shot and downloads only that one. The dark half is
+optional. Skip the second `cp` and the page keeps serving the old dark shot;
+delete the `dark/` folder entirely and every shot just stays light.
 
 The new shot should be the same shape as the one it replaces. It does not have
 to be 1080×2400: the build reads each PNG's real dimensions and writes them onto
@@ -70,10 +78,13 @@ Both take the same three flags:
 | `--package` | `com.peggy.app.dev` |
 | `--adb` | `~/AppData/Local/Android/Sdk/platform-tools/adb.exe` |
 
-`screenshots.py` also takes `--only`, to retake a subset instead of all eight:
+`screenshots.py` takes both themes by default, sixteen shots in two passes: it
+flips the device with `cmd uimode night` between them and puts it back to light
+when it is done. `--only` retakes a subset and `--theme` a single pass:
 
 ```bash
 python site/screenshots.py --only sort ideas
+python site/screenshots.py --theme dark
 ```
 
 Then `python site/build.py` to re-encode and rebuild.
@@ -91,7 +102,8 @@ database around.
 
 Three steps, all required:
 
-1. Take the PNG and put it in `site/screenshots/`.
+1. Take the PNG and put it in `site/screenshots/`, and its dark twin, under the same
+   name, in `site/screenshots/dark/`.
 2. Add an entry to the `shots` list in `site/screenshots.json`:
    ```json
    { "id": "search", "file": "search.png",

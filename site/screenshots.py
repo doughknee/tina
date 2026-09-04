@@ -23,9 +23,10 @@ OUT = HERE / "screenshots"
 
 
 class Device:
-    def __init__(self, adb, serial, package):
+    def __init__(self, adb, serial, package, theme="light"):
         self.adb = [adb, "-s", serial]
         self.package = package
+        self.theme = theme
 
     def sh(self, *args, binary=False):
         r = subprocess.run(self.adb + ["shell", *args], capture_output=True)
@@ -95,10 +96,12 @@ class Device:
         time.sleep(settle)
 
     def shot(self, name):
-        OUT.mkdir(parents=True, exist_ok=True)
+        # dark shots go in a subfolder so build.py can pair them with the light one by filename
+        out = OUT if self.theme == "light" else OUT / self.theme
+        out.mkdir(parents=True, exist_ok=True)
         data = self.sh("screencap", "-p", binary=True).replace(b"\r\n", b"\n")
-        (OUT / f"{name}.png").write_bytes(data)
-        print(f"  {name}.png  ({len(data) // 1024} KB)")
+        (out / f"{name}.png").write_bytes(data)
+        print(f"  {self.theme}/{name}.png  ({len(data) // 1024} KB)")
 
 
 # Each step runs against a freshly launched app, so one failure cannot poison the next shot.
@@ -190,11 +193,21 @@ def main():
     ap.add_argument("--package", default="com.peggy.app.dev")
     ap.add_argument("--adb", default=str(pathlib.Path.home() / "AppData/Local/Android/Sdk/platform-tools/adb.exe"))
     ap.add_argument("--only", nargs="*", help="names to retake; default is all of them")
+    ap.add_argument("--theme", choices=("light", "dark", "both"), default="both",
+                    help="light writes site/screenshots/, dark writes site/screenshots/dark/")
     args = ap.parse_args()
 
-    d = Device(args.adb, args.serial, args.package)
+    themes = ("light", "dark") if args.theme == "both" else (args.theme,)
+    for theme in themes:
+        capture(args, theme)
+
+
+def capture(args, theme):
+    d = Device(args.adb, args.serial, args.package, theme)
+    print(f"--- {theme}")
     d.demo_mode(True)
-    d.sh("cmd", "uimode", "night", "no")
+    d.sh("cmd", "uimode", "night", "yes" if theme == "dark" else "no")
+    time.sleep(2)
     try:
         for name, step in SHOTS:
             if args.only and name not in args.only:
@@ -204,7 +217,8 @@ def main():
             step(d)
     finally:
         d.demo_mode(False)
-    print(f"\nwrote to {OUT}")
+        d.sh("cmd", "uimode", "night", "no")
+    print(f"  -> {OUT if theme == 'light' else OUT / theme}")
 
 
 if __name__ == "__main__":
