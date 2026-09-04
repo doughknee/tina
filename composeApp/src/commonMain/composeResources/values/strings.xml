@@ -193,7 +193,11 @@
     <string name="fmt_bullets">Bulleted list</string>
     <string name="fmt_numbered">Numbered list</string>
     <string name="fmt_strike">Strikethrough</string>
-    <string name="fmt_hint">Type - for a bullet, 1. for a number, # for a heading</string>
+    <string name="fmt_checklist">Checklist</string>
+    <string name="fmt_hint">Type - for a bullet, [] for a checkbox, 1. for a number, # for a heading</string>
+    <string name="notes_done_count">%1$d of %2$d done</string>
+    <string name="notes_check_item">Tick %1$s</string>
+    <string name="notes_uncheck_item">Untick %1$s</string>
     <string name="notes_pinned">Pinned</string>
     <string name="notes_everything">Everything else</string>
     <string name="notes_all">All</string>

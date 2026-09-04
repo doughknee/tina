@@ -449,3 +449,9 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - `NoteEditorViewModel.edit` skips unchanged writes: opening a note re-emits its body and every open was bumping `updatedAt`, which reshuffled "Last edited".
 - `htmlPreview` only turns block tags into spaces; inline tags vanish, so "<b>ginger</b>." no longer reads "ginger .".
 
+### Checklists without a checklist model (v1.8.2)
+
+- `richeditor-compose` has no task-list paragraph, so a checklist item is a list line whose text starts with ☐ or ☑. The state lives in the text: it survives export, search, paste and the desktop, and `previewOf` reads it without a schema change. The card flips the marker character in the stored HTML (`toggleChecklistItem`), nothing else moves.
+- The editor's plain text joins paragraphs with a space and prefixes list lines with their bullet ("• "), while `toText()` uses newlines at the same indices. Line starts come from `toText()`, and `contentStart()` skips the bullet, so the "- ", "[] " and "# " rules and the checklist toolbar button work inside lists too.
+- Toolbar cycle is plain → ☐ → ☑ → plain; the `[] ` rule inserts ☐ and turns the line into a bullet if it is not one.
+

@@ -4,6 +4,8 @@ import com.tina.app.data.Item
 import com.tina.app.data.ItemType
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class NoteShapeTest {
     private fun note(title: String, body: String? = null) =
@@ -30,8 +32,27 @@ class NoteShapeTest {
         val body = "<ul>" + (1..6).joinToString("") { "<li>item $it</li>" } + "</ul>"
         val p = previewOf(note("Trip packing list", body))
         assertEquals(NoteShape.LIST, p.shape)
-        assertEquals(listOf("item 1", "item 2", "item 3", "item 4"), p.items)
+        assertEquals(listOf("item 1", "item 2", "item 3", "item 4"), p.items.map { it.text })
         assertEquals(2, p.moreItems)
+        assertFalse(p.isChecklist)
+    }
+
+    @Test fun checklistMarkersBecomeStateAndCounts() {
+        val body = "<ul><li>☑ Passport</li><li>☑ Chargers</li><li>☐ Rain jacket</li><li>plain bullet</li></ul>"
+        val p = previewOf(note("Trip", body))
+        assertTrue(p.isChecklist)
+        assertEquals(listOf(true, true, false, null), p.items.map { it.checked })
+        assertEquals("Passport", p.items[0].text)
+        assertEquals(2, p.done)
+        assertEquals(3, p.total)
+    }
+
+    @Test fun toggleFlipsOnlyTheAskedItem() {
+        val body = "<ul><li>☐ a</li><li><b>☐ b</b></li><li>c</li></ul>"
+        val once = toggleChecklistItem(body, 1)
+        assertEquals("<ul><li>☐ a</li><li><b>☑ b</b></li><li>c</li></ul>", once)
+        assertEquals(body, toggleChecklistItem(once, 1))
+        assertEquals(body, toggleChecklistItem(body, 2))
     }
 
     @Test fun splitUsesFirstLine() {

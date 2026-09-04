@@ -269,7 +269,7 @@ fun NotesScreen(
                 searching && query.isNotBlank() -> SearchResults(ui.all, query, nowMillis, today, open)
                 ui.isEmpty -> EmptyNotes(query = query, filtered = tagFilter != null)
                 ui.layout == NotesLayout.LIST -> NotesList(ui, nowMillis, today, selection, selectionMode, open, select)
-                else -> NotesGrid(ui, nowMillis, today, selection, selectionMode, open, select)
+                else -> NotesGrid(ui, nowMillis, today, selection, selectionMode, open, select, viewModel::toggleChecklistItem)
             }
         }
     }
@@ -399,6 +399,7 @@ private fun NotesGrid(
     selectionMode: Boolean,
     onOpen: (Item) -> Unit,
     onSelect: (Item) -> Unit,
+    onToggleItem: ((Item, Int) -> Unit)? = null,
 ) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // adaptive gives three cramped columns on a large phone; two on phones, adaptive on desktop
@@ -429,6 +430,7 @@ private fun NotesGrid(
                         selected = note.id in selection,
                         selectionMode = selectionMode,
                         showPin = false,
+                        onToggleItem = onToggleItem?.let { f -> { i -> f(note, i) } },
                         modifier = Modifier.animateItem(),
                     )
                 }
@@ -447,6 +449,7 @@ private fun NotesGrid(
                     onLongClick = { onSelect(note) },
                     selected = note.id in selection,
                     selectionMode = selectionMode,
+                    onToggleItem = onToggleItem?.let { f -> { i -> f(note, i) } },
                     modifier = Modifier.animateItem(),
                 )
             }
@@ -536,7 +539,7 @@ private fun SearchResults(
                         overflow = TextOverflow.Ellipsis,
                     )
                     val body = when (preview.shape) {
-                        NoteShape.LIST -> preview.items.joinToString(" · ")
+                        NoteShape.LIST -> preview.items.joinToString(" · ") { it.text }
                         NoteShape.TITLED -> preview.text
                         NoteShape.SCRAP -> ""
                     }

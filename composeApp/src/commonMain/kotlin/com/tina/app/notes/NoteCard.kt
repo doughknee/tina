@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.CheckBoxOutlineBlank
+import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -32,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tina.app.data.Item
@@ -40,7 +44,10 @@ import com.tina.app.resources.date_today
 import com.tina.app.resources.date_yesterday
 import com.tina.app.resources.months_short
 import com.tina.app.resources.note_untitled
+import com.tina.app.resources.notes_check_item
+import com.tina.app.resources.notes_done_count
 import com.tina.app.resources.notes_more_items
+import com.tina.app.resources.notes_uncheck_item
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -113,6 +120,8 @@ fun NoteCard(
     selected: Boolean = false,
     selectionMode: Boolean = false,
     showPin: Boolean = true,
+    /** Ticks the nth list item without opening the note; null renders the boxes as decoration. */
+    onToggleItem: ((Int) -> Unit)? = null,
 ) {
     val preview = remember(item) { previewOf(item) }
     val colored = item.color != null
@@ -123,7 +132,7 @@ fun NoteCard(
     }
     val untitled = stringResource(Res.string.note_untitled)
     val description = remember(preview) {
-        listOf(preview.title, preview.text, preview.items.joinToString(", ")).filter { it.isNotBlank() }.joinToString(". ").ifBlank { untitled }
+        listOf(preview.title, preview.text, preview.items.joinToString(", ") { it.text }).filter { it.isNotBlank() }.joinToString(". ").ifBlank { untitled }
     }
     val interaction = if (selectionMode) {
         Modifier.toggleable(value = selected, role = Role.Checkbox, onValueChange = { onClick() })
@@ -182,24 +191,50 @@ fun NoteCard(
                             Text(preview.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         }
                         Column(Modifier.padding(top = 6.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            preview.items.forEach { line ->
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(
-                                        Modifier.padding(end = 8.dp).size(6.dp)
-                                            .background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape),
-                                    )
+                            preview.items.forEachIndexed { index, line ->
+                                val checked = line.checked
+                                val tickLabel = stringResource(if (checked == true) Res.string.notes_uncheck_item else Res.string.notes_check_item, line.text)
+                                Row(
+                                    Modifier.then(
+                                        if (checked != null && onToggleItem != null && !selectionMode) {
+                                            Modifier
+                                                .toggleable(value = checked, role = Role.Checkbox, onValueChange = { onToggleItem(index) })
+                                                .semantics { contentDescription = tickLabel }
+                                        } else Modifier,
+                                    ).defaultMinSize(minHeight = if (checked != null) 28.dp else 0.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    if (checked != null) {
+                                        Icon(
+                                            if (checked) Icons.Outlined.CheckBox else Icons.Outlined.CheckBoxOutlineBlank,
+                                            contentDescription = null,
+                                            modifier = Modifier.padding(end = 8.dp).size(16.dp),
+                                            tint = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    } else {
+                                        Box(
+                                            Modifier.padding(end = 8.dp).size(6.dp)
+                                                .background(MaterialTheme.colorScheme.onSurfaceVariant, CircleShape),
+                                        )
+                                    }
                                     Text(
-                                        line,
+                                        line.text,
                                         style = MaterialTheme.typography.bodyMedium,
+                                        color = if (checked == true) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                                        textDecoration = if (checked == true) TextDecoration.LineThrough else null,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                     )
                                 }
                             }
                         }
-                        if (preview.moreItems > 0) {
+                        val footer = listOfNotNull(
+                            if (preview.moreItems > 0) stringResource(Res.string.notes_more_items, preview.moreItems) else null,
+                            if (preview.isChecklist) stringResource(Res.string.notes_done_count, preview.done, preview.total) else null,
+                        )
+                        if (footer.isNotEmpty()) {
                             Text(
-                                stringResource(Res.string.notes_more_items, preview.moreItems),
+                                footer.joinToString(" · "),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(top = 6.dp),
@@ -270,7 +305,7 @@ fun NoteRow(
                 overflow = TextOverflow.Ellipsis,
             )
             val sub = when (preview.shape) {
-                NoteShape.LIST -> preview.items.joinToString(" · ")
+                NoteShape.LIST -> preview.items.joinToString(" · ") { it.text }
                 NoteShape.TITLED -> preview.text
                 NoteShape.SCRAP -> ""
             }

@@ -179,6 +179,12 @@ class NotesViewModel(
         viewModelScope.launch { items.forEach { repository.delete(it.id) } }
     }
 
+    /** Ticks or unticks the nth list item of a note straight from its card. */
+    fun toggleChecklistItem(item: Item, index: Int) {
+        val body = item.body ?: return
+        viewModelScope.launch { repository.update(item.copy(body = toggleChecklistItem(body, index))) }
+    }
+
     fun togglePin(item: Item) {
         viewModelScope.launch { repository.update(item.copy(pinned = !item.pinned)) }
     }

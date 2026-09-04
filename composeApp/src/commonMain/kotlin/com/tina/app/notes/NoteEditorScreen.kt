@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
@@ -83,6 +84,7 @@ import com.tina.app.resources.back
 import com.tina.app.resources.delete
 import com.tina.app.resources.event_color
 import com.tina.app.resources.fmt_bold
+import com.tina.app.resources.fmt_checklist
 import com.tina.app.resources.fmt_bullets
 import com.tina.app.resources.fmt_heading
 import com.tina.app.resources.fmt_hint
@@ -172,14 +174,18 @@ fun NoteEditorScreen(
             .collect { (text, selection) ->
                 if (!selection.collapsed) return@collect
                 val cursor = selection.end
-                val lineStart = text.lastIndexOf('\n', cursor - 1) + 1
                 if (cursor > text.length) return@collect
+                // inside a list the paragraph text carries its bullet ("• ", "1. ") as a prefix
+                val lineStart = richTextState.contentStart()
                 val line = text.substring(lineStart, cursor)
                 val rule: (() -> Unit)? = when (line) {
                     "- ", "* " -> if (richTextState.isUnorderedList) null else ({ richTextState.toggleUnorderedList() })
                     "1. " -> if (richTextState.isOrderedList) null else ({ richTextState.toggleOrderedList() })
                     "# " -> ({ richTextState.toggleSpanStyle(HEADING) })
                     "## " -> ({ richTextState.toggleSpanStyle(SUBHEADING) })
+                    // a checklist item is a bullet whose text starts with a box; the card reads the box
+                    "[] ", "[ ] " -> ({ richTextState.startChecklistItem(UNCHECKED) })
+                    "[x] ", "[X] " -> ({ richTextState.startChecklistItem(CHECKED) })
                     else -> null
                 }
                 if (rule != null) {
@@ -405,7 +411,7 @@ private fun FormatToolbar(state: RichTextState, modifier: Modifier = Modifier) {
         )
         ToolbarDivider()
         FormatButton(
-            active = state.isUnorderedList,
+            active = state.isUnorderedList && state.currentLineMarker() == null,
             onClick = { state.toggleUnorderedList() },
             icon = { Icon(Icons.AutoMirrored.Outlined.FormatListBulleted, stringResource(Res.string.fmt_bullets)) },
         )
@@ -414,6 +420,65 @@ private fun FormatToolbar(state: RichTextState, modifier: Modifier = Modifier) {
             onClick = { state.toggleOrderedList() },
             icon = { Icon(Icons.Outlined.FormatListNumbered, stringResource(Res.string.fmt_numbered)) },
         )
+        FormatButton(
+            active = state.currentLineMarker() != null,
+            onClick = { state.cycleChecklistMarker() },
+            icon = { Icon(Icons.Outlined.Checklist, stringResource(Res.string.fmt_checklist)) },
+        )
+    }
+}
+
+/** Start of the line the cursor is on, in the editor's plain text. */
+private fun RichTextState.currentLineStart(): Int {
+    // annotatedString joins paragraphs with a space; toText() uses newlines at the same indices
+    val plain = toText()
+    val cursor = selection.end.coerceIn(0, plain.length)
+    return plain.lastIndexOf('\n', cursor - 1) + 1
+}
+
+/**
+ * Where the user's own text starts on the cursor's line: past the bullet or number the list
+ * paragraph prepends ("• ", "1. "), which the editor keeps in the plain text.
+ */
+private fun RichTextState.contentStart(): Int {
+    val start = currentLineStart()
+    if (!isList) return start
+    val text = annotatedString.text
+    val space = text.indexOf(' ', start)
+    if (space <= start) return start
+    val prefix = text.substring(start, space)
+    val isMarker = prefix.all { !it.isLetter() && it != UNCHECKED && it != CHECKED }
+    return if (isMarker) space + 1 else start
+}
+
+/** The box at the start of the cursor's line, if it is a checklist item. */
+private fun RichTextState.currentLineMarker(): Char? {
+    val text = annotatedString.text
+    return text.getOrNull(contentStart())?.takeIf { it == UNCHECKED || it == CHECKED }
+}
+
+/** Make the cursor's line a checklist item: a bullet whose text starts with [marker]. */
+private fun RichTextState.startChecklistItem(marker: Char) {
+    if (!isUnorderedList) toggleUnorderedList()
+    addTextAfterSelection("$marker ")
+}
+
+/** Toolbar: plain line → unticked box → ticked box → plain line. */
+private fun RichTextState.cycleChecklistMarker() {
+    val start = contentStart()
+    when (currentLineMarker()) {
+        null -> {
+            if (!isUnorderedList) toggleUnorderedList()
+            addTextAtIndex(contentStart(), "$UNCHECKED ")
+        }
+        UNCHECKED -> {
+            removeTextRange(TextRange(start, start + 1))
+            addTextAtIndex(start, CHECKED.toString())
+        }
+        else -> {
+            val end = if (annotatedString.text.getOrNull(start + 1) == ' ') start + 2 else start + 1
+            removeTextRange(TextRange(start, end))
+        }
     }
 }
 
