@@ -157,7 +157,22 @@ gitignored `site/review/`:
 ```bash
 python site/review.py --full          # 390, 820 and 1440, light and dark
 python site/review.py --nojs          # JavaScript off, to prove nothing is hidden
+python site/review.py --probe         # the numbers a screenshot cannot show you
 ```
+
+`--probe` is the one to run before committing a CSS change. It measures three
+things and exits non-zero if any of them fail:
+
+- **overflow** — `scrollWidth` against the viewport at 390, 820 and 1440 in both
+  themes. Anything larger is a sideways scrollbar.
+- **motion** — fast-scrolls the page and samples the computed opacity of every
+  `.reveal` sitting in the middle 20–80% of the viewport, which is where a
+  reader is looking. Any value below 1 there means the animation is delaying
+  reading. This is why the reveal moves but does not fade: a fade always loses
+  the race against a fast scroll, and half-transparent text is unreadable text.
+- **hidden** — loads with JavaScript off and with reduced motion asked for, and
+  fails if anything is transparent or displaced in either. Hiding is opt-in
+  (`html.js-reveal`), so both of those loads must show everything.
 
 Two things it has already caught, worth knowing before you trust an image from
 it:
