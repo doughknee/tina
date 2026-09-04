@@ -16,7 +16,8 @@ import okio.Path.Companion.toPath
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-enum class OpenAppTo { CAPTURE, TODAY, LAST }
+/** CAPTURE and TODAY are the old names for Plan; both stay readable from saved settings. */
+enum class OpenAppTo { CAPTURE, TODAY, LAST, SORT, IDEAS }
 
 /** SYSTEM follows the platform accessibility flag; ON/OFF override it. */
 enum class ReduceMotionMode { SYSTEM, ON, OFF }

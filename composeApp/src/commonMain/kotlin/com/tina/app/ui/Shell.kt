@@ -70,6 +70,7 @@ import com.tina.app.ask.AskSheet
 import com.tina.app.ask.AskViewModel
 import com.tina.app.capture.CaptureViewModel
 import com.tina.app.data.AiProvider
+import com.tina.app.data.OpenAppTo
 import com.tina.app.data.Item
 import com.tina.app.inbox.InboxScreen
 import com.tina.app.inbox.InboxViewModel
@@ -122,7 +123,12 @@ fun Shell(
     val askAvailable = settings.aiAskEnabled && settings.aiProvider != AiProvider.OFF
 
     // saved by name; LAST relies on rememberSaveable surviving process death, the others pin a start page
-    var selectedName by rememberSaveable(settings.openAppTo) { mutableStateOf(TinaTab.AGENDA.name) }
+    val startTab = when (settings.openAppTo) {
+        OpenAppTo.SORT -> TinaTab.INBOX
+        OpenAppTo.IDEAS -> TinaTab.NOTES
+        else -> TinaTab.AGENDA
+    }
+    var selectedName by rememberSaveable(settings.openAppTo) { mutableStateOf(startTab.name) }
     val selectedTab = TinaTab.entries.firstOrNull { it.name == selectedName } ?: TinaTab.AGENDA
     // deliberately not saveable: the bar always comes back in capture mode
     var askOpen by remember { mutableStateOf(false) }

@@ -280,7 +280,7 @@
     <string name="onb_capture_body">Type what’s on your mind. Dates, times, repeats and tags are read from the words. No forms, no pickers.</string>
     <string name="onb_capture_example">“dentist thursday 3pm” → Thursday, 3 PM</string>
     <string name="onb_sort_title">Sort it later</string>
-    <string name="onb_sort_body">Anything without a date waits in one inbox. Swipe right for today, left for someday. Undo everywhere, no “are you sure?”.</string>
+    <string name="onb_sort_body">Anything without a date waits on Sort, next to what’s overdue or snoozed. One tap answers each: Today, Done, Keep, Drop. Undo everywhere, no “are you sure?”.</string>
     <string name="onb_reminders_title">Rings on time</string>
     <string name="onb_reminders_body">Reminders fire at the exact minute, survive reboots and time zones, and come with Done and Snooze.</string>
     <string name="onb_notifications_on">Notifications are on</string>
@@ -319,7 +319,9 @@
     <string name="set_reduce_motion">Reduce motion</string>
     <string name="set_reduce_motion_system">Following system setting</string>
     <string name="open_to_capture">Plan</string>
-    <string name="open_to_today">Agenda</string>
+    <string name="open_to_today">Plan</string>
+    <string name="open_to_sort">Sort</string>
+    <string name="open_to_ideas">Ideas</string>
     <string name="open_to_last">Last screen</string>
     <!-- Settings: Appearance -->
     <string name="set_theme">Theme</string>
@@ -339,12 +341,12 @@
     <string name="set_voice_capture">Voice capture</string>
     <string name="set_voice_capture_sub">Mic button next to the field</string>
     <string name="set_widgets">Widgets</string>
-    <string name="set_widgets_sub">Today list · 1×1 capture</string>
+    <string name="set_widgets_sub">Today list · capture pill</string>
     <string name="set_undo_window">Undo window</string>
     <string name="set_undo_window_sub">Snackbar stays %1$d s</string>
     <!-- Settings: Date &amp; time -->
     <string name="set_day_sections">Day sections</string>
-    <string name="set_day_sections_sub">When Today splits morning / afternoon / evening</string>
+    <string name="set_day_sections_sub">When Plan’s day view splits morning / afternoon / evening</string>
     <string name="set_morning">Morning starts</string>
     <string name="set_afternoon">Afternoon starts</string>
     <string name="set_evening">Evening starts</string>
@@ -357,8 +359,8 @@
     <string name="set_quiet_hours_sub">Reminders due in this window ring when it ends</string>
     <string name="set_quiet_start">Quiet from</string>
     <string name="set_quiet_end">Quiet until</string>
-    <string name="set_inbox_reminder">Inbox reminder</string>
-    <string name="set_inbox_reminder_sub">After %1$d days untouched</string>
+    <string name="set_inbox_reminder">Sort reminder</string>
+    <string name="set_inbox_reminder_sub">When something has waited on Sort for %1$d days</string>
     <string name="set_sound">Sound &amp; vibration</string>
     <string name="set_sound_sub">Android notification settings</string>
     <!-- Settings: AI -->
@@ -374,7 +376,7 @@
     <!-- Settings: Organisation -->
     <string name="set_tags">Tags</string>
     <string name="set_tags_sub">%1$d tags · rename, merge, delete</string>
-    <string name="set_show_completed">Show completed in Today</string>
+    <string name="set_show_completed">Show completed on Plan</string>
     <string name="set_show_completed_sub">Struck through, at the section end</string>
     <string name="set_search_completed">Search completed items</string>
     <string name="set_search_completed_sub">Includes anything still in Trash</string>

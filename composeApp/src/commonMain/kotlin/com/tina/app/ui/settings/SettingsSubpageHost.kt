@@ -13,7 +13,9 @@ import com.tina.app.resources.contrast_medium
 import com.tina.app.resources.contrast_standard
 import com.tina.app.resources.licenses_title
 import com.tina.app.resources.open_to_capture
+import com.tina.app.resources.open_to_ideas
 import com.tina.app.resources.open_to_last
+import com.tina.app.resources.open_to_sort
 import com.tina.app.resources.set_contrast
 import com.tina.app.resources.set_open_app_to
 import com.tina.app.resources.set_undo_window
@@ -40,13 +42,20 @@ fun SettingsSubpageHost(
     when (destination) {
         SettingsDestination.OPEN_APP_TO -> ChoiceSubpage(
             title = stringResource(Res.string.set_open_app_to),
-            // CAPTURE and TODAY both open the Agenda now; a persisted TODAY just reads as Agenda
+            // CAPTURE and TODAY are the old names for Plan; a saved one still reads as Plan
             options = listOf(
                 stringResource(Res.string.open_to_capture),
+                stringResource(Res.string.open_to_sort),
+                stringResource(Res.string.open_to_ideas),
                 stringResource(Res.string.open_to_last),
             ),
-            selectedIndex = if (settings.openAppTo == OpenAppTo.LAST) 1 else 0,
-            onSelect = { viewModel.setOpenAppTo(if (it == 1) OpenAppTo.LAST else OpenAppTo.CAPTURE) },
+            selectedIndex = when (settings.openAppTo) {
+                OpenAppTo.SORT -> 1
+                OpenAppTo.IDEAS -> 2
+                OpenAppTo.LAST -> 3
+                else -> 0
+            },
+            onSelect = { viewModel.setOpenAppTo(listOf(OpenAppTo.CAPTURE, OpenAppTo.SORT, OpenAppTo.IDEAS, OpenAppTo.LAST)[it]) },
             onBack = onBack,
         )
         SettingsDestination.UNDO_WINDOW -> ChoiceSubpage(
@@ -72,8 +81,8 @@ fun SettingsSubpageHost(
             onBack = onBack,
             intro = stringResource(Res.string.widgets_hint),
             entries = listOf(
-                "Today" to "Your day with tappable checkboxes",
-                "Capture" to "1×1 — opens straight into the field",
+                "Today" to "Your day with checkboxes, a capture button, and rows that open the item. Refreshes itself every half hour.",
+                "Capture" to "A pill that opens straight into the field",
             ),
         )
         SettingsDestination.SHORTCUTS -> InfoSubpage(
@@ -81,18 +90,25 @@ fun SettingsSubpageHost(
             onBack = onBack,
             entries = listOf(
                 "Ctrl+N" to "Focus capture",
-                "N" to "New note in the Notes scope, otherwise focus capture",
+                "N" to "New idea on Ideas, otherwise focus capture",
                 "Ctrl+F" to "Search",
-                "Arrows" to "Move the agenda date",
+                "Arrows" to "Move the Plan date",
+                "Enter" to "Confirm the selected row",
+                "Delete" to "Delete the selected row",
             ),
         )
         SettingsDestination.WHATS_NEW -> InfoSubpage(
             title = stringResource(Res.string.whats_new_title),
             onBack = onBack,
             entries = listOf(
+                "1.8 — Ideas and decisions" to
+                    "Ideas rebuilt: cards that read like notes, a pinned section, a tag rail, " +
+                        "long-press selection, sort and layout, a paper-like editor, and a tag page " +
+                        "that gathers notes, tasks and events. Sort became the decisions page. " +
+                        "Capture understands far more phrasings. Widgets, quiet hours, and undo everywhere.",
                 "1.7 — Trust" to
                     "Repeating reminders ring every time, backups carry everything, your AI key is " +
-                        "encrypted, Ask asks before big changes, tina Pro groundwork, and a real icon.",
+                        "encrypted, Ask asks before big changes, Peggy Pro groundwork, and a real icon.",
                 "1.6 — Swipe to sort" to
                     "Swipe triage on Sort, the settings hub, series editing, empty states and a " +
                         "quick-settings tile for ideas.",

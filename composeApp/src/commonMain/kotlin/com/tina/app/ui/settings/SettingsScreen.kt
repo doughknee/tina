@@ -141,6 +141,8 @@ import com.tina.app.resources.import_failed
 import com.tina.app.resources.ok
 import com.tina.app.resources.open_to_capture
 import com.tina.app.resources.open_to_last
+import com.tina.app.resources.open_to_ideas
+import com.tina.app.resources.open_to_sort
 import com.tina.app.resources.open_to_today
 import com.tina.app.resources.refine_auto
 import com.tina.app.resources.refine_manual
@@ -673,6 +675,8 @@ private fun rememberSettingsSections(
     val openToLabel = when (settings.openAppTo) {
         OpenAppTo.CAPTURE -> stringResource(Res.string.open_to_capture)
         OpenAppTo.TODAY -> stringResource(Res.string.open_to_today)
+        OpenAppTo.SORT -> stringResource(Res.string.open_to_sort)
+        OpenAppTo.IDEAS -> stringResource(Res.string.open_to_ideas)
         OpenAppTo.LAST -> stringResource(Res.string.open_to_last)
     }
     val contrastLabel = when (settings.contrast) {
@@ -970,7 +974,7 @@ private fun rememberSettingsSections(
                 id = "inboxReminder",
                                 title = stringResource(Res.string.set_inbox_reminder),
                 supporting = stringResource(Res.string.set_inbox_reminder_sub, settings.inboxReminderDays),
-                keywords = listOf("inbox", "triage", "remind"),
+                keywords = listOf("inbox", "sort", "triage", "remind"),
                 checked = settings.inboxReminder,
                 onCheckedChange = viewModel::setInboxReminder,
             ),
@@ -1184,7 +1188,7 @@ private fun rememberSettingsSections(
             SettingsRow.Navigation(
                 id = "shortcuts",
                 title = stringResource(Res.string.set_shortcuts),
-                supporting = stringResource(Res.string.set_shortcuts_sub, 12),
+                supporting = stringResource(Res.string.set_shortcuts_sub, 6),
                 keywords = listOf("keys", "bindings"),
                 onClick = { onNavigate(SettingsDestination.SHORTCUTS) },
             ),
