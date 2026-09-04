@@ -17,6 +17,21 @@ OUT = pathlib.Path(__file__).resolve().parent / "review"
 SIZES = {390: 844, 820: 1180, 1440: 900, 1280: 900}
 
 
+def scroll_through(page, step):
+    """Walk the page top to bottom and back.
+
+    loading="lazy" images below the fold are still unloaded when Playwright
+    composites a full_page screenshot, so they come out as blank frames. The
+    wheel works with JavaScript disabled, which page.evaluate does not.
+    """
+    for _ in range(60):
+        page.mouse.wheel(0, step)
+        page.wait_for_timeout(60)
+    page.wait_for_timeout(400)
+    page.mouse.wheel(0, -60 * step)
+    page.wait_for_timeout(400)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--url", default="http://127.0.0.1:8899/peggy/")
@@ -41,6 +56,8 @@ def main():
             for w in widths:
                 page.set_viewport_size({"width": w, "height": SIZES.get(w, 900)})
                 page.goto(a.url, wait_until="networkidle")
+                if a.full_page:
+                    scroll_through(page, SIZES.get(w, 900))
                 page.wait_for_timeout(500)
                 name = f"{w}-{scheme}{'-nojs' if a.nojs else ''}{a.tag}.png"
                 page.screenshot(path=str(OUT / name), full_page=a.full_page)

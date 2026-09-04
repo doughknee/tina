@@ -24,12 +24,12 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
       fresh screenshot at 1280 wide.
       *Proves it:* load `http://127.0.0.1:8899/peggy/`, screenshot, and read the text in it.
 
-- [ ] **Check every section renders in order** — hero, claims strip, capture, sort, plan, ideas,
+- [x] **Check every section renders in order** — hero, claims strip, capture, sort, plan, ideas,
       tags, feature grid, privacy band, FAQ, closing CTA, footer.
       *Done when:* each of the twelve is present once, in that order, with no empty or collapsed
       block.
 
-- [ ] **Confirm the reveal animation never hides content.** Elements carry `.reveal`
+- [x] **Confirm the reveal animation never hides content.** Elements carry `.reveal`
       (`opacity:0`) and only get `.in` from an IntersectionObserver.
       *Done when:* with JavaScript disabled, every `.reveal` block is still readable.
       *Proves it:* load the page with JS off; nothing should be invisible. If it is, invert the

@@ -127,3 +127,24 @@ it, and un-distorts every other screenshot on the page at the same time.
 - `site/build.py`, `site/screenshots.py`, `site/demo_data.py` and `site/review.py` all sit
   inside the published directory, so Pages serves them. Harmless but untidy; not touched
   tonight because it is outside every phase.
+
+## Phase 1 complete
+
+1.2 and 1.3 both verified from a JS-disabled full-page capture at 1280: all twelve
+sections present once and in order, nothing hidden. The reveal is now inverted --
+`.reveal` only hides under `html.js-reveal`, added by a head script before first
+paint and only when `IntersectionObserver` exists and reduced motion is not asked
+for. A page without JavaScript hides nothing, by construction rather than by luck.
+
+**`review.py` full-page captures were wrong until fixed.** `loading="lazy"` images
+below the fold composite as blank white frames, which read exactly like a broken
+screenshot. `scroll_through()` walks the page with the mouse wheel first -- the
+wheel works with JavaScript disabled, `page.evaluate` does not. Do not trust any
+full-page image captured before this.
+
+## Also found, not yet fixed
+
+- **`calendar.webp` is built but never used.** The build writes eight shots; the
+  page references seven (`capture` twice, `sort`, `plan-day`, `plan-week`, `ideas`,
+  `editor`, `tag`). Either the calendar shot wants a home on the page or it should
+  come out of the manifest. Worth a decision in Phase 2.
