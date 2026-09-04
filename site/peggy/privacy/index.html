@@ -2,34 +2,187 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Peggy privacy policy</title>
 <meta name="description" content="How Peggy handles your data: on your device, no account, no analytics.">
+<meta name="theme-color" content="#4f5fd6">
+<link rel="canonical" href="https://doughknee.com/peggy/privacy/">
+<link rel="icon" href="/peggy/icon.png" sizes="512x512">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Peggy privacy policy">
+<meta property="og:description" content="How Peggy handles your data: on your device, no account, no analytics.">
+<meta property="og:url" content="https://doughknee.com/peggy/privacy/">
+<meta property="og:image" content="https://doughknee.com/peggy/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
-:root { color-scheme: light dark; --bg: #fbfbfd; --fg: #1c1c22; --muted: #5d5f6b; --accent: #4f5fd6; --card: #ffffff; --line: #e6e6ee; }
-@media (prefers-color-scheme: dark) { :root { --bg: #121216; --fg: #ececf2; --muted: #a0a2b0; --accent: #9aa5ff; --card: #1c1c22; --line: #2a2a33; } }
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-main { max-width: 680px; margin: 0 auto; padding: 48px 24px 96px; }
-h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.02em; }
-h2 { font-size: 1.25rem; margin: 40px 0 8px; }
-p, li { color: var(--fg); }
-.muted { color: var(--muted); }
-a { color: var(--accent); }
-.hero { padding: 48px 0 24px; }
-.claim { font-size: 1.35rem; color: var(--muted); margin: 0 0 28px; }
-.btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 999px; font-weight: 600; }
-.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 32px 0; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
-.card strong { display: block; margin-bottom: 4px; }
-footer { margin-top: 64px; font-size: 0.9rem; color: var(--muted); }
-footer a { color: inherit; }
-.icon { width: 72px; height: 72px; border-radius: 20px; background: #4f5fd6; display: grid; place-items: center; margin-bottom: 20px; }
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  color-scheme:light dark;
+  --bg:#fbfbfd; --panel:#fff; --ink:#15151b; --muted:#5c5e6b; --line:#e7e7ef;
+  --brand:#4f5fd6; --on-brand:#fff; --tint:#eef0ff; --shadow:0 24px 60px -32px rgb(21 21 27/.28);
+  --max:1120px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e0e13; --panel:#17171f; --ink:#ececf3; --muted:#a2a4b4; --line:#26262f;
+  --brand:#9aa5ff; --on-brand:#14142a; --tint:#1b1c2c; --shadow:0 24px 60px -32px rgb(0 0 0/.7);
+}}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:400 17px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  -webkit-font-smoothing:antialiased}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--brand)}
+h1,h2,h3{line-height:1.1;letter-spacing:-.022em;margin:0}
+h1{font-size:clamp(2.4rem,6vw,4rem);font-weight:700}
+h2{font-size:clamp(1.9rem,4vw,2.7rem);font-weight:700}
+h3{font-size:1.12rem;font-weight:650;letter-spacing:-.01em}
+p{margin:0}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+.lede{font-size:clamp(1.06rem,2vw,1.3rem);color:var(--muted);max-width:56ch}
+.muted{color:var(--muted)}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:saturate(1.6) blur(12px);border-bottom:1px solid transparent;transition:border-color .2s}
+header.stuck{border-bottom-color:var(--line)}
+.bar{display:flex;align-items:center;gap:16px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:680;letter-spacing:-.02em;
+  font-size:1.06rem;color:var(--ink);text-decoration:none}
+.brand .badge{width:30px;height:30px;border-radius:9px;background:var(--brand);display:grid;place-items:center}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:6px}
+.bar nav a{color:var(--muted);text-decoration:none;font-size:.94rem;padding:8px 12px;border-radius:9px}
+.bar nav a:hover{color:var(--ink);background:var(--tint)}
+@media (max-width:640px){.bar nav .hide-sm{display:none}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:9px;background:var(--brand);color:var(--on-brand);
+  text-decoration:none;font-weight:620;padding:13px 22px;border-radius:999px;border:1px solid transparent;
+  transition:transform .12s ease,filter .12s ease}
+.btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn.small{padding:9px 16px;font-size:.92rem}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{background:var(--panel)}
+
+/* hero */
+.hero{padding:clamp(48px,8vw,104px) 0 clamp(40px,6vw,72px)}
+.hero-grid{display:grid;gap:clamp(32px,5vw,64px);grid-template-columns:1fr;align-items:center}
+@media (min-width:900px){.hero-grid{grid-template-columns:1.05fr .95fr}}
+.hero h1{margin-bottom:18px}
+.hero .lede{margin-bottom:28px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cta-note{font-size:.9rem;color:var(--muted);margin-top:14px}
+.hero-shot{justify-self:center}
+
+/* phone frame */
+.phone{width:min(272px,70vw);padding:9px;border-radius:40px;background:#0d0d12;
+  box-shadow:var(--shadow),0 0 0 1px rgb(255 255 255/.06) inset}
+.phone img{border-radius:32px;aspect-ratio:1080/2400;background:var(--panel)}
+.shot{display:flex;flex-direction:column;align-items:center;gap:14px}
+.shot figcaption{font-size:.9rem;color:var(--muted);text-align:center;max-width:30ch}
+.pair{display:flex;gap:clamp(14px,3vw,28px);justify-content:center;flex-wrap:wrap}
+.pair .phone{width:min(228px,58vw)}
+
+/* claims strip */
+.claims{border-block:1px solid var(--line);background:var(--panel)}
+.claims ul{list-style:none;margin:0;padding:26px 0;display:grid;gap:20px;grid-template-columns:1fr}
+@media (min-width:760px){.claims ul{grid-template-columns:repeat(3,1fr)}}
+.claims li{display:flex;gap:12px;align-items:flex-start}
+.claims strong{display:block;letter-spacing:-.01em}
+.claims span{color:var(--muted);font-size:.94rem}
+.claims svg{flex:none;margin-top:2px;color:var(--brand)}
+
+/* alternating feature rows */
+.row{padding:clamp(56px,8vw,104px) 0;border-bottom:1px solid var(--line)}
+.row-grid{display:grid;gap:clamp(32px,5vw,72px);grid-template-columns:1fr;align-items:center}
+@media (min-width:900px){
+  .row-grid{grid-template-columns:1fr 1fr}
+  .row.flip .row-grid > :first-child{order:2}
+}
+.row h2{margin:12px 0 16px}
+.row .lede{margin-bottom:22px}
+.points{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.points li{display:flex;gap:11px;align-items:flex-start;color:var(--muted)}
+.points li strong{color:var(--ink);font-weight:620}
+.points svg{flex:none;margin-top:5px;color:var(--brand)}
+
+/* parse examples */
+.parse{margin:22px 0 0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)}
+.parse div{display:grid;grid-template-columns:1fr;gap:4px;padding:13px 16px}
+.parse div + div{border-top:1px solid var(--line)}
+@media (min-width:520px){.parse div{grid-template-columns:1.1fr 1fr;gap:16px;align-items:baseline}}
+.parse code{font:600 .92rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink)}
+.parse span{color:var(--muted);font-size:.92rem}
+
+/* feature grid */
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));margin-top:36px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card h3{margin-bottom:6px}
+.card p{color:var(--muted);font-size:.95rem}
+.card .ico{width:34px;height:34px;border-radius:10px;background:var(--tint);color:var(--brand);
+  display:grid;place-items:center;margin-bottom:13px}
+
+/* privacy band */
+.band{padding:clamp(56px,8vw,104px) 0;border-bottom:1px solid var(--line)}
+.band .inner{background:var(--panel);border:1px solid var(--line);border-radius:24px;
+  padding:clamp(28px,5vw,52px)}
+.band h2{margin-bottom:16px}
+
+/* faq */
+.faq{padding:clamp(56px,8vw,104px) 0}
+.faq .items{margin-top:28px;border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;list-style:none;padding:18px 40px 18px 0;font-weight:620;position:relative}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"";position:absolute;right:8px;top:26px;width:9px;height:9px;
+  border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);
+  transition:transform .2s}
+details[open] summary::after{transform:rotate(225deg)}
+details p{padding:0 0 20px;color:var(--muted);max-width:70ch}
+
+/* closing cta */
+.close{padding:clamp(60px,9vw,116px) 0;text-align:center;border-top:1px solid var(--line)}
+.close h2{margin-bottom:14px}
+.close .lede{margin:0 auto 28px}
+.close .cta{justify-content:center}
+
+footer{border-top:1px solid var(--line);padding:34px 0 56px;color:var(--muted);font-size:.92rem}
+.foot{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--ink);text-decoration:underline}
+.foot .spacer{margin-left:auto}
+
+/* article pages (privacy) */
+.doc{max-width:720px;margin:0 auto;padding:56px 24px 96px}
+.doc h1{font-size:clamp(2rem,5vw,2.6rem);margin-bottom:10px}
+.doc h2{font-size:1.22rem;margin:38px 0 8px}
+.doc p,.doc li{color:var(--ink)}
+.doc ul{padding-left:20px}
+.doc li{margin:6px 0}
+.doc code{font:600 .9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+.reveal{opacity:0;transform:translateY(14px)}
+.reveal.in{opacity:1;transform:none;transition:opacity .6s ease,transform .6s ease}
+@media (prefers-reduced-motion:reduce){
+  .reveal,.reveal.in{opacity:1;transform:none;transition:none}
+  .btn:hover{transform:none}
+}
 </style>
 </head>
 <body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/peggy/"><span class="badge"><svg width="19" height="19" viewBox="0 0 108 108" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M35.6 56.1a22 22 0 1 1 36.8 0L54 84Z" fill="#fff"/><path d="m42 45 8 8 16-16" fill="none" stroke="#4f5fd6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Peggy</a>
+    <nav>
+      <a class="hide-sm" href="/peggy/#features">Features</a>
+      <a class="hide-sm" href="/peggy/#privacy">Privacy</a>
+      <a class="btn small" href="https://play.google.com/apps/testing/com.peggy.app">Get Peggy</a>
+    </nav>
+  </div>
+</header>
 <main>
-<h1>Peggy privacy policy</h1>
+<div class="doc"><h1>Peggy privacy policy</h1>
 <p>Effective 2026-09-02. Applies to the Peggy Android and desktop apps published by Brandon Harris.</p>
 <h2>The short version</h2>
 <p>Peggy keeps your data on your device. It has no account system, no analytics, no advertising, and no server of its own. The only time your data leaves your device is when <strong>you</strong> turn on an AI feature and choose where it goes.</p>
@@ -53,8 +206,17 @@ footer a { color: inherit; }
 <h2>Changes</h2>
 <p>Changes to this policy are published with the app release notes and at this address.</p>
 <h2>Contact</h2>
-<p>Questions or deletion requests: bcharris713@gmail.com</p>
-<footer>© Brandon Harris · <a href="/peggy/">Peggy</a> · <a href="/peggy/privacy/">Privacy</a></footer>
+<p>Questions or deletion requests: bcharris713@gmail.com</p></div>
 </main>
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 Brandon Harris</span>
+    <a href="/peggy/">Peggy</a>
+    <a href="/peggy/privacy/">Privacy</a>
+    <a href="https://play.google.com/apps/testing/com.peggy.app">Google&nbsp;Play</a>
+    <span class="spacer muted">Made on a phone that stays off the internet.</span>
+  </div>
+</footer>
+
 </body>
 </html>

@@ -15,7 +15,7 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
 
 ## 1. Rendering correctness
 
-- [ ] **Confirm the hero actually renders.** The one screenshot taken of the built page at
+- [x] **Confirm the hero actually renders.** The one screenshot taken of the built page at
       1280×900 showed the nav and the phone image, but the left column (the `<h1>`, the lede and
       the two CTA buttons) was blank. Unresolved: it may be a paint-timing artifact of the
       screenshot, or a real CSS bug in `.hero-grid`. Do not treat any later visual task as done
@@ -86,7 +86,7 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
       silently reusing a stale WebP. In `.github/workflows/pages.yml`, before `python
       site/build.py`: `- run: pip install pillow`.
       *Done when:* the workflow file has the step and a push builds green.
-- [ ] **Ignore the generated SQL.** `site/demo_data.sql` is written by `demo_data.py` on every
+- [x] **Ignore the generated SQL.** `site/demo_data.sql` is written by `demo_data.py` on every
       run; add it to `.gitignore` (or have the script write to a temp path instead).
 - [ ] **Confirm the workflow path filter still matches.** `pages.yml` triggers on `site/**` and
       `docs/PRIVACY.md`; the new screenshots and manifest live under `site/`, so it should.

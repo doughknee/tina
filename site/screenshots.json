@@ -1,0 +1,59 @@
+{
+  "_comment": [
+    "Every screenshot the site shows. To swap one: drop a new PNG into site/screenshots/",
+    "with the same file name and run `python site/build.py`. To add one: take the shot,",
+    "add an entry here, and reference its id from a section in build.py. `python",
+    "site/screenshots.py` retakes them all from a device. The build fails if a file named",
+    "here is missing, so a typo can never ship a broken image."
+  ],
+  "shots": [
+    {
+      "id": "capture",
+      "file": "capture.png",
+      "alt": "Peggy's capture bar with “Dentist thursday 3pm” typed, and chips underneath reading Event, Thursday and 3 PM.",
+      "caption": "What Peggy understood, before you hit save."
+    },
+    {
+      "id": "plan-day",
+      "file": "plan-day.png",
+      "alt": "The Plan tab showing one day, split into Morning and Afternoon, with an appointment at 9 AM and lunch at 1 PM.",
+      "caption": "Today, in the order it happens."
+    },
+    {
+      "id": "plan-week",
+      "file": "plan-week.png",
+      "alt": "The Plan tab showing a week, with a daily habit rolled into a single row that tracks how many days are done.",
+      "caption": "A daily habit is one row, not seven."
+    },
+    {
+      "id": "calendar",
+      "file": "calendar.png",
+      "alt": "A month grid with dots on the days that have something on them, above a list of repeating items.",
+      "caption": "A month at a glance."
+    },
+    {
+      "id": "sort",
+      "file": "sort.png",
+      "alt": "The Sort tab grouping items into New, Overdue and Snoozed, each row offering Today, Someday, Tomorrow and This week.",
+      "caption": "Every open decision, with the answer one tap away."
+    },
+    {
+      "id": "ideas",
+      "file": "ideas.png",
+      "alt": "The Ideas tab: a grid of note cards including a packing checklist showing two of six done, above a row of tag filters.",
+      "caption": "Notes that look like what they hold."
+    },
+    {
+      "id": "editor",
+      "file": "editor.png",
+      "alt": "A note open in the editor, mixing a paragraph with a tickable checklist, with the formatting row above the keyboard.",
+      "caption": "Type “[] ” and the line becomes a box."
+    },
+    {
+      "id": "tag",
+      "file": "tag.png",
+      "alt": "The page for the tag “kitchen”, showing a pinned overview note followed by that tag's open tasks and upcoming events.",
+      "caption": "One tag, everything under it."
+    }
+  ]
+}

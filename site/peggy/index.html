@@ -2,49 +2,344 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Peggy</title>
-<meta name="description" content="Peggy: capture, plan, sort. A quick-capture to-do app for Android that keeps your data on your device.">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Peggy — two seconds from thought to done</title>
+<meta name="description" content="A quick-capture to-do, calendar and notes app for Android. Type it the way you would say it. No account, no cloud, everything stays on your phone.">
+<meta name="theme-color" content="#4f5fd6">
+<link rel="canonical" href="https://doughknee.com/peggy/">
+<link rel="icon" href="/peggy/icon.png" sizes="512x512">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Peggy — two seconds from thought to done">
+<meta property="og:description" content="A quick-capture to-do, calendar and notes app for Android. Type it the way you would say it. No account, no cloud, everything stays on your phone.">
+<meta property="og:url" content="https://doughknee.com/peggy/">
+<meta property="og:image" content="https://doughknee.com/peggy/og.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
-:root { color-scheme: light dark; --bg: #fbfbfd; --fg: #1c1c22; --muted: #5d5f6b; --accent: #4f5fd6; --card: #ffffff; --line: #e6e6ee; }
-@media (prefers-color-scheme: dark) { :root { --bg: #121216; --fg: #ececf2; --muted: #a0a2b0; --accent: #9aa5ff; --card: #1c1c22; --line: #2a2a33; } }
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-main { max-width: 680px; margin: 0 auto; padding: 48px 24px 96px; }
-h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.02em; }
-h2 { font-size: 1.25rem; margin: 40px 0 8px; }
-p, li { color: var(--fg); }
-.muted { color: var(--muted); }
-a { color: var(--accent); }
-.hero { padding: 48px 0 24px; }
-.claim { font-size: 1.35rem; color: var(--muted); margin: 0 0 28px; }
-.btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 999px; font-weight: 600; }
-.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 32px 0; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
-.card strong { display: block; margin-bottom: 4px; }
-footer { margin-top: 64px; font-size: 0.9rem; color: var(--muted); }
-footer a { color: inherit; }
-.icon { width: 72px; height: 72px; border-radius: 20px; background: #4f5fd6; display: grid; place-items: center; margin-bottom: 20px; }
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  color-scheme:light dark;
+  --bg:#fbfbfd; --panel:#fff; --ink:#15151b; --muted:#5c5e6b; --line:#e7e7ef;
+  --brand:#4f5fd6; --on-brand:#fff; --tint:#eef0ff; --shadow:0 24px 60px -32px rgb(21 21 27/.28);
+  --max:1120px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e0e13; --panel:#17171f; --ink:#ececf3; --muted:#a2a4b4; --line:#26262f;
+  --brand:#9aa5ff; --on-brand:#14142a; --tint:#1b1c2c; --shadow:0 24px 60px -32px rgb(0 0 0/.7);
+}}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:400 17px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  -webkit-font-smoothing:antialiased}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--brand)}
+h1,h2,h3{line-height:1.1;letter-spacing:-.022em;margin:0}
+h1{font-size:clamp(2.4rem,6vw,4rem);font-weight:700}
+h2{font-size:clamp(1.9rem,4vw,2.7rem);font-weight:700}
+h3{font-size:1.12rem;font-weight:650;letter-spacing:-.01em}
+p{margin:0}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+.lede{font-size:clamp(1.06rem,2vw,1.3rem);color:var(--muted);max-width:56ch}
+.muted{color:var(--muted)}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:saturate(1.6) blur(12px);border-bottom:1px solid transparent;transition:border-color .2s}
+header.stuck{border-bottom-color:var(--line)}
+.bar{display:flex;align-items:center;gap:16px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:680;letter-spacing:-.02em;
+  font-size:1.06rem;color:var(--ink);text-decoration:none}
+.brand .badge{width:30px;height:30px;border-radius:9px;background:var(--brand);display:grid;place-items:center}
+.bar nav{margin-left:auto;display:flex;align-items:center;gap:6px}
+.bar nav a{color:var(--muted);text-decoration:none;font-size:.94rem;padding:8px 12px;border-radius:9px}
+.bar nav a:hover{color:var(--ink);background:var(--tint)}
+@media (max-width:640px){.bar nav .hide-sm{display:none}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:9px;background:var(--brand);color:var(--on-brand);
+  text-decoration:none;font-weight:620;padding:13px 22px;border-radius:999px;border:1px solid transparent;
+  transition:transform .12s ease,filter .12s ease}
+.btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn.small{padding:9px 16px;font-size:.92rem}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{background:var(--panel)}
+
+/* hero */
+.hero{padding:clamp(48px,8vw,104px) 0 clamp(40px,6vw,72px)}
+.hero-grid{display:grid;gap:clamp(32px,5vw,64px);grid-template-columns:1fr;align-items:center}
+@media (min-width:900px){.hero-grid{grid-template-columns:1.05fr .95fr}}
+.hero h1{margin-bottom:18px}
+.hero .lede{margin-bottom:28px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cta-note{font-size:.9rem;color:var(--muted);margin-top:14px}
+.hero-shot{justify-self:center}
+
+/* phone frame */
+.phone{width:min(272px,70vw);padding:9px;border-radius:40px;background:#0d0d12;
+  box-shadow:var(--shadow),0 0 0 1px rgb(255 255 255/.06) inset}
+.phone img{border-radius:32px;aspect-ratio:1080/2400;background:var(--panel)}
+.shot{display:flex;flex-direction:column;align-items:center;gap:14px}
+.shot figcaption{font-size:.9rem;color:var(--muted);text-align:center;max-width:30ch}
+.pair{display:flex;gap:clamp(14px,3vw,28px);justify-content:center;flex-wrap:wrap}
+.pair .phone{width:min(228px,58vw)}
+
+/* claims strip */
+.claims{border-block:1px solid var(--line);background:var(--panel)}
+.claims ul{list-style:none;margin:0;padding:26px 0;display:grid;gap:20px;grid-template-columns:1fr}
+@media (min-width:760px){.claims ul{grid-template-columns:repeat(3,1fr)}}
+.claims li{display:flex;gap:12px;align-items:flex-start}
+.claims strong{display:block;letter-spacing:-.01em}
+.claims span{color:var(--muted);font-size:.94rem}
+.claims svg{flex:none;margin-top:2px;color:var(--brand)}
+
+/* alternating feature rows */
+.row{padding:clamp(56px,8vw,104px) 0;border-bottom:1px solid var(--line)}
+.row-grid{display:grid;gap:clamp(32px,5vw,72px);grid-template-columns:1fr;align-items:center}
+@media (min-width:900px){
+  .row-grid{grid-template-columns:1fr 1fr}
+  .row.flip .row-grid > :first-child{order:2}
+}
+.row h2{margin:12px 0 16px}
+.row .lede{margin-bottom:22px}
+.points{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.points li{display:flex;gap:11px;align-items:flex-start;color:var(--muted)}
+.points li strong{color:var(--ink);font-weight:620}
+.points svg{flex:none;margin-top:5px;color:var(--brand)}
+
+/* parse examples */
+.parse{margin:22px 0 0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)}
+.parse div{display:grid;grid-template-columns:1fr;gap:4px;padding:13px 16px}
+.parse div + div{border-top:1px solid var(--line)}
+@media (min-width:520px){.parse div{grid-template-columns:1.1fr 1fr;gap:16px;align-items:baseline}}
+.parse code{font:600 .92rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink)}
+.parse span{color:var(--muted);font-size:.92rem}
+
+/* feature grid */
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));margin-top:36px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card h3{margin-bottom:6px}
+.card p{color:var(--muted);font-size:.95rem}
+.card .ico{width:34px;height:34px;border-radius:10px;background:var(--tint);color:var(--brand);
+  display:grid;place-items:center;margin-bottom:13px}
+
+/* privacy band */
+.band{padding:clamp(56px,8vw,104px) 0;border-bottom:1px solid var(--line)}
+.band .inner{background:var(--panel);border:1px solid var(--line);border-radius:24px;
+  padding:clamp(28px,5vw,52px)}
+.band h2{margin-bottom:16px}
+
+/* faq */
+.faq{padding:clamp(56px,8vw,104px) 0}
+.faq .items{margin-top:28px;border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;list-style:none;padding:18px 40px 18px 0;font-weight:620;position:relative}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"";position:absolute;right:8px;top:26px;width:9px;height:9px;
+  border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);
+  transition:transform .2s}
+details[open] summary::after{transform:rotate(225deg)}
+details p{padding:0 0 20px;color:var(--muted);max-width:70ch}
+
+/* closing cta */
+.close{padding:clamp(60px,9vw,116px) 0;text-align:center;border-top:1px solid var(--line)}
+.close h2{margin-bottom:14px}
+.close .lede{margin:0 auto 28px}
+.close .cta{justify-content:center}
+
+footer{border-top:1px solid var(--line);padding:34px 0 56px;color:var(--muted);font-size:.92rem}
+.foot{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--ink);text-decoration:underline}
+.foot .spacer{margin-left:auto}
+
+/* article pages (privacy) */
+.doc{max-width:720px;margin:0 auto;padding:56px 24px 96px}
+.doc h1{font-size:clamp(2rem,5vw,2.6rem);margin-bottom:10px}
+.doc h2{font-size:1.22rem;margin:38px 0 8px}
+.doc p,.doc li{color:var(--ink)}
+.doc ul{padding-left:20px}
+.doc li{margin:6px 0}
+.doc code{font:600 .9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+.reveal{opacity:0;transform:translateY(14px)}
+.reveal.in{opacity:1;transform:none;transition:opacity .6s ease,transform .6s ease}
+@media (prefers-reduced-motion:reduce){
+  .reveal,.reveal.in{opacity:1;transform:none;transition:none}
+  .btn:hover{transform:none}
+}
 </style>
 </head>
 <body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="/peggy/"><span class="badge"><svg width="19" height="19" viewBox="0 0 108 108" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M35.6 56.1a22 22 0 1 1 36.8 0L54 84Z" fill="#fff"/><path d="m42 45 8 8 16-16" fill="none" stroke="#4f5fd6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Peggy</a>
+    <nav>
+      <a class="hide-sm" href="/peggy/#features">Features</a>
+      <a class="hide-sm" href="/peggy/#privacy">Privacy</a>
+      <a class="btn small" href="https://play.google.com/apps/testing/com.peggy.app">Get Peggy</a>
+    </nav>
+  </div>
+</header>
 <main>
 
-<div class="hero">
-  <div class="icon"><svg width="44" height="44" viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M35.6,56.1 A22,22 0 1,1 72.4,56.1 L54,84 Z" fill="#fff"/><path d="M42,45 L50,53 L66,37" stroke="#4f5fd6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-  <h1>Peggy</h1>
-  <p class="claim">Two seconds from thought to done. Sort it later.</p>
-  <a class="btn" href="https://play.google.com/store/apps/details?id=com.peggy.app">Get it on Google Play</a>
-</div>
-<div class="grid">
-  <div class="card"><strong>Capture</strong>Type "dentist thursday 3pm" and it is a scheduled task. From the widget, the quick-settings tile, or the share sheet, without opening the app.</div>
-  <div class="card"><strong>Sort</strong>Everything lands in one inbox. Swipe to put it on today, someday, or in the bin. Undo everywhere.</div>
-  <div class="card"><strong>Plan</strong>Day, week, month. Repeating tasks that ring every time, and reminders that survive reboots and time zones.</div>
-  <div class="card"><strong>Yours</strong>No account, no cloud, works offline. Your data stays on your phone, and you can export all of it any time.</div>
-</div>
-<p class="muted">Free forever for capture, plan and sort. Peggy Pro adds hosted AI, themes and more.</p>
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Two seconds from<br>thought to done.</h1>
+      <p class="lede">Peggy catches the thing you would otherwise forget on the way to the kitchen.
+        Type it the way you would say it. Peggy reads the date, the time and the repeat, and files it.</p>
+      <div class="cta">
+        <a class="btn" href="https://play.google.com/apps/testing/com.peggy.app">Join the test on Google Play</a>
+        <a class="btn ghost" href="#how">See how it works</a>
+      </div>
+      <p class="cta-note">Android 12 and up · free · no account</p>
+    </div>
+    <div class="hero-shot"><div class="phone"><img src="/peggy/shots/capture.webp" width="1080" height="2400" loading="eager" decoding="async" alt="Peggy&#x27;s capture bar with “Dentist thursday 3pm” typed, and chips underneath reading Event, Thursday and 3 PM."></div></div>
+  </div>
+</section>
 
-<footer>© Brandon Harris · <a href="/peggy/">Peggy</a> · <a href="/peggy/privacy/">Privacy</a></footer>
+<div class="claims"><div class="wrap"><ul><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Under two seconds</strong><span>One line of text, no forms, no pickers.</span></span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>No account, ever</strong><span>Nothing to sign up for and nothing to sign in to.</span></span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Works with no signal</strong><span>Everything happens on the phone in your hand.</span></span></li></ul></div></div>
+
+<div id="how"></div>
+
+<section class="row">
+  <div class="wrap row-grid">
+    <div class="reveal">
+      <p class="eyebrow">Capture</p>
+      <h2>Type it the way you would say it</h2>
+      <p class="lede">There is one field and it is always on screen. Whatever you type gets read for a date, a time, a repeat, a tag and a priority, on the phone, with no network.</p>
+      <ul class="points"><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>No forms.</strong> No date picker, no category, no required anything.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Every chip is removable.</strong> Peggy shows what it understood before you save, and you can drop any part of it.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>From anywhere.</strong> The widget, the quick-settings tile and the share sheet all reach the same field.</span></li></ul>
+      <div class="parse"><div><code>dentist thursday 3pm</code><span>An event on Thursday at 3 PM, with a reminder.</span></div><div><code>water the plants every 3 days</code><span>A task that comes back every third day.</span></div><div><code>pay rent on the 1st</code><span>Monthly, on the first.</span></div><div><code>#kitchen order the tap</code><span>Filed under the kitchen tag.</span></div><div><code>call mum tomorrow urgent</code><span>Tomorrow, flagged high.</span></div></div>
+    </div>
+    <div class="reveal"><figure class="shot"><div class="phone"><img src="/peggy/shots/capture.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="Peggy&#x27;s capture bar with “Dentist thursday 3pm” typed, and chips underneath reading Event, Thursday and 3 PM."></div><figcaption>What Peggy understood, before you hit save.</figcaption></figure></div>
+  </div>
+</section>
+
+
+<section class="row flip">
+  <div class="wrap row-grid">
+    <div class="reveal">
+      <p class="eyebrow">Sort</p>
+      <h2>Decide later, in one place</h2>
+      <p class="lede">Anything you capture without a date waits on Sort, next to what is overdue, what you snoozed and what you said someday to. It is the only list that ever asks you for a decision.</p>
+      <ul class="points"><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>One tap per answer.</strong> Today, Tomorrow, This week, Someday, Done.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>A badge you can trust.</strong> It counts what is new, overdue or snoozed, and never nags you about someday.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Undo on everything.</strong> Including emptying the bin.</span></li></ul>
+      
+    </div>
+    <div class="reveal"><figure class="shot"><div class="phone"><img src="/peggy/shots/sort.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Sort tab grouping items into New, Overdue and Snoozed, each row offering Today, Someday, Tomorrow and This week."></div><figcaption>Every open decision, with the answer one tap away.</figcaption></figure></div>
+  </div>
+</section>
+
+
+<section class="row">
+  <div class="wrap row-grid">
+    <div class="reveal">
+      <p class="eyebrow">Plan</p>
+      <h2>Your day, in the order it happens</h2>
+      <p class="lede">Morning, afternoon, evening, and a place for things with no set time. Zoom out to a week, a month, or everything at once.</p>
+      <ul class="points"><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Habits stay one row.</strong> A daily task shows as a single line with the week's progress, not seven copies.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Reminders that ring.</strong> On the exact minute, after a reboot, and after you land in another time zone.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>A month at a glance.</strong> Dots mark the days with something on them.</span></li></ul>
+      
+    </div>
+    <div class="reveal"><div class="pair"><div class="phone"><img src="/peggy/shots/plan-day.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Plan tab showing one day, split into Morning and Afternoon, with an appointment at 9 AM and lunch at 1 PM."></div><div class="phone"><img src="/peggy/shots/plan-week.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Plan tab showing a week, with a daily habit rolled into a single row that tracks how many days are done."></div></div></div>
+  </div>
+</section>
+
+
+<section class="row flip">
+  <div class="wrap row-grid">
+    <div class="reveal">
+      <p class="eyebrow">Ideas</p>
+      <h2>Notes that keep their shape</h2>
+      <p class="lede">A list looks like a list, a stray thought reads as a thought, and a note with a title gets one. Pin what matters and let the rest sit in the grid.</p>
+      <ul class="points"><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Checklists you can tick from the grid.</strong> No need to open the note to cross something off.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Real writing tools.</strong> Headings, bold, bullets and checklists, with markdown shortcuts as you type.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Share it out.</strong> Send a note anywhere, or copy it as Markdown.</span></li></ul>
+      
+    </div>
+    <div class="reveal"><div class="pair"><div class="phone"><img src="/peggy/shots/ideas.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The Ideas tab: a grid of note cards including a packing checklist showing two of six done, above a row of tag filters."></div><div class="phone"><img src="/peggy/shots/editor.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="A note open in the editor, mixing a paragraph with a tickable checklist, with the formatting row above the keyboard."></div></div></div>
+  </div>
+</section>
+
+
+<section class="row">
+  <div class="wrap row-grid">
+    <div class="reveal">
+      <p class="eyebrow">Tags</p>
+      <h2>A tag is the project</h2>
+      <p class="lede">There is no second hierarchy to file things into. Any tag has a page that gathers its notes, its tasks and its events together, and pinning a note to it turns that note into the overview.</p>
+      <ul class="points"><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Nothing to set up.</strong> Type #kitchen anywhere and the page exists.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>All three types together.</strong> The one thing a notes app cannot do.</span></li><li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Capture straight into it.</strong> The bar at the bottom of a tag page tags what you write.</span></li></ul>
+      
+    </div>
+    <div class="reveal"><figure class="shot"><div class="phone"><img src="/peggy/shots/tag.webp" width="1080" height="2400" loading="lazy" decoding="async" alt="The page for the tag “kitchen”, showing a pinned overview note followed by that tag&#x27;s open tasks and upcoming events."></div><figcaption>One tag, everything under it.</figcaption></figure></div>
+  </div>
+</section>
+
+<section class="row" id="features">
+  <div class="wrap">
+    <p class="eyebrow reveal">Everything else</p>
+    <h2 class="reveal">The parts you only notice when they are missing</h2>
+    <div class="grid"><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div><h3>Reminders that actually ring</h3><p>Exact alarms that survive a reboot, a time-zone change and a battery saver. Quiet hours hold anything due overnight until morning.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></svg></div><h3>Undo, never “are you sure?”</h3><p>Nothing in Peggy stops to ask. Every destructive thing happens at once and offers you a few seconds to take it back.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div><h3>Capture without opening it</h3><p>A home-screen widget, a quick-settings tile, and the Android share sheet all drop straight into the same field.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 3 3 5-6"/></svg></div><h3>Checklists in any note</h3><p>Type “[] ” and the line becomes a box. Tick items from the card without opening the note.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div><h3>Repeats that roll up</h3><p>Every day, every second Tuesday, every 15th. A habit stays one row on your week instead of seven.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.5" cy="10" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>Material You</h3><p>Colours from your wallpaper, a real dark theme, higher-contrast modes and a reduce-motion switch.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg></div><h3>A bin, with a way back</h3><p>Deleted things wait in the trash for as long as you choose, and restore in one tap.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg></div><h3>Your data, in one file</h3><p>Export everything to JSON whenever you like, import it back, and let a weekly backup run on its own.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><h3>Lock it if you want</h3><p>Require your device unlock to open Peggy, and blank the app-switcher preview.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="1.6"/><path d="M4.5 8.5 12 10l7.5-1.5"/><path d="M12 10v4"/><path d="m9 20 3-6 3 6"/></svg></div><h3>Built for TalkBack</h3><p>Labelled controls, headings, swipe actions as real accessibility actions, and touch targets that clear the guidelines.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 13.7 9l5.5 1.7-5.5 1.7L12 18l-1.7-5.6L4.8 10.7 10.3 9z"/></svg></div><h3>AI only if you ask</h3><p>Parsing runs on your phone. If you want more, bring your own Ollama, Claude or OpenAI key — off until you do.</p></article><article class="card reveal"><div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20"/><path d="M12 2a15 15 0 0 0 0 20"/></svg></div><h3>Offline by design</h3><p>No account, no sync service, no server to be down. Everything works on a plane.</p></article></div>
+  </div>
+</section>
+
+<section class="band" id="privacy">
+  <div class="wrap">
+    <div class="inner reveal">
+      <p class="eyebrow">Privacy</p>
+      <h2>It is your phone. It stays that way.</h2>
+      <p class="lede">Peggy has no account system, no analytics, no advertising and no server of its own.
+        There is no telemetry to switch off, because none was written. The only way anything leaves
+        your phone is if you turn on an AI provider yourself and pick where it goes.</p>
+      <ul class="points" style="margin-top:22px">
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>No sign-up.</strong> Peggy never asks who you are.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>No tracking.</strong> Nothing counts your taps or reports a crash without you sending it.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Your key, your provider.</strong> Bring Ollama on your own machine and nothing touches the internet at all.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span><strong>Take it with you.</strong> Export everything to a file, any time, and delete it all just as easily.</span></li>
+      </ul>
+      <p style="margin-top:26px"><a href="/peggy/privacy/">Read the privacy policy</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="wrap">
+    <p class="eyebrow reveal">Questions</p>
+    <h2 class="reveal">Before you install it</h2>
+    <div class="items reveal"><details><summary>Is Peggy free?</summary><p>Yes. Capturing, planning, sorting and writing are free and stay free. A paid tier is planned later for hosted AI, themes and extra widgets, and it will not take anything away from what is here now.</p></details><details><summary>Do I need an account?</summary><p>No. There is no sign-up, no email, and no profile. Peggy works the moment you install it.</p></details><details><summary>Where does my data live?</summary><p>In a database on your phone, and nowhere else. You can export all of it to a file from Settings, and delete all of it from the same place.</p></details><details><summary>What does the AI see?</summary><p>Nothing, unless you turn it on. Peggy reads dates and times on your phone with no network at all. If you add your own AI provider, only that feature's text goes to the provider you chose — Ollama can even run on your own machine.</p></details><details><summary>Is there an iPhone version?</summary><p>Not today. Peggy is an Android app for Android 12 and up. There is a desktop build for the same data, which is not published yet.</p></details><details><summary>Why is it in testing?</summary><p>Google requires a closed test with real testers before a new personal developer account can publish to everyone. Joining the test gets you the app now and helps it reach the store.</p></details></div>
+  </div>
+</section>
+
+<section class="close">
+  <div class="wrap reveal">
+    <h2>Catch the next one.</h2>
+    <p class="lede">Peggy is in its closed test on Google Play while it works towards release.
+      Join it and you get the app now.</p>
+    <div class="cta"><a class="btn" href="https://play.google.com/apps/testing/com.peggy.app">Join the test on Google Play</a></div>
+    <p class="cta-note">Android 12 and up · free · no account</p>
+  </div>
+</section>
+
 </main>
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 Brandon Harris</span>
+    <a href="/peggy/">Peggy</a>
+    <a href="/peggy/privacy/">Privacy</a>
+    <a href="https://play.google.com/apps/testing/com.peggy.app">Google&nbsp;Play</a>
+    <span class="spacer muted">Made on a phone that stays off the internet.</span>
+  </div>
+</footer>
+<script>
+(function(){
+  var h=document.querySelector('header');
+  if(h){var s=function(){h.classList.toggle('stuck',window.scrollY>8)};s();
+    addEventListener('scroll',s,{passive:true})}
+  var items=document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion:reduce)').matches){
+    items.forEach(function(el){el.classList.add('in')});return}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},
+    {rootMargin:'0px 0px -8% 0px'});
+  items.forEach(function(el){io.observe(el)});
+})();
+</script>
 </body>
 </html>

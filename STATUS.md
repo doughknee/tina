@@ -95,3 +95,35 @@ ignored rather than committed.
   (`python -m http.server 8899` started in `site/`). Stop it if it is in the way.
 - `adb` is not on the path in Git Bash; the scripts default to
   `~/AppData/Local/Android/Sdk/platform-tools/adb.exe` and take `--adb` to override.
+
+---
+
+# Session 1 — 2026-09-04
+
+## Tooling
+
+**chrome: unavailable.** `tabs_context_mcp` is not present in this session, so the Brave
+extension path was never viable. Per the protocol it was tried once and not retried.
+All visual review is Playwright: headless Chromium, `networkidle` + 500 ms, both
+`prefers-color-scheme` values, captured by `site/review.py` into gitignored `site/review/`.
+
+## Phase 1
+
+**1.1 hero blank — fixed, and the stated hypothesis was wrong.** The left column of
+`.hero-grid` does not carry `.reveal`, so the IntersectionObserver was never the cause.
+The real bug: `img{max-width:100%;display:block}` had no `height:auto`. Every screenshot
+therefore rendered at its intrinsic `height="2400"` while `max-width` squashed the width
+to 272 px, making `.hero-shot` 2418 px tall. `align-items:center` then centred the text
+column against that row and pushed the `<h1>` down to y=1167 — a full screen below the
+fold. The text was never hidden, only displaced. One line at the shared `img` rule fixes
+it, and un-distorts every other screenshot on the page at the same time.
+
+## Found while there, not yet fixed
+
+- **`header .btn` renders in `--muted`, not `--on-brand`.** `.bar nav a{color:var(--muted)}`
+  (0,2,1) outranks `.btn{color:var(--on-brand)}` (0,1,0), so the "Get Peggy" pill in the
+  nav is grey-on-purple. Visible in `site/review/1280-light-gate2.png`. Belongs to
+  PLAN 3.4 (contrast) and is queued for Phase 2.
+- `site/build.py`, `site/screenshots.py`, `site/demo_data.py` and `site/review.py` all sit
+  inside the published directory, so Pages serves them. Harmless but untidy; not touched
+  tonight because it is outside every phase.
