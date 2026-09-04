@@ -4,17 +4,15 @@ Written at the point work stopped, so the next session does not have to re-deriv
 `PLAN.md` has what is left. Everything is committed on `site/overnight`. Nothing is deployed —
 no push, no workflow run, by design.
 
-**Phases 1–5 are complete. This session found and fixed one real defect: `.phone` and the brand
-mark are built out of a background and a box-shadow, and Windows high contrast throws both of
-those away — so in forced colours the bezel measured 1.0:1 and all eight screenshots floated,
-and the logo was reduced to a bare tick beside the wordmark.** Six of the eight rubric items
-score 5; the two still at 4 are blocked on decisions that are yours, below. PLAN sections 7 and
-8 are deliberately untouched (out of scope).
+**Phases 1–5 are complete. This session found no defect.** Five theories were tested and all
+five came back clean, which is written up below so nobody spends a sixth session on them. Six of
+the eight rubric items score 5; the two still at 4 are blocked on decisions that are yours,
+below. PLAN sections 7 and 8 are deliberately untouched (out of scope).
 
 There is no `DONE` file, because `DONE` requires every item at 5 and two of them cannot get
 there without you.
 
-## What this session found
+## What session 8 found and fixed (kept: the reasoning still applies)
 
 **The bezel was fixed for dark mode and still did not exist in high contrast.** Session 7 gave
 `.phone` a `--bezel` token re-chosen per theme, which is right, and the frame is now solid in
@@ -55,7 +53,42 @@ one class token, and no rule matches `.badge` on its own.
 This is now the eighth `--probe` check, proved to fail as well as pass — without the fix it
 reports **9** surfaces (the mark and all eight phones) and exits 1; with it, 0 and exits 0.
 
-### Theories tested this session that were clean
+## What session 9 tested, all clean
+
+Five conditions, each of them the intersection of two things that had only ever been checked
+apart. That intersection is where the last five defects lived, so they were worth the run; this
+time there was nothing there.
+
+- **The reader's own font size against the sticky header.** The text-size check sets the root to
+  24px and looks at font sizes and scrollWidth; the anchor check follows every jump at the
+  default size. Neither had ever run at the same time, and `.bar` is a hardcoded `height:64px`
+  while everything inside it is `rem` — so the bar looked like it should burst and take the
+  80px `scroll-padding-top` with it. It does not: at root 24 the header still measures 65px,
+  nothing inside it paints outside its box, and all four anchors land **0.0px** clear at 390,
+  820 and 1440. Checked on all three pages.
+- **Surfaces the tokens cannot reach in dark mode.** Scrollbars, form controls and the
+  `<details>` markers are drawn by the browser, not by the two `:root` blocks, so a light
+  scrollbar on the dark page would be exactly "an inversion". `:root` declares
+  `color-scheme:light dark`, so they follow the theme. Nothing to fix.
+- **The sticky header in forced colours.** It is skipped by both colour checks on purpose (it is
+  translucent by design), and forced colours keeps its 82% alpha, so page content does read
+  through it. Measured the empty strip of the bar between the wordmark and the nav, at 2×,
+  scrolled: **1.24–1.55:1** of ghosting in forced colours against **1.21–1.62:1** in normal
+  rendering — the same bar, not a worse one. Session 7 judged the frosted bar working and it
+  still is. `header.stuck` gets its bottom border in all four palettes (forced colours forces it
+  to CanvasText), so the bar keeps a hard edge where it matters.
+- **390 in forced colours**, the mobile high-contrast read. 1440 forced was looked at in session
+  8 and 390 has only ever been looked at in the two normal themes. Walked all 17 screenfuls in
+  both forced palettes: header edge, hero, both outlined buttons, the outlined phone from
+  session 8's fix, the parse table with its rows separated, the feature grid, all six FAQ rows
+  and the closing CTA. Everything reads.
+- **Whether forced colours dims the screenshots.** They looked washed out in the 390 forced
+  crop. They are not: mean luminance **0.708** and 5th–95th percentile **0.527–0.957** in
+  light, dark, forced light and forced dark — identical to three decimal places. That is the
+  scaled-capture trap for the third time in nine sessions; the crop was downscaled to be looked
+  at, not the page.
+
+### Theories tested in session 8 that were clean
 
 - **The colour checks only ever ran at 1440.** That is the "three good widths" shape pointed at
   the harness itself, so it was worth checking. Ran both the `themes` join and the new
@@ -88,7 +121,7 @@ reports **9** surfaces (the mark and all eight phones) and exits 1; with it, 0 a
 
 ## Tooling
 
-**chrome: available.** Not used for scoring this session, for the same reason as session 7 and
+**chrome: available.** `tabs_context_mcp` answered without error again in session 9 (no tab group; offers to create one). Not used for scoring, for the same reason as session 7 and
 one more: the finding was a forced-colours measurement, and Chrome cannot be told to use a
 colour scheme, a viewport, a root font size *or* a forced-colours palette. Playwright supplies
 every number below.
@@ -121,9 +154,9 @@ Scored from captures and measurements of the served page, not from the CSS.
 |---|---|---|---|
 | 1 | Hero communicates what Peggy is in under 5 s | **5** | What Peggy *is* lands above the fold at every size measured: capture speed in the h1, "an event, a task or a note — three things that usually mean three apps" in the lede, then both buttons. Re-read at 390 dark this session. Note the correction session 6 made and do not undo it: **the brief's third point is above the fold only at 1440×900.** "Works with no signal" sits 154 px below it at 1280×720 and 599 px below at 390×844; at 390 the privacy half is carried above the fold by "no account" in the CTA note alone. Still a 5 — the rubric asks what Peggy is, and a stacked phone layout cannot hold a screenshot and a three-claim strip in one screen. |
 | 2 | Type scale deliberate, has personality | **4** | Clamped scale, −.022em on headings, .14em uppercase eyebrow, 1.65 body leading, a real second voice in the monospace parse table, and since session 6 a scale that moves as a whole with the reader's font size. Capped at 4 by `system-ui`: there is no typeface of its own, because there are deliberately no external requests. **Your call, see below.** |
-| 3 | Screenshots framed in context, never floating | **5** | Scored **3** at the start of this session for the third time in three sessions, and for the same underlying reason each time: the frame is a background plus a shadow, and there are reading conditions that take those away. Dark mode took the background (session 7); Windows high contrast takes both (above), and there all eight shots floated. Fixed with an outline in forced colours — the frame measures 21:1 in both high-contrast palettes, 18.3:1 light and 1.39:1 dark — and looked at in all four. Seven of the eight carry a `<figcaption>`; the hero shot does not, and should not. |
+| 3 | Screenshots framed in context, never floating | **5** | Scored **3** at the start of this session for the third time in three sessions, and for the same underlying reason each time: the frame is a background plus a shadow, and there are reading conditions that take those away. Dark mode took the background (session 7); Windows high contrast takes both (above), and there all eight shots floated. Fixed with an outline in forced colours — the frame measures 21:1 in both high-contrast palettes, 18.3:1 light and 1.39:1 dark — and looked at in all four. Seven of the eight carry a `<figcaption>`; the hero shot does not, and should not. Session 9 walked all 17 screenfuls at 390 in both forced-colours palettes — the outline holds there too — and measured the shots themselves as pixel-identical in luminance across all four palettes. |
 | 4 | Every line specific to Peggy, zero filler | **5** | The parse table shows literal input strings that `CaptureCorpusTest` proves; the 12 cards each name a mechanic. Session 6 sampled five claims off the rendered copy and found all five in `composeApp/src`. Re-read at 390 dark and 820 light this session, and this session read the copy nobody had scored: all eight `alt` strings are 108-122 characters describing what is actually on that screen, and the captions and meta description match. |
-| 5 | Reads at 390/820/1440, no horizontal scroll | **5** | `--probe` clean: no overflow at any of the 67 widths from 360 to 1680, one duo transition, all four anchors 0.0 px under the sticky header at all three widths. Session 7 extended this below the sweep's floor (340/320/300/280), under forced WCAG text spacing, and at four short/landscape viewports — all clean on all three pages. Above the ceiling, 1920 and 2560 just centre the 1120 px container. |
+| 5 | Reads at 390/820/1440, no horizontal scroll | **5** | `--probe` clean: no overflow at any of the 67 widths from 360 to 1680, one duo transition, all four anchors 0.0 px under the sticky header at all three widths. Session 7 extended this below the sweep's floor (340/320/300/280), under forced WCAG text spacing, and at four short/landscape viewports — all clean on all three pages. Above the ceiling, 1920 and 2560 just centre the 1120 px container. Session 9 added the one combination that had been missing: at a root font size of 24px the header still measures 65px, nothing paints outside it, and every anchor still lands 0.0 px clear on all three pages. |
 | 6 | Lighthouse performance above 95 | **5** | Re-run this session against the changed CSS: 100 on performance, accessibility, best-practices and SEO, desktop and mobile, CLS exactly 0, LCP 0.3 s desktop / 1.1 s mobile, TBT 0. |
 | 7 | Motion purposeful, never delays reading | **5** | The reveal does not touch opacity, so it cannot be caught mid-fade: 0 of 408 samples at 390, 0 of 737 at 820 and 0 of 718 at 1440, worst 1.000. Motion is a 16 px rise. |
 | 8 | Dark theme designed, not an inversion | **4** | Tokens are separately chosen, not derived — brand lightens #4f5fd6 → #9aa5ff, on-brand flips to near-black, panel #17171f sits distinctly above bg #0e0e13, and the bezel is re-chosen too. The light screenshots really are the only thing left holding this at 4. **Your call, see below.** |
@@ -178,6 +211,11 @@ borders and outlines and throws away backgrounds and shadows. `.phone` was corre
 themes and still had no frame there, because a background and a shadow were the whole of it.
 The general rule the eighth check enforces: **a surface that is solid where it was designed must
 still be drawn by something forced colours keeps.**
+
+**The privacy page is `/peggy/privacy/`, not `/privacy/`.** A scratch probe pointed at
+`/privacy/` gets the server's 404 listing, which has no `<header>` and no anchors, and either
+crashes or quietly reports all clear for a page it never loaded. It cost ten minutes this
+session. `review.py --probe --url` takes the full path; use it rather than assembling one.
 
 **A screenshot's own background is not a surface.** The `contrast` check skips replaced
 elements. Every `.phone img` carries `--panel` as a loading placeholder, and counting those made

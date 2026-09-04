@@ -420,3 +420,45 @@ anything. Never retry an approach logged as failed.
   parse table above it. Motion sampled at 820, the width the check skips: 0 of
   737, worst 1.000, and it cannot be otherwise since the reveal never touches
   opacity. Looked at 820 light, which had been measured but never read.
+
+## Session 9 — 2026-09-04
+
+- **Chrome available, not used for scoring.** `tabs_context_mcp` answered without
+  error for the third session running (no tab group; offers to create one).
+  Playwright still supplies every number: it is the only one here that can set a
+  viewport, a colour scheme, a root font size or a forced-colours palette.
+- **Phase 5, cycle 1. Five theories tested, all five clean, nothing changed.**
+  Each was the intersection of two conditions that had only ever been checked
+  apart, which is where the last five defects lived. Recorded in STATUS.md so a
+  tenth session does not re-test them.
+  - **Root font size against the sticky header.** `.bar` is a hardcoded
+    `height:64px` with `rem` contents, and `scroll-padding-top` is a hardcoded
+    80px, so large text looked like it should burst the bar and bury the anchor
+    targets under it. It does not: header still 65px at root 24, nothing painting
+    outside its box, all four anchors 0.0px clear at 390/820/1440, all three pages.
+  - **UA-drawn surfaces in dark mode** (scrollbars, form controls, `<details>`
+    markers) are outside the two `:root` blocks. `color-scheme:light dark` is
+    declared, so they follow the theme.
+  - **The sticky header in forced colours.** Both colour checks skip it as
+    translucent by design, and forced colours keeps the 82% alpha, so content does
+    read through it. Measured at 2x in the empty strip of the bar, scrolled:
+    1.24-1.55:1 of ghosting forced against 1.21-1.62:1 normal. The same bar, not a
+    worse one, and `header.stuck` gets its bottom border in all four palettes.
+  - **390 in forced colours**, the mobile high-contrast read -- 1440 forced was
+    looked at in session 8, 390 only ever in the two normal themes. All 17
+    screenfuls in both forced palettes: everything reads, and session 8's phone
+    outline holds at 390.
+  - **Whether forced colours dims the screenshots.** They look washed out in a
+    forced 390 crop and they are not: mean luminance 0.708 and p5-p95 0.527-0.957
+    in light, dark, forced light and forced dark, identical to three decimals.
+    The scaled-capture trap for the third time in nine sessions.
+- **New gotcha, and it cost ten minutes.** The privacy page is `/peggy/privacy/`,
+  not `/privacy/`. A scratch probe pointed at `/privacy/` gets the server's 404
+  listing, which has no `<header>` and no anchors, so it either crashes or quietly
+  reports all clear for a page it never loaded. Re-ran that leg against the real
+  URL; clean.
+- **Closing verification.** Fresh `python site/build.py` leaves `git diff` empty,
+  and `--probe` is all clear on all eight checks.
+- **Phase 5 still open at six 5s and two 4s.** Item 2 (typeface) and item 8
+  (dark-theme screenshots) are Doni's decisions, unchanged. No `DONE` file: that
+  needs all eight at 5.
