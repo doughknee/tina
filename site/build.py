@@ -410,7 +410,7 @@ def landing(shots):
     parse_rows = [
         ("dentist thursday 3pm", "An event on Thursday at 3 PM, with a reminder."),
         ("water the plants every 3 days", "A task that comes back every third day."),
-        ("pay rent on the 1st", "Monthly, on the first."),
+        ("rent on the 1st every month", "Monthly, on the first."),
         ("#kitchen order the tap", "Filed under the kitchen tag."),
         ("call mum tomorrow urgent", "Tomorrow, flagged high."),
     ]
@@ -429,7 +429,8 @@ def landing(shots):
         ("check-square", "Checklists in any note",
          "Type “[] ” and the line becomes a box. Tick items from the card without opening the note."),
         ("clock", "Repeats that roll up",
-         "Every day, every second Tuesday, every 15th. A habit stays one row on your week instead of seven."),
+         "Every day, every Monday and Wednesday, every 15th. A habit stays one row on your week "
+         "instead of seven."),
         ("palette", "Material You",
          "Colours from your wallpaper, a real dark theme, higher-contrast modes and a reduce-motion switch."),
         ("trash", "A bin, with a way back",
@@ -453,7 +454,7 @@ def landing(shots):
 
     faqs = [
         ("Is Peggy free?",
-         "Yes. Capturing, planning, sorting and writing are free and stay free. A paid tier is planned later for hosted AI, themes and extra widgets, and it will not take anything away from what is here now."),
+         "Yes. Capturing, planning, sorting and writing are free and stay free."),
         ("Do I need an account?",
          "No. There is no sign-up, no email, and no profile. Peggy works the moment you install it."),
         ("Where does my data live?",

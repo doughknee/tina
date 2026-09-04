@@ -65,16 +65,16 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
 
 ## 4. Content accuracy
 
-- [ ] **Re-check every factual claim on the page against the shipped app**, particularly: Android
+- [x] **Re-check every factual claim on the page against the shipped app**, particularly: Android
       12 and up (minSdk 31), reminders surviving reboot and time-zone change, quiet hours,
       widgets and the quick-settings tile, checklists, export and import, app lock, and
       "no analytics, no server".
       *Done when:* each claim traces to something in `CHANGELOG.md` or the code.
-- [ ] **Decide the support contact.** The footer deliberately has no email — the Play listing
+- [x] **Decide the support contact.** The footer deliberately has no email — the Play listing
       carries one, and publishing a personal address on a public page was not mine to decide.
       *Done when:* either an address (or a form/alias) is added to the footer, or it is a
       deliberate no.
-- [ ] **Re-read the Pro paragraph in the FAQ.** It promises a paid tier "later" with hosted AI,
+- [x] **Re-read the Pro paragraph in the FAQ.** It promises a paid tier "later" with hosted AI,
       themes and widgets. Confirm that is still the intent before it is public.
 
 ## 5. Deploy plumbing
