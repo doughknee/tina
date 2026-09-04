@@ -18,6 +18,11 @@ numbers you can paste into STATUS.md:
             .reveal overlapping the middle 20-80% of the viewport -- where a
             reader's eye is. Any value below 1.0 there is the animation
             delaying reading. This is why the reveal moves but does not fade.
+  sweep     every width from 360 to 1680, not only the three the rubric
+            names. Overflow anywhere, and the number of times the .pair
+            duos flip between side-by-side and stacked -- one transition
+            is the design, more than one is a column too narrow for its
+            phones over some band in the middle.
   hidden    loads with JavaScript off and with reduced motion asked for, and
             fails if any .reveal is transparent or displaced in either. Hiding
             is opt-in, so both of those loads must show everything.
@@ -50,6 +55,17 @@ def scroll_through(page, step):
 # Scrolls the page for 240 frames and records the opacity of every .reveal in
 # the reading band. Runs in the page because it has to sample per frame; doing
 # it from Python would miss the frames that matter.
+SWEEP_JS = """
+() => ({
+  over: document.documentElement.scrollWidth > innerWidth,
+  rows: [...document.querySelectorAll('.pair')].map(pr => {
+    const f = [...pr.children];
+    return f.length === 2 &&
+      Math.abs(f[0].getBoundingClientRect().top - f[1].getBoundingClientRect().top) < 2;
+  }),
+})
+"""
+
 MOTION_JS = """
 () => new Promise(resolve => {
   const samples = [];
@@ -94,6 +110,32 @@ def probe(url):
                 bad += not ok
                 print(f"    {w:>4} {scheme:<5} scrollWidth={sw:<5} {'ok' if ok else 'OVERFLOW'}")
             ctx.close()
+
+        print("sweep     (every width, not just the three the rubric names)")
+        ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+        page = ctx.new_page()
+        page.goto(url, wait_until="networkidle")
+        over, flips, prev = [], 0, None
+        for w in range(360, 1681, 20):
+            page.set_viewport_size({"width": w, "height": 900})
+            page.wait_for_timeout(80)
+            r = page.evaluate(SWEEP_JS)
+            if r["over"]:
+                over.append(w)
+            # A duo is side by side or stacked. Going side by side, back to
+            # stacked, then side by side again is a column too narrow for its
+            # phones over some band in the middle: one transition is the
+            # design, more than one is the bug.
+            cur = all(r["rows"])
+            if prev is not None and cur != prev:
+                flips += 1
+            prev = cur
+        ctx.close()
+        ok = not over and flips <= 1
+        bad += not ok
+        print(f"    360-1680   overflow at {over or 'none'}, "
+              f"{flips} duo transition{'' if flips == 1 else 's'} "
+              f"{'ok' if ok else 'REFLOW BUG'}")
 
         print("motion    (.reveal opacity in the middle 20-80% during a fast scroll)")
         for w, h in ((390, 844), (1440, 900)):

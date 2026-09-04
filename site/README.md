@@ -160,11 +160,17 @@ python site/review.py --nojs          # JavaScript off, to prove nothing is hidd
 python site/review.py --probe         # the numbers a screenshot cannot show you
 ```
 
-`--probe` is the one to run before committing a CSS change. It measures three
+`--probe` is the one to run before committing a CSS change. It measures four
 things and exits non-zero if any of them fail:
 
 - **overflow** — `scrollWidth` against the viewport at 390, 820 and 1440 in both
   themes. Anything larger is a sideways scrollbar.
+- **sweep** — every width from 360 to 1680 in 20 px steps, not only the three
+  the rubric names. It fails on overflow at any of them, and on the `.pair`
+  phone duos flipping between side by side and stacked more than once. One
+  transition is the design; a second and third mean some band in the middle has
+  a column too narrow for its phones. That is exactly what 900–1060 was, and
+  checking only 390, 820 and 1440 never saw it.
 - **motion** — fast-scrolls the page and samples the computed opacity of every
   `.reveal` sitting in the middle 20–80% of the viewport, which is where a
   reader is looking. Any value below 1 there means the animation is delaying
@@ -181,6 +187,10 @@ it:
   screenshots as an empty white frame unless the page is scrolled through first.
   `scroll_through()` does that with the mouse wheel, which works with JavaScript
   disabled where `page.evaluate` does not.
+- **Three good widths are not a responsive check.** 390, 820 and 1440 all
+  passed while every width from 900 to 1060 was visibly broken. Breakpoints put
+  the bugs *between* the widths you test, which is why `sweep` walks the range
+  instead of sampling it.
 - **Colour cannot be judged from a scaled capture.** A full-page PNG of this page
   is over 13,000 px tall, and downscaling it shifted the dark-theme link colour
   enough to look like a contrast bug that was not there. Crop at
