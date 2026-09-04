@@ -455,3 +455,7 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - The editor's plain text joins paragraphs with a space and prefixes list lines with their bullet ("• "), while `toText()` uses newlines at the same indices. Line starts come from `toText()`, and `contentStart()` skips the bullet, so the "- ", "[] " and "# " rules and the checklist toolbar button work inside lists too.
 - Toolbar cycle is plain → ☐ → ☑ → plain; the `[] ` rule inserts ☐ and turns the line into a bullet if it is not one.
 
+### Keyboard rise re-profiled on imePadding (v1.8.2)
+
+- `dumpsys gfxinfo` over six capture-field opens and closes on the Pixel 9 Pro XL: 446 frames, 1.1 % janky, p90 10 ms, p95 12 ms. The 2024 profile that motivated the hand-rolled lift (31 % janky, 46–61 ms p90) does not reproduce on this hardware with this Compose; `imePadding` stays.
+
