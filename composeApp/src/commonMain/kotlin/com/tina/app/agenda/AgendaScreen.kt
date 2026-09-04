@@ -100,6 +100,7 @@ import com.tina.app.data.Item
 import com.tina.app.data.ItemType
 import com.tina.app.resources.Res
 import com.tina.app.resources.agenda_everything
+import com.tina.app.resources.agenda_everywhere
 import com.tina.app.resources.series_expand
 import com.tina.app.resources.series_collapse
 import com.tina.app.resources.day_has_items
@@ -303,7 +304,7 @@ fun AgendaScreen(
                     val visibleMonth = if (gridShown) monthState.firstVisibleMonth.yearMonth
                     else weekState.firstVisibleWeek.days[3].date.let { YearMonth(it.year, it.month) }
                     val (primary, secondary) = when (granularity) {
-                        Granularity.ALL -> stringResource(Res.string.agenda_everything) to null
+                        Granularity.ALL -> stringResource(Res.string.agenda_everything) to stringResource(Res.string.agenda_everywhere)
                         Granularity.MONTH -> monthNames[visibleMonth.month.number - 1] to visibleMonth.year.toString()
                         Granularity.WEEK -> {
                             val range = weekTitle(selectedDate, monthNames)
