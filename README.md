@@ -84,6 +84,15 @@ Settings copy drifts when features change. `/settings-audit` (a project skill in
 onboarding cards — cross-checks it, fixes the drift, and proves it with a build and
 screenshots. It names no rows or features itself, so it does not go stale.
 
+### The marketing site
+
+`site/` builds doughknee.com — the Peggy page, the privacy policy rendered from
+`docs/PRIVACY.md`, and the home page — with `python site/build.py`. The eight
+screenshots on it are generated from a seeded emulator, so replacing a picture is
+dropping a PNG and rebuilding, not editing HTML. `site/README.md` is the
+procedure: swapping one shot, retaking all of them, adding a new one, changing
+the demo content, and the two constants to flip when Peggy leaves closed testing.
+
 ### Trying a change on your phone without Play
 
 The Play build is signed by Google, so an upload-key APK cannot install over it. Build the `dev` variant instead: same release code, package `com.peggy.app.dev`, shown as "Peggy dev" next to the real app with its own data.

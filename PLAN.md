@@ -79,22 +79,22 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
 
 ## 5. Deploy plumbing
 
-- [ ] **Commit the generated artifacts** so the CI build never depends on Pillow:
+- [x] **Commit the generated artifacts** so the CI build never depends on Pillow:
       `site/peggy/shots/*.webp` and `site/peggy/og.png`.
       *Done when:* `git status` is clean after a fresh `python site/build.py`.
-- [ ] **Add Pillow to the Pages workflow** so a newly dropped PNG is re-encoded on CI rather than
+- [x] **Add Pillow to the Pages workflow** so a newly dropped PNG is re-encoded on CI rather than
       silently reusing a stale WebP. In `.github/workflows/pages.yml`, before `python
       site/build.py`: `- run: pip install pillow`.
       *Done when:* the workflow file has the step and a push builds green.
 - [x] **Ignore the generated SQL.** `site/demo_data.sql` is written by `demo_data.py` on every
       run; add it to `.gitignore` (or have the script write to a temp path instead).
-- [ ] **Confirm the workflow path filter still matches.** `pages.yml` triggers on `site/**` and
+- [x] **Confirm the workflow path filter still matches.** `pages.yml` triggers on `site/**` and
       `docs/PRIVACY.md`; the new screenshots and manifest live under `site/`, so it should.
       *Done when:* a push touching only `site/screenshots/*.png` triggers a deploy.
 
 ## 6. The updating story (the one explicit request)
 
-- [ ] **Write `site/README.md`.** This is the deliverable that makes the whole pipeline useful and
+- [x] **Write `site/README.md`.** This is the deliverable that makes the whole pipeline useful and
       it does not exist yet. It must cover, in order:
       1. Replacing one screenshot: drop a PNG over `site/screenshots/<name>.png`, run
          `python site/build.py`, commit. Nothing else.
@@ -108,7 +108,7 @@ cd site && python -m http.server 8899 --bind 127.0.0.1
          `adb` on the path.
       6. Swapping the CTA at launch: `PRIMARY_URL` / `PRIMARY_LABEL` at the top of `build.py`.
       *Done when:* someone who has not seen tonight can replace a screenshot using only that file.
-- [ ] **Point the repo README at it** from the Development section, next to the
+- [x] **Point the repo README at it** from the Development section, next to the
       "Keeping Settings honest" note.
 
 ## 7. Ship
