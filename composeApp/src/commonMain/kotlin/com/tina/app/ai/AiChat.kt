@@ -220,7 +220,17 @@ class AiChat(
             put("model", model)
             put("max_tokens", 4096)
             if (onDelta != null) put("stream", true)
-            put("system", system)
+            // The system prompt carries the whole database, and it is the same on every turn of
+            // a conversation until something changes. Marking it cacheable means the provider
+            // reads it once per conversation instead of once per question: most of the input
+            // tokens, and the first-token wait, go away on the second turn onwards.
+            put("system", buildJsonArray {
+                add(buildJsonObject {
+                    put("type", "text")
+                    put("text", system)
+                    put("cache_control", buildJsonObject { put("type", "ephemeral") })
+                })
+            })
             put("messages", buildJsonArray {
                 messages.forEach { m ->
                     add(buildJsonObject {
