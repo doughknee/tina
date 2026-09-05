@@ -1,0 +1,5 @@
+# service-account JSON and local dev vars never go in the repo
+*.json
+.dev.vars
+node_modules/
+.wrangler/

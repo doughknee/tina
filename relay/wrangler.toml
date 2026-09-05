@@ -1,6 +1,10 @@
 name = "peggy-relay"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
+# workers_dev off: the relay lives on the site's own domain, and the zone is on Cloudflare,
+# so deploy creates the record and the certificate itself.
+workers_dev = false
+routes = [{ pattern = "relay.doughknee.com", custom_domain = true }]
 
 [vars]
 PACKAGE_NAME = "com.peggy.app"
@@ -8,7 +12,7 @@ PACKAGE_NAME = "com.peggy.app"
 # Created with `npx wrangler kv namespace create KV`; paste the id it prints.
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_KV_ID"
+id = "0118e1f07a4e4df2ab555b8dbe89c844"
 
 # Secrets, set with `npx wrangler secret put <NAME>` (never in this file):
 #   ANTHROPIC_API_KEY   the relay's own key, billed to the Peggy account

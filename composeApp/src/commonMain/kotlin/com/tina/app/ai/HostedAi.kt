@@ -7,7 +7,7 @@ import com.tina.app.pro.Entitlement
  * where the API key goes. The relay (relay/README.md) checks the purchase, pins the model per
  * route and keeps the real key. No model or key is ever configured on the phone for this.
  */
-const val HOSTED_RELAY_URL = "https://peggy-relay.doughknee.workers.dev"
+const val HOSTED_RELAY_URL = "https://relay.doughknee.com"
 
 /** The model field is required by the wire format; the relay replaces it per route. */
 const val HOSTED_MODEL_PLACEHOLDER = "relay"
