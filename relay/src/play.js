@@ -26,15 +26,17 @@ export async function verifyWithPlay({ token, product, env, doFetch }) {
 
   if (product === "peggy_pro_lifetime") {
     const r = await doFetch(`${API}/${pkg}/purchases/products/${product}/tokens/${encodeURIComponent(token)}`, { headers: auth });
-    if (!r.ok) return null;
+    if (!r.ok) { console.log(`play products ${r.status}: ${(await r.text()).slice(0, 200)}`); return null; }
     const p = await r.json();
+    console.log(`play product state=${p.purchaseState}`);
     if (p.purchaseState !== 0) return null; // 0 purchased, 1 cancelled (refunded), 2 pending
     return { plan: "lifetime", until: Date.now() + 365 * 86_400_000 };
   }
 
   const r = await doFetch(`${API}/${pkg}/purchases/subscriptionsv2/tokens/${encodeURIComponent(token)}`, { headers: auth });
-  if (!r.ok) return null;
+  if (!r.ok) { console.log(`play subscriptionsv2 ${r.status}: ${(await r.text()).slice(0, 200)}`); return null; }
   const s = await r.json();
+  console.log(`play sub state=${s.subscriptionState} expiry=${s.lineItems?.[0]?.expiryTime}`);
   if (!LIVE_STATES.has(s.subscriptionState)) return null;
   const line = (s.lineItems ?? []).find((l) => l.productId === product) ?? s.lineItems?.[0];
   if (!line) return null;
