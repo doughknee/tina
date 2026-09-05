@@ -2,7 +2,7 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## Unreleased
+## v1.9.2 (internal testing, 2026-09-05)
 
 ### Peggy Pro
 - Colour themes: Settings → Appearance → Colour has seven seeds beyond Peggy blue, each growing a full light and dark palette. Choosing one takes over from the wallpaper colour.
