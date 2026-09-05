@@ -35,6 +35,14 @@ class SettingsViewModel(
         viewModelScope.launch { repository.setDynamicColor(enabled) }
     }
 
+    /** A chosen theme replaces the wallpaper colour, so the switch follows the choice. */
+    fun setThemeSeed(seed: com.tina.app.data.ThemeSeed) {
+        viewModelScope.launch {
+            repository.setThemeSeed(seed)
+            if (seed != com.tina.app.data.ThemeSeed.PEGGY) repository.setDynamicColor(false)
+        }
+    }
+
     fun setFirstDayOfWeek(day: DayOfWeek) {
         viewModelScope.launch { repository.setFirstDayOfWeek(day) }
     }

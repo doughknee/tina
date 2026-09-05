@@ -38,11 +38,12 @@ actual fun systemPrefersReducedMotion(): Boolean {
 }
 
 @Composable
-actual fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorScheme {
+actual fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean, seed: com.tina.app.data.ThemeSeed): ColorScheme {
     val context = LocalContext.current
+    val wallpaper = dynamicColor && seed == com.tina.app.data.ThemeSeed.PEGGY
     return when {
-        dynamicColor && darkTheme -> dynamicDarkColorScheme(context)
-        dynamicColor -> dynamicLightColorScheme(context)
-        else -> brandColorScheme(darkTheme)
+        wallpaper && darkTheme -> dynamicDarkColorScheme(context)
+        wallpaper -> dynamicLightColorScheme(context)
+        else -> seedColorScheme(seed, darkTheme)
     }
 }

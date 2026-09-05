@@ -6,8 +6,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 @Composable
-actual fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorScheme =
-    brandColorScheme(darkTheme)
+actual fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean, seed: com.tina.app.data.ThemeSeed): ColorScheme =
+    seedColorScheme(seed, darkTheme)
 
 /** No system bars to colour on desktop. */
 @Composable

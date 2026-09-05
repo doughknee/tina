@@ -16,6 +16,15 @@ import okio.Path.Companion.toPath
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
+/**
+ * The colour a whole Material scheme grows from. PEGGY is the launcher blue and free; the rest
+ * are Pro. Persisted by name; the ARGB is here so the swatch can be drawn without the theme.
+ */
+enum class ThemeSeed(val argb: Long) {
+    PEGGY(0xFF4F5FD6), OCEAN(0xFF006B8F), FOREST(0xFF2E7D4F), SUNSET(0xFFD65A2F),
+    ROSE(0xFFC2185B), PLUM(0xFF6A3FA0), GOLD(0xFFB58900), SLATE(0xFF546E7A),
+}
+
 /** CAPTURE and TODAY are the old names for Plan; both stay readable from saved settings. */
 enum class OpenAppTo { CAPTURE, TODAY, LAST, SORT, IDEAS }
 
@@ -35,6 +44,7 @@ enum class AiRefineMode { AUTO, SUGGEST, MANUAL }
 data class Settings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
+    val themeSeed: ThemeSeed = ThemeSeed.PEGGY,
     val firstDayOfWeek: DayOfWeek = DayOfWeek.MONDAY,
     val use24h: Boolean = false,
     val defaultReminderMinutes: Int = DEFAULT_REMINDER_MINUTES,
@@ -113,6 +123,7 @@ fun createSettingsStore(producePath: () -> String): DataStore<Preferences> =
 
 private val KEY_THEME = stringPreferencesKey("themeMode")
 private val KEY_DYNAMIC = booleanPreferencesKey("dynamicColor")
+private val KEY_THEME_SEED = stringPreferencesKey("themeSeed")
 private val KEY_FIRST_DAY = intPreferencesKey("firstDayOfWeek")
 private val KEY_24H = booleanPreferencesKey("use24h")
 private val KEY_REMINDER = intPreferencesKey("defaultReminderMinutes")
@@ -180,6 +191,7 @@ class SettingsRepository(
             themeMode = p[KEY_THEME]?.let { value -> ThemeMode.entries.firstOrNull { it.name == value } }
                 ?: ThemeMode.SYSTEM,
             dynamicColor = p[KEY_DYNAMIC] ?: true,
+            themeSeed = p[KEY_THEME_SEED]?.let { v -> ThemeSeed.entries.firstOrNull { it.name == v } } ?: ThemeSeed.PEGGY,
             firstDayOfWeek = p[KEY_FIRST_DAY]?.let { DayOfWeek(it) } ?: DayOfWeek.MONDAY,
             use24h = p[KEY_24H] ?: false,
             defaultReminderMinutes = p[KEY_REMINDER] ?: DEFAULT_REMINDER_MINUTES,
@@ -246,6 +258,7 @@ class SettingsRepository(
 
     suspend fun setThemeMode(mode: ThemeMode) = store.edit { it[KEY_THEME] = mode.name }
     suspend fun setDynamicColor(enabled: Boolean) = store.edit { it[KEY_DYNAMIC] = enabled }
+    suspend fun setThemeSeed(seed: ThemeSeed) = store.edit { it[KEY_THEME_SEED] = seed.name }
     suspend fun setFirstDayOfWeek(day: DayOfWeek) = store.edit { it[KEY_FIRST_DAY] = day.isoDayNumber }
     suspend fun setUse24h(enabled: Boolean) = store.edit { it[KEY_24H] = enabled }
     suspend fun setDefaultReminderMinutes(minutes: Int) = store.edit { it[KEY_REMINDER] = minutes }
@@ -329,6 +342,7 @@ class SettingsRepository(
     suspend fun applyBackup(s: BackupSettings) = store.edit { p ->
         p[KEY_THEME] = s.themeMode
         p[KEY_DYNAMIC] = s.dynamicColor
+        p[KEY_THEME_SEED] = s.themeSeed
         p[KEY_FIRST_DAY] = s.firstDayOfWeekIso
         p[KEY_24H] = s.use24h
         p[KEY_REMINDER] = s.defaultReminderMinutes

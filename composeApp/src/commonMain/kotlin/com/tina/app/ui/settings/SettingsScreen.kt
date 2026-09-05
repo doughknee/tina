@@ -263,6 +263,15 @@ import com.tina.app.resources.set_sound_sub
 import com.tina.app.resources.set_tags
 import com.tina.app.resources.set_tags_sub
 import com.tina.app.resources.set_theme
+import com.tina.app.resources.set_theme_seed
+import com.tina.app.resources.seed_peggy
+import com.tina.app.resources.seed_ocean
+import com.tina.app.resources.seed_forest
+import com.tina.app.resources.seed_sunset
+import com.tina.app.resources.seed_rose
+import com.tina.app.resources.seed_plum
+import com.tina.app.resources.seed_gold
+import com.tina.app.resources.seed_slate
 import com.tina.app.resources.set_undo_window
 import com.tina.app.resources.set_undo_window_sub
 import com.tina.app.resources.set_version
@@ -701,6 +710,21 @@ private fun rememberSettingsSections(
             else -> stringResource(Res.string.reminder_min_before, m)
         }
     }
+    val seedLabels = com.tina.app.data.ThemeSeed.entries.associateWith {
+        stringResource(
+            when (it) {
+                com.tina.app.data.ThemeSeed.PEGGY -> Res.string.seed_peggy
+                com.tina.app.data.ThemeSeed.OCEAN -> Res.string.seed_ocean
+                com.tina.app.data.ThemeSeed.FOREST -> Res.string.seed_forest
+                com.tina.app.data.ThemeSeed.SUNSET -> Res.string.seed_sunset
+                com.tina.app.data.ThemeSeed.ROSE -> Res.string.seed_rose
+                com.tina.app.data.ThemeSeed.PLUM -> Res.string.seed_plum
+                com.tina.app.data.ThemeSeed.GOLD -> Res.string.seed_gold
+                com.tina.app.data.ThemeSeed.SLATE -> Res.string.seed_slate
+            },
+        )
+    }
+    val isPro = com.tina.app.pro.rememberIsPro()
     val providerLabels = listOf(
         stringResource(Res.string.ai_provider_off),
         stringResource(Res.string.ai_provider_hosted),
@@ -709,7 +733,6 @@ private fun rememberSettingsSections(
         stringResource(Res.string.ai_provider_openai),
         stringResource(Res.string.ai_provider_custom),
     )
-    val isPro = com.tina.app.pro.rememberIsPro()
     val refineLabels = listOf(
         stringResource(Res.string.refine_auto),
         stringResource(Res.string.refine_suggest),
@@ -793,12 +816,28 @@ private fun rememberSettingsSections(
                 selectedIndex = ThemeMode.entries.indexOf(settings.themeMode),
                 onSelect = { viewModel.setThemeMode(ThemeMode.entries[it]) },
             ),
+            SettingsRow.Custom(
+                id = "themeSeed",
+                title = stringResource(Res.string.set_theme_seed),
+                supporting = seedLabels[settings.themeSeed],
+                keywords = listOf("colour", "color", "accent", "palette", "peggy pro"),
+                content = {
+                    ThemeSeedRail(
+                        title = stringResource(Res.string.set_theme_seed),
+                        selected = settings.themeSeed,
+                        isPro = isPro,
+                        labels = seedLabels,
+                        onPick = viewModel::setThemeSeed,
+                        onLocked = { onNavigate(SettingsDestination.PRO) },
+                    )
+                },
+            ),
             SettingsRow.Switch(
                 id = "dynamicColor",
                 title = stringResource(Res.string.settings_dynamic_color),
                 supporting = stringResource(Res.string.settings_dynamic_color_desc),
                 keywords = listOf("material you", "wallpaper"),
-                visible = Platform.isAndroid,
+                visible = Platform.isAndroid && settings.themeSeed == com.tina.app.data.ThemeSeed.PEGGY,
                 checked = settings.dynamicColor,
                 onCheckedChange = viewModel::setDynamicColor,
             ),

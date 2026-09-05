@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +50,7 @@ import com.tina.app.resources.pro_pitch_ai
 import com.tina.app.resources.pro_pitch_coming
 import com.tina.app.resources.pro_pitch_export
 import com.tina.app.resources.pro_pitch_quota
+import com.tina.app.resources.pro_pitch_themes
 import com.tina.app.resources.pro_quota
 import com.tina.app.resources.pro_plan_active
 import com.tina.app.resources.pro_restore
@@ -102,7 +104,8 @@ fun PaywallScreen(onBack: () -> Unit, store: ProStore = koinInject(), http: io.k
                 Pitch(Icons.Outlined.AutoAwesome, stringResource(Res.string.pro_pitch_ai))
                 Pitch(Icons.Outlined.History, stringResource(Res.string.pro_pitch_quota))
                 Pitch(Icons.Outlined.IosShare, stringResource(Res.string.pro_pitch_export))
-                Pitch(Icons.Outlined.Palette, stringResource(Res.string.pro_pitch_coming))
+                Pitch(Icons.Outlined.Palette, stringResource(Res.string.pro_pitch_themes))
+                Pitch(Icons.Outlined.PhoneAndroid, stringResource(Res.string.pro_pitch_coming))
             }
         }
         when (val current = entitlement) {

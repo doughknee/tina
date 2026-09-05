@@ -8,6 +8,8 @@ import kotlinx.serialization.json.Json
 data class BackupSettings(
     val themeMode: String = "SYSTEM",
     val dynamicColor: Boolean = true,
+    /** A ThemeSeed name; defaulted so backups from before themes still read. */
+    val themeSeed: String = "PEGGY",
     val firstDayOfWeekIso: Int = 1,
     val use24h: Boolean = false,
     val defaultReminderMinutes: Int = DEFAULT_REMINDER_MINUTES,
@@ -53,6 +55,7 @@ data class BackupSettings(
 fun Settings.toBackupSettings(): BackupSettings = BackupSettings(
     themeMode = themeMode.name,
     dynamicColor = dynamicColor,
+    themeSeed = themeSeed.name,
     firstDayOfWeekIso = firstDayOfWeek.isoDayNumber,
     use24h = use24h,
     defaultReminderMinutes = defaultReminderMinutes,

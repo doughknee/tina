@@ -12,6 +12,7 @@ import com.tina.app.data.ContrastMode
 import com.tina.app.data.ReduceMotionMode
 import com.tina.app.data.Settings
 import com.tina.app.data.ThemeMode
+import com.tina.app.data.ThemeSeed
 import com.tina.app.ui.LocalReduceMotion
 
 /** Current user settings, available anywhere in the tree. */
@@ -20,12 +21,13 @@ val LocalSettings = staticCompositionLocalOf { Settings() }
 /** The launcher blue; every non-dynamic scheme grows from it. */
 val BrandSeed = Color(0xFF4F5FD6)
 
-/** A full Material 3 tonal scheme from the brand seed, for phones without dynamic colour and for desktop. */
-fun brandColorScheme(dark: Boolean): ColorScheme =
-    com.materialkolor.dynamicColorScheme(seedColor = BrandSeed, isDark = dark, style = com.materialkolor.PaletteStyle.TonalSpot)
+/** A full Material 3 tonal scheme grown from [seed]: phones without dynamic colour, any chosen theme, and desktop. */
+fun seedColorScheme(seed: ThemeSeed, dark: Boolean): ColorScheme =
+    com.materialkolor.dynamicColorScheme(seedColor = Color(seed.argb), isDark = dark, style = com.materialkolor.PaletteStyle.TonalSpot)
 
+/** Wallpaper colour applies only while the brand seed is chosen; picking a theme is choosing over the wallpaper. */
 @Composable
-expect fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean): ColorScheme
+expect fun appColorScheme(darkTheme: Boolean, dynamicColor: Boolean, seed: ThemeSeed): ColorScheme
 
 /**
  * Keeps the system bar icons legible against the app's *own* theme. Edge-to-edge picks icon
@@ -76,7 +78,7 @@ fun AppTheme(settings: Settings, content: @Composable () -> Unit) {
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
-    val scheme = appColorScheme(dark, settings.dynamicColor)
+    val scheme = appColorScheme(dark, settings.dynamicColor, settings.themeSeed)
         .withContrast(settings.contrast, dark)
         .let { if (dark && settings.pureBlack) it.pureBlack() else it }
 
