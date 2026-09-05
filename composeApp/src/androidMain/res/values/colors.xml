@@ -2,6 +2,14 @@
 <resources>
     <!-- brand seed; Theme.kt derives the palette from the same value -->
     <color name="ic_launcher_background">#4F5FD6</color>
+    <!-- the other seven launcher icons; the pin is the same, only the plate changes -->
+    <color name="ic_launcher_bg_ocean">#006B8F</color>
+    <color name="ic_launcher_bg_forest">#2E7D4F</color>
+    <color name="ic_launcher_bg_sunset">#D65A2F</color>
+    <color name="ic_launcher_bg_rose">#C2185B</color>
+    <color name="ic_launcher_bg_plum">#6A3FA0</color>
+    <color name="ic_launcher_bg_gold">#B58900</color>
+    <color name="ic_launcher_bg_slate">#546E7A</color>
     <color name="window_light">#FCF8FF</color>
     <color name="window_dark">#101014</color>
 </resources>

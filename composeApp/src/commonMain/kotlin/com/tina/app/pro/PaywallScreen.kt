@@ -47,7 +47,7 @@ import com.tina.app.resources.pro_monthly
 import com.tina.app.resources.pro_none
 import com.tina.app.resources.pro_pending
 import com.tina.app.resources.pro_pitch_ai
-import com.tina.app.resources.pro_pitch_coming
+import com.tina.app.resources.pro_pitch_icons
 import com.tina.app.resources.pro_pitch_export
 import com.tina.app.resources.pro_pitch_quota
 import com.tina.app.resources.pro_pitch_themes
@@ -105,7 +105,7 @@ fun PaywallScreen(onBack: () -> Unit, store: ProStore = koinInject(), http: io.k
                 Pitch(Icons.Outlined.History, stringResource(Res.string.pro_pitch_quota))
                 Pitch(Icons.Outlined.IosShare, stringResource(Res.string.pro_pitch_export))
                 Pitch(Icons.Outlined.Palette, stringResource(Res.string.pro_pitch_themes))
-                Pitch(Icons.Outlined.PhoneAndroid, stringResource(Res.string.pro_pitch_coming))
+                Pitch(Icons.Outlined.PhoneAndroid, stringResource(Res.string.pro_pitch_icons))
             }
         }
         when (val current = entitlement) {

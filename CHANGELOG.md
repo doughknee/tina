@@ -2,6 +2,11 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
+## Unreleased
+
+### Peggy Pro
+- App icons: Settings → Appearance → App icon offers the same eight colours as the theme; the home-screen icon changes in place, no reinstall.
+
 ## v1.9.3 (internal testing, 2026-09-05)
 
 - Ask keeps the end of a streaming answer in view instead of leaving it below the fold.

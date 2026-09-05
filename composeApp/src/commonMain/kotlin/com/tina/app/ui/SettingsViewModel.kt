@@ -35,6 +35,10 @@ class SettingsViewModel(
         viewModelScope.launch { repository.setDynamicColor(enabled) }
     }
 
+    fun setAppIcon(seed: com.tina.app.data.ThemeSeed) {
+        viewModelScope.launch { repository.setAppIcon(seed) }
+    }
+
     /** A chosen theme replaces the wallpaper colour, so the switch follows the choice. */
     fun setThemeSeed(seed: com.tina.app.data.ThemeSeed) {
         viewModelScope.launch {

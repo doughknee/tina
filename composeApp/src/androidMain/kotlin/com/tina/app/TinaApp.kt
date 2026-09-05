@@ -54,6 +54,10 @@ class TinaApp : Application(), KoinComponent {
                     repository.rescheduleAllReminders()
                 }
         }
+        // the launcher icon follows the setting; the first collect on a fresh install is a no-op
+        scope.launch {
+            settingsRepository.settings.map { it.appIcon }.distinctUntilChanged().collect { applyAppIcon(this@TinaApp, it) }
+        }
         // digest alarms follow the settings that describe them
         scope.launch {
             settingsRepository.settings

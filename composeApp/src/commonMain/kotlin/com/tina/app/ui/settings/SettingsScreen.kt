@@ -263,6 +263,7 @@ import com.tina.app.resources.set_sound_sub
 import com.tina.app.resources.set_tags
 import com.tina.app.resources.set_tags_sub
 import com.tina.app.resources.set_theme
+import com.tina.app.resources.set_app_icon
 import com.tina.app.resources.set_theme_seed
 import com.tina.app.resources.seed_peggy
 import com.tina.app.resources.seed_ocean
@@ -828,6 +829,23 @@ private fun rememberSettingsSections(
                         isPro = isPro,
                         labels = seedLabels,
                         onPick = viewModel::setThemeSeed,
+                        onLocked = { onNavigate(SettingsDestination.PRO) },
+                    )
+                },
+            ),
+            SettingsRow.Custom(
+                id = "appIcon",
+                title = stringResource(Res.string.set_app_icon),
+                supporting = seedLabels[settings.appIcon],
+                keywords = listOf("icon", "launcher", "home screen", "peggy pro"),
+                visible = Platform.isAndroid,
+                content = {
+                    ThemeSeedRail(
+                        title = stringResource(Res.string.set_app_icon),
+                        selected = settings.appIcon,
+                        isPro = isPro,
+                        labels = seedLabels,
+                        onPick = viewModel::setAppIcon,
                         onLocked = { onNavigate(SettingsDestination.PRO) },
                     )
                 },

@@ -45,6 +45,8 @@ data class Settings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
     val themeSeed: ThemeSeed = ThemeSeed.PEGGY,
+    /** Which launcher icon is enabled (Android). Device-specific, so not in backups. */
+    val appIcon: ThemeSeed = ThemeSeed.PEGGY,
     val firstDayOfWeek: DayOfWeek = DayOfWeek.MONDAY,
     val use24h: Boolean = false,
     val defaultReminderMinutes: Int = DEFAULT_REMINDER_MINUTES,
@@ -124,6 +126,7 @@ fun createSettingsStore(producePath: () -> String): DataStore<Preferences> =
 private val KEY_THEME = stringPreferencesKey("themeMode")
 private val KEY_DYNAMIC = booleanPreferencesKey("dynamicColor")
 private val KEY_THEME_SEED = stringPreferencesKey("themeSeed")
+private val KEY_APP_ICON = stringPreferencesKey("appIcon")
 private val KEY_FIRST_DAY = intPreferencesKey("firstDayOfWeek")
 private val KEY_24H = booleanPreferencesKey("use24h")
 private val KEY_REMINDER = intPreferencesKey("defaultReminderMinutes")
@@ -192,6 +195,7 @@ class SettingsRepository(
                 ?: ThemeMode.SYSTEM,
             dynamicColor = p[KEY_DYNAMIC] ?: true,
             themeSeed = p[KEY_THEME_SEED]?.let { v -> ThemeSeed.entries.firstOrNull { it.name == v } } ?: ThemeSeed.PEGGY,
+            appIcon = p[KEY_APP_ICON]?.let { v -> ThemeSeed.entries.firstOrNull { it.name == v } } ?: ThemeSeed.PEGGY,
             firstDayOfWeek = p[KEY_FIRST_DAY]?.let { DayOfWeek(it) } ?: DayOfWeek.MONDAY,
             use24h = p[KEY_24H] ?: false,
             defaultReminderMinutes = p[KEY_REMINDER] ?: DEFAULT_REMINDER_MINUTES,
@@ -259,6 +263,7 @@ class SettingsRepository(
     suspend fun setThemeMode(mode: ThemeMode) = store.edit { it[KEY_THEME] = mode.name }
     suspend fun setDynamicColor(enabled: Boolean) = store.edit { it[KEY_DYNAMIC] = enabled }
     suspend fun setThemeSeed(seed: ThemeSeed) = store.edit { it[KEY_THEME_SEED] = seed.name }
+    suspend fun setAppIcon(seed: ThemeSeed) = store.edit { it[KEY_APP_ICON] = seed.name }
     suspend fun setFirstDayOfWeek(day: DayOfWeek) = store.edit { it[KEY_FIRST_DAY] = day.isoDayNumber }
     suspend fun setUse24h(enabled: Boolean) = store.edit { it[KEY_24H] = enabled }
     suspend fun setDefaultReminderMinutes(minutes: Int) = store.edit { it[KEY_REMINDER] = minutes }

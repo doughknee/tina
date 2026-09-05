@@ -298,7 +298,7 @@
     <string name="pro_pitch_quota">400 Ask turns a month, and captures refined without counting</string>
     <string name="pro_pitch_export">Export your calendar as .ics to Google Calendar, Outlook or anything else</string>
     <string name="pro_pitch_themes">Seven colour themes, from Ocean to Slate</string>
-    <string name="pro_pitch_coming">App icons as they land</string>
+    <string name="pro_pitch_icons">A matching app icon for every colour</string>
     <string name="pro_quota">This month: %1$d of %2$d Ask turns · %3$d of %4$d captures and improvements</string>
     <string name="pro_trial_note">%1$d-day free trial, then %2$s</string>
     <string name="pro_yearly_note">Best value</string>
@@ -331,6 +331,7 @@
     <!-- Settings: Appearance -->
     <string name="set_theme">Theme</string>
     <string name="set_theme_seed">Colour</string>
+    <string name="set_app_icon">App icon</string>
     <string name="seed_peggy">Peggy blue</string>
     <string name="seed_ocean">Ocean</string>
     <string name="seed_forest">Forest</string>
