@@ -168,6 +168,8 @@ private val KEY_CLOSE_TO_TRAY = booleanPreferencesKey("closeToTray")
 private val KEY_ONBOARDING_SEEN = booleanPreferencesKey("onboardingSeen")
 private val KEY_UNDATED_TO_SORT = booleanPreferencesKey("undatedToSort")
 private val KEY_LAST_TIME_ZONE = androidx.datastore.preferences.core.stringPreferencesKey("lastTimeZone")
+private val KEY_ASK_CHAT = androidx.datastore.preferences.core.longPreferencesKey("askChatId")
+private val KEY_CAPTURE_DRAFT = androidx.datastore.preferences.core.stringPreferencesKey("captureDraft")
 
 class SettingsRepository(
     private val store: DataStore<Preferences>,
@@ -315,6 +317,13 @@ class SettingsRepository(
     /** The zone all-day events were last anchored in; see [syncTimeZone]. */
     suspend fun lastTimeZoneId(): String? = store.data.first()[KEY_LAST_TIME_ZONE]
     suspend fun setLastTimeZoneId(id: String) = store.edit { it[KEY_LAST_TIME_ZONE] = id }
+
+    // What was on screen when the process died: the open Ask conversation and an unsent draft.
+    // Not settings, but the same store, so they come back whatever killed the app.
+    suspend fun askChatId(): Long? = store.data.first()[KEY_ASK_CHAT]
+    suspend fun setAskChatId(id: Long?) = store.edit { if (id == null) it.remove(KEY_ASK_CHAT) else it[KEY_ASK_CHAT] = id }
+    suspend fun captureDraft(): String = store.data.first()[KEY_CAPTURE_DRAFT] ?: ""
+    suspend fun setCaptureDraft(text: String) = store.edit { if (text.isBlank()) it.remove(KEY_CAPTURE_DRAFT) else it[KEY_CAPTURE_DRAFT] = text }
 
     /** One atomic write restoring a backed-up settings block. */
     suspend fun applyBackup(s: BackupSettings) = store.edit { p ->

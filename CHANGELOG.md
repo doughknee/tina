@@ -2,6 +2,10 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
+## Unreleased
+
+- An unsent capture and the open Ask conversation come back after Android kills the app in the background.
+
 ## v1.9.1 (internal testing, 2026-09-05)
 
 ### Ask

@@ -14,6 +14,7 @@ import com.tina.app.data.Settings
 import com.tina.app.data.SettingsRepository
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -25,7 +26,7 @@ data class Starters(val titles: List<String> = emptyList(), val tags: List<Strin
 
 class CaptureViewModel(
     private val repository: ItemRepository,
-    settingsRepository: SettingsRepository,
+    private val settingsRepository: SettingsRepository,
     private val refiner: com.tina.app.ai.CaptureRefiner,
     private val review: com.tina.app.ui.ReviewPrompter = com.tina.app.ui.NoReviewPrompter,
 ) : ViewModel() {
@@ -69,6 +70,17 @@ class CaptureViewModel(
      */
     var fieldValue by mutableStateOf(TextFieldValue())
         private set
+
+    init {
+        // An unsent draft survives the process being killed in the background: it is restored
+        // here, then every change is written through. The first emission is the restore itself.
+        viewModelScope.launch {
+            val saved = settingsRepository.captureDraft()
+            if (saved.isNotEmpty() && text.isEmpty()) fieldValue = TextFieldValue(saved, TextRange(saved.length))
+            androidx.compose.runtime.snapshotFlow { text }.drop(1).collect { settingsRepository.setCaptureDraft(it) }
+        }
+    }
+
     val text: String get() = fieldValue.text
     var removedKinds by mutableStateOf(emptySet<ChipKind>())
         private set

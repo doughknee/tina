@@ -92,6 +92,11 @@ class AskViewModel(
     private var undoBatch: List<UndoStep> = emptyList()
     private var deletedChat: Pair<ChatEntity, List<ChatMessageEntity>>? = null
 
+    init {
+        // the conversation that was open comes back after the process is killed in the background
+        viewModelScope.launch { settingsRepository.askChatId()?.let { openChat(it) } }
+    }
+
     private fun now(): Long = Clock.System.now().toEpochMilliseconds()
 
     fun effectiveModel(settingsModel: String): String = modelOverride ?: settingsModel
@@ -114,12 +119,14 @@ class AskViewModel(
         currentChatId = null
         messages.clear()
         lastError = null
+        viewModelScope.launch { settingsRepository.setAskChatId(null) }
     }
 
     fun openChat(id: Long) {
         viewModelScope.launch {
             val entity = chatDao.chat(id) ?: return@launch
             currentChatId = id
+            settingsRepository.setAskChatId(id)
             reasoning = ReasoningLevel.entries.firstOrNull { it.name == entity.reasoning }
                 ?: ReasoningLevel.BALANCED
             modelOverride = entity.model
@@ -209,6 +216,7 @@ class AskViewModel(
             ),
         )
         currentChatId = id
+        settingsRepository.setAskChatId(id)
         return id
     }
 
