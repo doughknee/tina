@@ -2,7 +2,7 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## Unreleased
+## v1.9.3 (internal testing, 2026-09-05)
 
 - Ask keeps the end of a streaming answer in view instead of leaving it below the fold.
 
