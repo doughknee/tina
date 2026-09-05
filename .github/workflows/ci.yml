@@ -19,8 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Relay self-check
-        run: node relay/test.mjs
+      - name: Relay and release self-checks
+        run: node relay/test.mjs && node release/test.mjs
       - uses: gradle/actions/setup-gradle@v4
       - name: Unit tests, lint, release build
         run: ./gradlew :composeApp:desktopTest :composeApp:lintRelease :composeApp:assembleRelease --no-daemon --console=plain

@@ -14,6 +14,7 @@ import { execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { signJwt } from "../relay/src/play.js";
+import { bumpVersion, cutChangelog, parseVersion, releaseNotes as notesFor } from "./lib.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const GRADLE = path.join(ROOT, "composeApp", "build.gradle.kts");
@@ -81,39 +82,22 @@ if (notes) console.log(`notes:\n${notes}`);
 
 function die(msg) { console.error(msg); process.exit(1); }
 
-function readVersion() {
-  const g = readFileSync(GRADLE, "utf8");
-  return { versionName: g.match(/versionName = "([^"]+)"/)[1], versionCode: Number(g.match(/versionCode = (\d+)/)[1]) };
-}
+function readVersion() { return parseVersion(readFileSync(GRADLE, "utf8")); }
 
 /** Bumps gradle, retitles the CHANGELOG's Unreleased section, commits and tags. */
 function cut(newName, track) {
   const { versionName, versionCode } = readVersion();
   if (newName === versionName) die(`already at ${versionName}`);
-  const g = readFileSync(GRADLE, "utf8")
-    .replace(`versionCode = ${versionCode}`, `versionCode = ${versionCode + 1}`)
-    .replace(`versionName = "${versionName}"`, `versionName = "${newName}"`);
-  writeFileSync(GRADLE, g);
+  writeFileSync(GRADLE, bumpVersion(readFileSync(GRADLE, "utf8"), newName));
   const label = { internal: "internal testing", alpha: "closed testing", production: "production" }[track] ?? track;
-  const today = new Date().toISOString().slice(0, 10);
-  const c = readFileSync(CHANGELOG, "utf8");
-  if (!c.includes("## Unreleased")) die("CHANGELOG.md has no Unreleased section to cut");
-  writeFileSync(CHANGELOG, c.replace("## Unreleased", `## v${newName} (${label}, ${today})`));
+  const cutLog = cutChangelog(readFileSync(CHANGELOG, "utf8"), newName, label, new Date().toISOString().slice(0, 10));
+  if (!cutLog) die("CHANGELOG.md has no Unreleased section to cut");
+  writeFileSync(CHANGELOG, cutLog);
   execSync(`git add "${GRADLE}" "${CHANGELOG}" && git commit -q -m "Peggy ${newName}" && git tag -a v${newName} -m "v${newName}"`, { cwd: ROOT, stdio: "inherit" });
   console.log(`cut v${newName} (${versionCode + 1}); push with: git push --follow-tags`);
 }
 
-/** The CHANGELOG section for this version, as plain text Play accepts (500 chars). */
-function releaseNotes(versionName) {
-  const c = readFileSync(CHANGELOG, "utf8");
-  const m = c.match(new RegExp(`^## v${versionName.replace(/\./g, "\\.")}[^\n]*\n([\\s\\S]*?)(?=^## |\\Z)`, "m"));
-  if (!m) return "";
-  const lines = m[1].split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"))
-    .map((l) => l.replace(/^- /, "• ").replace(/\*\*/g, ""));
-  let text = lines.join("\n");
-  if (text.length > 500) text = text.slice(0, 497) + "…";
-  return text;
-}
+function releaseNotes(versionName) { return notesFor(readFileSync(CHANGELOG, "utf8"), versionName); }
 
 async function accessToken(sa) {
   const now = Math.floor(Date.now() / 1000);
