@@ -17,6 +17,7 @@ import com.tina.app.ai.applyImprovePatch
 import com.tina.app.ai.buildAskContext
 import com.tina.app.ai.buildAskSystemPrompt
 import com.tina.app.ai.extractAskActions
+import com.tina.app.ai.streamPreview
 import com.tina.app.ai.MAX_ASK_ACTIONS
 import com.tina.app.ai.needsConfirmation
 import com.tina.app.capture.ParsedCapture
@@ -62,6 +63,9 @@ class AskViewModel(
     var currentChatId by mutableStateOf<Long?>(null)
         private set
     var sending by mutableStateOf(false)
+        private set
+    /** The reply so far while [sending]; the screen shows it in place of the spinner. */
+    var streamingReply by mutableStateOf("")
         private set
     /** Why the last question failed, or null; the screen turns it into a sentence. */
     var lastError by mutableStateOf<com.tina.app.ai.AiError?>(null)
@@ -228,10 +232,16 @@ class AskViewModel(
         // fresh context per question so answers always reflect current data
         val context = buildAskContext(repository.allItems(), tz)
         val system = buildAskSystemPrompt(context, nowLocal, reasoning, writeEnabled)
+        streamingReply = ""
         val reply = try {
-            chat.chat(system, messages.toList(), modelOverride)
+            chat.chat(system, messages.toList(), modelOverride) { delta ->
+                // shown live; the actions block, if one is coming, stays hidden until the end
+                streamingReply = streamPreview(streamingReply + delta)
+            }
         } catch (e: com.tina.app.ai.AiException) {
             null.also { lastError = e.error }
+        } finally {
+            streamingReply = ""
         }
         if (reply == null) {
             // lastError is set above

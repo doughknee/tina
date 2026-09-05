@@ -258,7 +258,25 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
                         )
                     }
                 }
-                if (viewModel.sending) {
+                if (viewModel.sending && viewModel.streamingReply.isNotEmpty()) {
+                    // the answer, as far as it has arrived; the same bubble the finished one gets
+                    item {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                            Text(
+                                viewModel.streamingReply,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .widthIn(max = 320.dp)
+                                    .background(
+                                        MaterialTheme.colorScheme.surface,
+                                        RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 6.dp, bottomEnd = 20.dp),
+                                    )
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                            )
+                        }
+                    }
+                } else if (viewModel.sending) {
                     item {
                         Row(
                             // a screen reader hears the model start without hunting for the spinner

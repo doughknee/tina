@@ -36,6 +36,18 @@ fun needsConfirmation(actions: List<AskAction>): Boolean =
  * Pulls the trailing {"actions":[...]} block out of a model reply.
  * Returns the reply with the block removed, plus the parsed actions.
  */
+/**
+ * What to show of a reply that is still arriving. The actions block is JSON the user never
+ * sees; once its `"actions"` key has streamed in, everything from the `{` that opens it is
+ * held back until the reply is complete and [extractAskActions] can take it out properly.
+ */
+fun streamPreview(partial: String): String {
+    val marker = partial.lastIndexOf("\"actions\"")
+    if (marker < 0) return partial
+    val start = partial.lastIndexOf('{', marker)
+    return if (start < 0) partial else partial.substring(0, start).trimEnd()
+}
+
 fun extractAskActions(reply: String): Pair<String, List<AskAction>> {
     val marker = reply.lastIndexOf("\"actions\"")
     if (marker < 0) return reply to emptyList()

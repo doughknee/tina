@@ -9,6 +9,9 @@ import com.tina.app.data.SettingsRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.preparePost
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.utils.io.readUTF8Line
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
@@ -128,11 +131,17 @@ class AiChat(
     private val network: com.tina.app.data.NetworkStatus,
     private val proStore: com.tina.app.pro.ProStore,
 ) {
-    /** The reply text; throws [AiException] with the reason the user can act on. */
+    /**
+     * The reply text; throws [AiException] with the reason the user can act on.
+     * [onDelta] receives the reply as it arrives; the return value is still the whole reply.
+     * Only the Anthropic wire format streams (that includes the relay); OpenAI-shaped
+     * providers answer in one piece and call [onDelta] once.
+     */
     suspend fun chat(
         system: String,
         messages: List<ChatMessage>,
         modelOverride: String? = null,
+        onDelta: ((String) -> Unit)? = null,
     ): String {
         val settings = settingsRepository.settings.first()
         if (settings.aiProvider == AiProvider.OFF) throw AiException(AiError.OFF)
@@ -143,8 +152,8 @@ class AiChat(
         if (settings.aiWifiOnly && settings.aiProvider != AiProvider.OLLAMA && !network.isUnmetered) throw AiException(AiError.METERED)
         val text = try {
             when (settings.aiProvider) {
-                AiProvider.ANTHROPIC, AiProvider.HOSTED -> anthropic(settings, model, system, messages)
-                else -> openAi(settings, model, system, messages)
+                AiProvider.ANTHROPIC, AiProvider.HOSTED -> anthropic(settings, model, system, messages, onDelta)
+                else -> openAi(settings, model, system, messages)?.also { onDelta?.invoke(it) }
             }
         } catch (e: AiException) {
             throw e
@@ -201,6 +210,7 @@ class AiChat(
         model: String,
         system: String,
         messages: List<ChatMessage>,
+        onDelta: ((String) -> Unit)?,
     ): String? {
         val relay = if (settings.aiProvider == AiProvider.HOSTED) {
             relayHeaders(proStore.entitlement.value, "ask") ?: throw AiException(AiError.UNAUTHORIZED, "not Pro")
@@ -209,6 +219,7 @@ class AiChat(
         val body = buildJsonObject {
             put("model", model)
             put("max_tokens", 4096)
+            if (onDelta != null) put("stream", true)
             put("system", system)
             put("messages", buildJsonArray {
                 messages.forEach { m ->
@@ -219,7 +230,7 @@ class AiChat(
                 }
             })
         }
-        val response = http.post("$baseUrl/v1/messages") {
+        val request: io.ktor.client.request.HttpRequestBuilder.() -> Unit = {
             contentType(ContentType.Application.Json)
             header("anthropic-version", "2023-06-01")
             if (relay != null) {
@@ -232,6 +243,25 @@ class AiChat(
             }
             setBody(body.toString())
         }
+        if (onDelta != null) {
+            // the body is read line by line as server-sent events, so text shows as it is written
+            return http.preparePost("$baseUrl/v1/messages", request).execute { response ->
+                if (!response.status.isSuccess()) {
+                    val text = response.bodyAsText()
+                    throw AiException(aiErrorFor(response.status.value, text), text.take(200))
+                }
+                val channel = response.bodyAsChannel()
+                val full = StringBuilder()
+                while (true) {
+                    val line = channel.readUTF8Line() ?: break
+                    val delta = sseTextDelta(line) ?: continue
+                    full.append(delta)
+                    onDelta(delta)
+                }
+                full.toString()
+            }
+        }
+        val response = http.post("$baseUrl/v1/messages", request)
         if (!response.status.isSuccess()) {
             val text = response.bodyAsText()
             throw AiException(aiErrorFor(response.status.value, text), text.take(200))
@@ -240,5 +270,23 @@ class AiChat(
         return payload["content"]?.jsonArray
             ?.firstOrNull { it.jsonObject["type"]?.jsonPrimitive?.content == "text" }
             ?.jsonObject?.get("text")?.jsonPrimitive?.content
+    }
+}
+
+/**
+ * One line of an Anthropic event stream: the text of a `content_block_delta`, null for every
+ * other line (event names, pings, block starts, blanks). A streamed `error` event throws.
+ */
+internal fun sseTextDelta(line: String): String? {
+    if (!line.startsWith("data:")) return null
+    val json = line.removePrefix("data:").trim()
+    if (json.isEmpty() || json == "[DONE]") return null
+    val event = chatJson.parseToJsonElement(json).jsonObject
+    return when (event["type"]?.jsonPrimitive?.content) {
+        "content_block_delta" -> event["delta"]?.jsonObject
+            ?.takeIf { it["type"]?.jsonPrimitive?.content == "text_delta" }
+            ?.get("text")?.jsonPrimitive?.content
+        "error" -> throw AiException(AiError.SERVER, event["error"]?.jsonObject?.get("message")?.jsonPrimitive?.content)
+        else -> null
     }
 }
