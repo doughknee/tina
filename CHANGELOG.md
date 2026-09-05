@@ -2,6 +2,16 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
+## Unreleased
+
+### Ask
+- Answers appear as they are written instead of after a wait.
+- The database context is sent once per conversation, not once per question, so follow-ups are faster and cheaper.
+
+### Peggy Pro
+- Export your calendar: Settings → Data → Export calendar writes events and dated tasks as an .ics file any calendar app can import.
+- The Pro page shows this month’s hosted-AI use, and promises only what ships.
+
 ## v1.9.0 (internal testing, 2026-09-05)
 
 ### Peggy Pro

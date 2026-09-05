@@ -41,6 +41,20 @@ actual fun rememberBackupHandlers(
         }
     }
 
+    val calendarLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/calendar"),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                context.contentResolver.openOutputStream(uri)?.use { stream ->
+                    stream.write(backups.exportIcs().encodeToByteArray())
+                }
+            }
+            onExported()
+        }
+    }
+
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument(),
     ) { uri ->
@@ -63,6 +77,10 @@ actual fun rememberBackupHandlers(
                 exportLauncher.launch("peggy-backup-$today.json")
             },
             restore = { importLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
+            exportCalendar = {
+                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                calendarLauncher.launch("peggy-calendar-$today.ics")
+            },
         )
     }
 }

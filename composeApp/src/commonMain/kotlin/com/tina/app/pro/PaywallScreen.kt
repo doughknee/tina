@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -46,6 +47,7 @@ import com.tina.app.resources.pro_none
 import com.tina.app.resources.pro_pending
 import com.tina.app.resources.pro_pitch_ai
 import com.tina.app.resources.pro_pitch_coming
+import com.tina.app.resources.pro_pitch_export
 import com.tina.app.resources.pro_pitch_quota
 import com.tina.app.resources.pro_quota
 import com.tina.app.resources.pro_plan_active
@@ -99,6 +101,7 @@ fun PaywallScreen(onBack: () -> Unit, store: ProStore = koinInject(), http: io.k
                 // list as each one lands, not before (MONETIZATION.md §7).
                 Pitch(Icons.Outlined.AutoAwesome, stringResource(Res.string.pro_pitch_ai))
                 Pitch(Icons.Outlined.History, stringResource(Res.string.pro_pitch_quota))
+                Pitch(Icons.Outlined.IosShare, stringResource(Res.string.pro_pitch_export))
                 Pitch(Icons.Outlined.Palette, stringResource(Res.string.pro_pitch_coming))
             }
         }

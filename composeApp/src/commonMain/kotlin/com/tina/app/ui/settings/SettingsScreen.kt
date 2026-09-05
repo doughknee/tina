@@ -133,7 +133,9 @@ import com.tina.app.resources.cancel
 import com.tina.app.resources.contrast_high
 import com.tina.app.resources.contrast_medium
 import com.tina.app.resources.contrast_standard
+import com.tina.app.resources.export_calendar
 import com.tina.app.resources.export_data
+import com.tina.app.resources.set_export_calendar_sub
 import com.tina.app.resources.export_done
 import com.tina.app.resources.import_data
 import com.tina.app.resources.import_done
@@ -402,6 +404,7 @@ fun SettingsScreen(
             }
         },
         onExport = backupHandlers.export,
+        onExportCalendar = backupHandlers.exportCalendar,
         onImport = backupHandlers.restore,
         snackbarHostState = snackbarHostState,
     )
@@ -677,6 +680,7 @@ private fun rememberSettingsSections(
     onPickTime: (TimeTarget) -> Unit,
     onClearCompleted: () -> Unit,
     onExport: () -> Unit,
+    onExportCalendar: () -> Unit,
     onImport: () -> Unit,
     snackbarHostState: SnackbarHostState,
     devUnlocked: Boolean,
@@ -1163,6 +1167,14 @@ private fun rememberSettingsSections(
                 supporting = stringResource(Res.string.set_export_sub, stats.items),
                 keywords = listOf("backup", "save", "json"),
                 onClick = onExport,
+            ),
+            SettingsRow.External(
+                id = "exportCalendar",
+                title = stringResource(Res.string.export_calendar),
+                supporting = stringResource(Res.string.set_export_calendar_sub),
+                keywords = listOf("ics", "ical", "calendar", "google calendar", "outlook"),
+                // a Pro feature (MONETIZATION.md §7): the paywall explains it instead of a dead row
+                onClick = { if (isPro) onExportCalendar() else onNavigate(SettingsDestination.PRO) },
             ),
             SettingsRow.External(
                 id = "import",

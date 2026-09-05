@@ -58,6 +58,21 @@ actual fun rememberBackupHandlers(
                     }
                 }
             },
+            exportCalendar = {
+                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                val dialog = FileDialog(null as Frame?, "", FileDialog.SAVE).apply {
+                    file = "peggy-calendar-$today.ics"
+                    isVisible = true
+                }
+                val directory = dialog.directory
+                val fileName = dialog.file
+                if (directory != null && fileName != null) {
+                    scope.launch {
+                        withContext(Dispatchers.IO) { File(directory, fileName).writeText(backups.exportIcs()) }
+                        onExported()
+                    }
+                }
+            },
         )
     }
 }

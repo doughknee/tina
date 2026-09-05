@@ -2,7 +2,7 @@ package com.tina.app.data
 
 import androidx.compose.runtime.Composable
 
-class BackupHandlers(val export: () -> Unit, val restore: () -> Unit)
+class BackupHandlers(val export: () -> Unit, val restore: () -> Unit, val exportCalendar: () -> Unit)
 
 /**
  * Platform file-picker plumbing for backup/restore. `onImported` receives what was

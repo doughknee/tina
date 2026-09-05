@@ -35,6 +35,10 @@ class BackupService(
         return encodeBackup(all, Clock.System.now().toEpochMilliseconds(), settings, occ, chatList)
     }
 
+    /** The calendar for other apps: events and dated tasks as iCalendar. Not a backup; nothing imports it. */
+    suspend fun exportIcs(): String =
+        icsOf(items.getEverything(), kotlinx.datetime.TimeZone.currentSystemDefault(), Clock.System.now().toEpochMilliseconds())
+
     /** Null when the text is not a backup this build understands. */
     suspend fun importJson(text: String): ImportResult? {
         val backup = decodeBackup(text) ?: return null
