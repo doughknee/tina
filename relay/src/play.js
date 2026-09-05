@@ -69,7 +69,7 @@ async function accessToken(env, doFetch) {
  * straight from the JSON it arrives with literal backslash-n sequences and maybe its quotes,
  * so both are stripped along with the armour and real whitespace.
  */
-async function signJwt(claims, pem) {
+export async function signJwt(claims, pem) {
   const b64 = pem.replace(/\\n/g, "").replace(/"/g, "").replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
   const der = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   const key = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);

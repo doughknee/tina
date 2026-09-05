@@ -10,3 +10,6 @@ keystore.properties
 site/review/
 site/demo_data.sql
 .overnight-lock
+
+# Play publishing key for release/publish.mjs
+release/service-account.json
