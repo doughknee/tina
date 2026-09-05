@@ -53,7 +53,8 @@ if (flag("check")) {
 // --- 3. bundle
 if (!flag("no-build")) {
   console.log(`building ${versionName} (${versionCode})…`);
-  execSync(`${process.platform === "win32" ? "gradlew.bat" : "./gradlew"} :composeApp:bundleRelease -q`, { cwd: ROOT, stdio: "inherit" });
+  // through the shell: on Windows gradlew.bat needs cmd, and the daemon's handles outlive a bare spawn
+  execSync(`${process.platform === "win32" ? "cmd /c gradlew.bat" : "./gradlew"} :composeApp:bundleRelease -q --no-daemon`, { cwd: ROOT, stdio: "inherit", shell: true });
 }
 const aab = readFileSync(value("aab") ?? AAB);
 
