@@ -66,7 +66,7 @@ class PlayProStore(
     init {
         scope.launch {
             if (BuildConfig.PRO_OVERRIDE) {
-                entitlement.value = Entitlement.Pro(ProPlan.LIFETIME)
+                entitlement.value = Entitlement.Pro(ProPlan.LIFETIME, BuildConfig.PRO_OVERRIDE_TOKEN)
                 return@launch
             }
             // the cache first, so a Pro user with no signal is still Pro

@@ -139,6 +139,10 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
     LaunchedEffect(viewModel.messages.size, viewModel.sending) {
         if (viewModel.messages.isNotEmpty()) listState.animateScrollToItem(viewModel.messages.size)
     }
+    // the streaming bubble is an extra item after the messages; keep its tail in view as it grows
+    LaunchedEffect(viewModel.streamingReply.length) {
+        if (viewModel.sending && viewModel.streamingReply.isNotEmpty()) listState.scrollToItem(viewModel.messages.size, Int.MAX_VALUE)
+    }
 
     Column(Modifier.fillMaxSize()) {
         Row(

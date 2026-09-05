@@ -94,6 +94,9 @@ android {
             rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
         }
         buildConfigField("boolean", "PRO_OVERRIDE", (local.getProperty("tina.proOverride") == "true").toString())
+        // tina.proOverrideToken pairs with the relay's DEV_TOKEN secret, so an override build can use
+        // hosted AI without a Play purchase; blank means the override is Pro in the app only
+        buildConfigField("String", "PRO_OVERRIDE_TOKEN", "\"${local.getProperty("tina.proOverrideToken") ?: ""}\"")
     }
 
     signingConfigs {
