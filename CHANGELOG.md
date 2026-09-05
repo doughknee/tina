@@ -2,7 +2,7 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## Unreleased
+## v1.9.0 (internal testing, 2026-09-05)
 
 ### Peggy Pro
 - Hosted AI: pick “Peggy Pro” as the provider and Ask, parsing and Improve work with no key to set up. Pro subscribers get 400 Ask turns a month; lifetime gets 50. When the month is used up the app says so and your own key still works.

@@ -6,6 +6,10 @@ package com.tina.app.ui.settings
  * matches the running build. Keep the first entry's version equal to the build's major.minor.
  */
 val WHATS_NEW: List<Pair<String, String>> = listOf(
+    "1.9" to
+        "Peggy Pro is on sale. Pick \"Peggy Pro\" as the AI provider and Ask, parsing and Improve " +
+            "work with no key to set up: 400 Ask turns a month on a subscription, 50 on lifetime, and " +
+            "your own key still works whenever you like.",
     "1.8" to
         "Ideas rebuilt: cards that read like notes, checklists you can tick from the card, a pinned " +
             "section, a tag rail, long-press selection, sort and layout, a paper-like editor, and a tag " +
