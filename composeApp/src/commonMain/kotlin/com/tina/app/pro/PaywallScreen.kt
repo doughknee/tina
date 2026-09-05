@@ -12,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -23,6 +22,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,9 +45,9 @@ import com.tina.app.resources.pro_monthly
 import com.tina.app.resources.pro_none
 import com.tina.app.resources.pro_pending
 import com.tina.app.resources.pro_pitch_ai
-import com.tina.app.resources.pro_pitch_export
-import com.tina.app.resources.pro_pitch_history
-import com.tina.app.resources.pro_pitch_themes
+import com.tina.app.resources.pro_pitch_coming
+import com.tina.app.resources.pro_pitch_quota
+import com.tina.app.resources.pro_quota
 import com.tina.app.resources.pro_plan_active
 import com.tina.app.resources.pro_restore
 import com.tina.app.resources.pro_restore_none
@@ -76,7 +76,7 @@ fun ProPlan.label(): String = when (this) {
  * back as "not now". A settings subpage, never a pop-up.
  */
 @Composable
-fun PaywallScreen(onBack: () -> Unit, store: ProStore = koinInject()) {
+fun PaywallScreen(onBack: () -> Unit, store: ProStore = koinInject(), http: io.ktor.client.HttpClient = koinInject()) {
     val entitlement by store.entitlement.collectAsState()
     val prices by store.prices.collectAsState()
     val pending by store.pending.collectAsState()
@@ -95,14 +95,18 @@ fun PaywallScreen(onBack: () -> Unit, store: ProStore = koinInject()) {
     ) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Only what ships is promised here. Themes, icons and export return to this
+                // list as each one lands, not before (MONETIZATION.md §7).
                 Pitch(Icons.Outlined.AutoAwesome, stringResource(Res.string.pro_pitch_ai))
-                Pitch(Icons.Outlined.Palette, stringResource(Res.string.pro_pitch_themes))
-                Pitch(Icons.Outlined.History, stringResource(Res.string.pro_pitch_history))
-                Pitch(Icons.Outlined.IosShare, stringResource(Res.string.pro_pitch_export))
+                Pitch(Icons.Outlined.History, stringResource(Res.string.pro_pitch_quota))
+                Pitch(Icons.Outlined.Palette, stringResource(Res.string.pro_pitch_coming))
             }
         }
         when (val current = entitlement) {
             is Entitlement.Pro -> item {
+                // the relay's own count, so the number here is the number that gates requests
+                var quota by remember(current) { mutableStateOf<com.tina.app.ai.HostedQuota?>(null) }
+                LaunchedEffect(current) { quota = com.tina.app.ai.fetchHostedQuota(http, current) }
                 Surface(
                     color = MaterialTheme.colorScheme.primaryContainer,
                     shape = MaterialTheme.shapes.large,
@@ -114,6 +118,13 @@ fun PaywallScreen(onBack: () -> Unit, store: ProStore = koinInject()) {
                             Text(stringResource(Res.string.pro_active_title), style = MaterialTheme.typography.titleMediumEmphasized)
                         }
                         Text(stringResource(Res.string.pro_plan_active, current.plan.label()), style = MaterialTheme.typography.bodyMedium)
+                        quota?.let { q ->
+                            Text(
+                                stringResource(Res.string.pro_quota, q.askUsed, q.askLimit, q.lightUsed, q.lightLimit),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                         if (current.plan.subscription) {
                             TextButton(onClick = {
                                 uriHandler.openUri(

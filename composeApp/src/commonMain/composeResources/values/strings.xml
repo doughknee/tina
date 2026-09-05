@@ -292,10 +292,10 @@
     <string name="pro_monthly">Monthly</string>
     <string name="pro_yearly">Yearly</string>
     <string name="pro_lifetime">Lifetime</string>
-    <string name="pro_pitch_ai">Ask and parse with Peggy’s hosted AI, no key needed</string>
-    <string name="pro_pitch_themes">Themes, icons and extra widgets</string>
-    <string name="pro_pitch_history">Ask history kept beyond 30 days</string>
-    <string name="pro_pitch_export">Calendar export and encrypted backups</string>
+    <string name="pro_pitch_ai">Ask, parse and Improve with Peggy’s hosted AI, no key to set up</string>
+    <string name="pro_pitch_quota">400 Ask turns a month, and captures refined without counting</string>
+    <string name="pro_pitch_coming">Themes, app icons and calendar export as they land</string>
+    <string name="pro_quota">This month: %1$d of %2$d Ask turns · %3$d of %4$d captures and improvements</string>
     <string name="pro_trial_note">%1$d-day free trial, then %2$s</string>
     <string name="pro_yearly_note">Best value</string>
     <string name="pro_lifetime_note">Pay once. Hosted AI capped at 50 Ask turns a month.</string>

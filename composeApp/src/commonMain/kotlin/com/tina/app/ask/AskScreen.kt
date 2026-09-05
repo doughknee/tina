@@ -95,6 +95,7 @@ import com.tina.app.resources.ask_thinking
 import com.tina.app.resources.ask_write_off
 import com.tina.app.resources.ask_write_on
 import com.tina.app.resources.delete
+import com.tina.app.resources.ai_provider_hosted
 import com.tina.app.resources.tab_ask
 import com.tina.app.resources.undo
 import com.tina.app.ui.relativeAge
@@ -144,11 +145,13 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
             Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val modelLabel = if (settings.aiProvider == AiProvider.ANTHROPIC) {
-                ANTHROPIC_MODELS.firstOrNull { it.id == viewModel.effectiveModel(settings.aiModel) }?.label
-                    ?: viewModel.effectiveModel(settings.aiModel)
-            } else {
-                stringResource(Res.string.tab_ask)
+            val modelLabel = when (settings.aiProvider) {
+                AiProvider.ANTHROPIC ->
+                    ANTHROPIC_MODELS.firstOrNull { it.id == viewModel.effectiveModel(settings.aiModel) }?.label
+                        ?: viewModel.effectiveModel(settings.aiModel)
+                // the relay picks the model, so the picker stays closed and the label says who answers
+                AiProvider.HOSTED -> stringResource(Res.string.ai_provider_hosted)
+                else -> stringResource(Res.string.tab_ask)
             }
             Box(Modifier.weight(1f)) {
                 TextButton(
