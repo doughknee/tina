@@ -17,7 +17,8 @@ const env = {
   PACKAGE_NAME: "com.peggy.app",
   ANTHROPIC_API_KEY: "sk-relay",
   PLAY_SA_EMAIL: "sa@example.iam.gserviceaccount.com",
-  PLAY_SA_KEY: PEM,
+  // as it arrives when the JSON value is pasted into `wrangler secret put`: quoted, newlines escaped
+  PLAY_SA_KEY: JSON.stringify(PEM),
   RTDN_SECRET: "s3cret",
   DEV_TOKEN: "dev-token",
 };

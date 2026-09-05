@@ -52,9 +52,10 @@ One-time, in this order:
    service account. In Play Console → Users and permissions, invite the service-account
    email with **View financial data** on the Peggy app. Download its JSON key.
 3. **Secrets**: `npx wrangler secret put` for `ANTHROPIC_API_KEY`, `PLAY_SA_EMAIL`,
-   `PLAY_SA_KEY` (the `private_key` field, PEM text with the newlines), `RTDN_SECRET`
+   `PLAY_SA_KEY` (the `private_key` field pasted as-is; escaped `\n` and quotes are fine), `RTDN_SECRET`
    (any long random string).
-4. `npx wrangler deploy`. Note the `*.workers.dev` URL, or route a custom domain.
+4. `npx wrangler deploy`. `wrangler.toml` routes it at `relay.doughknee.com`, a custom domain on the
+   site's own zone, so deploy creates the DNS record and certificate; no `workers.dev` needed.
 5. **Revocation**: Play Console → Monetization setup → Real-time developer notifications.
    Create a Pub/Sub topic in the same Google Cloud project, add a **push** subscription with
    endpoint `https://<relay>/rtdn?secret=<RTDN_SECRET>`, and grant
@@ -62,7 +63,7 @@ One-time, in this order:
    Until this is wired, a refund or cancellation is honoured within six hours (the cache TTL)
    instead of immediately.
 
-Then point `HOSTED_RELAY_URL` in the app at the deployed URL.
+`HOSTED_RELAY_URL` in the app already points there.
 
 ## What it deliberately does not do
 
