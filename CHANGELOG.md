@@ -2,7 +2,7 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## Unreleased
+## v1.9.1 (internal testing, 2026-09-05)
 
 ### Ask
 - Answers appear as they are written instead of after a wait.
