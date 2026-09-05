@@ -142,6 +142,7 @@
     <string name="ai_provider_anthropic">Claude</string>
     <string name="ai_provider_openai">OpenAI</string>
     <string name="ai_provider_custom">Custom</string>
+    <string name="ai_provider_hosted">Peggy Pro</string>
     <string name="ai_base_url">Base URL</string>
     <string name="ai_model">Model</string>
     <string name="ai_api_key">API key</string>
@@ -469,6 +470,7 @@
     <string name="ask_error_unauthorized">The API key was rejected. Check it in Settings → Parsing &amp; AI.</string>
     <string name="ask_error_not_found">The model or endpoint wasn’t found. Check the model name and URL.</string>
     <string name="ask_error_rate_limited">The provider is rate-limiting. Try again in a minute.</string>
+    <string name="ask_error_quota">This month’s hosted AI is used up. It resets next month, or add your own key in Settings → Parsing &amp; AI.</string>
     <string name="ask_error_server">The provider had an error. Try again.</string>
     <string name="ask_error_bad_reply">The model answered in a shape Peggy couldn’t read. Try again.</string>
     <string name="ask_retry">Retry</string>

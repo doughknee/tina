@@ -234,7 +234,7 @@ materially improve the item; keep options short (2-4 words).
     suspend fun suggest(item: Item): ImprovePatch? {
         val tz = TimeZone.currentSystemDefault()
         val now = kotlin.time.Clock.System.now().toLocalDateTime(tz)
-        val text = parser.complete(basePrompt(item, now, tz)) ?: return null
+        val text = parser.complete(basePrompt(item, now, tz), route = "improve") ?: return null
         return parseImprovePatch(text, item)
     }
 
@@ -246,7 +246,7 @@ materially improve the item; keep options short (2-4 words).
         val prompt = basePrompt(item, now, tz) +
             "\n\nThe user answered your questions:\n$answerBlock\n" +
             "Now return the final JSON change-set. Do not include \"questions\"."
-        val text = parser.complete(prompt) ?: return null
+        val text = parser.complete(prompt, route = "improve") ?: return null
         return parseImprovePatch(text, item)?.copy(questions = emptyList())
     }
 }

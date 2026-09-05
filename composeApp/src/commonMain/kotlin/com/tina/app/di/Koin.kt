@@ -34,9 +34,9 @@ val commonModule = module {
         com.tina.app.data.BackupService(db, db.itemDao(), db.occurrenceDao(), db.chatDao(), get())
     }
     single { SettingsRepository(get(), get()) }
-    single { AiCaptureParser(get(), get(), get()) }
+    single { AiCaptureParser(get(), get(), get(), get()) }
     single { com.tina.app.ai.AiImprover(get(), get()) }
-    single { com.tina.app.ai.AiChat(get(), get(), get()) }
+    single { com.tina.app.ai.AiChat(get(), get(), get(), get()) }
     single { get<com.tina.app.data.AppDatabase>().chatDao() }
     single { com.tina.app.data.OccurrenceRepository(get<com.tina.app.data.AppDatabase>().occurrenceDao()) }
     viewModelOf(::AskViewModel)

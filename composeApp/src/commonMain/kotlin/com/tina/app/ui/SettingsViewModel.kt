@@ -58,6 +58,7 @@ class SettingsViewModel(
                 AiProvider.ANTHROPIC -> "" to ANTHROPIC_DEFAULT_MODEL
                 AiProvider.OPENAI -> OPENAI_DEFAULT_BASE_URL to ""
                 AiProvider.CUSTOM -> "" to null
+                AiProvider.HOSTED -> "" to ""  // the relay picks the model and the URL is fixed
                 AiProvider.OFF -> null to null
             }
             repository.setAiProviderApplyingDefaults(provider, baseUrl, model)

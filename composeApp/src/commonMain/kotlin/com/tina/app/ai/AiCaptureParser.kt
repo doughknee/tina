@@ -138,19 +138,21 @@ class AiCaptureParser(
     private val http: HttpClient,
     private val settingsRepository: SettingsRepository,
     private val network: com.tina.app.data.NetworkStatus,
+    private val proStore: com.tina.app.pro.ProStore,
 ) {
     /** Wi-Fi only holds cloud calls off metered connections; Ollama is on your own network. */
     private fun blockedByMeteredNetwork(settings: Settings): Boolean =
         settings.aiWifiOnly && settings.aiProvider != AiProvider.OLLAMA && !network.isUnmetered
 
     /** One best-effort completion against whichever provider is configured. Null on any failure. */
-    suspend fun complete(prompt: String): String? {
+    suspend fun complete(prompt: String, route: String = "parse"): String? {
         val settings = settingsRepository.settings.first()
-        if (settings.aiProvider == AiProvider.OFF || settings.aiModel.isBlank()) return null
+        if (settings.aiProvider == AiProvider.OFF) return null
+        if (settings.aiProvider != AiProvider.HOSTED && settings.aiModel.isBlank()) return null
         if (blockedByMeteredNetwork(settings)) return null
         return runCatching {
             when (settings.aiProvider) {
-                AiProvider.ANTHROPIC -> anthropicComplete(settings, prompt)
+                AiProvider.ANTHROPIC, AiProvider.HOSTED -> anthropicComplete(settings, prompt, route)
                 else -> openAiComplete(settings, prompt)
             }
         }.getOrNull()
@@ -166,11 +168,11 @@ class AiCaptureParser(
     suspend fun testConnection(now: LocalDateTime, firstDayOfWeek: DayOfWeek): String? {
         val settings = settingsRepository.settings.first()
         if (settings.aiProvider == AiProvider.OFF) return "provider off"
-        if (settings.aiModel.isBlank()) return "no model set"
+        if (settings.aiProvider != AiProvider.HOSTED && settings.aiModel.isBlank()) return "no model set"
         val prompt = buildParsePrompt("lunch with sam tomorrow at noon", now, firstDayOfWeek)
         val text = try {
             when (settings.aiProvider) {
-                AiProvider.ANTHROPIC -> anthropicComplete(settings, prompt)
+                AiProvider.ANTHROPIC, AiProvider.HOSTED -> anthropicComplete(settings, prompt, "parse")
                 else -> openAiComplete(settings, prompt)
             }
         } catch (e: Throwable) {
@@ -216,10 +218,13 @@ class AiCaptureParser(
             ?.jsonObject?.get("message")?.jsonObject?.get("content")?.jsonPrimitive?.content
     }
 
-    private suspend fun anthropicComplete(settings: Settings, prompt: String): String? {
-        val baseUrl = settings.aiBaseUrl.ifBlank { ANTHROPIC_DEFAULT_BASE_URL }.trimEnd('/')
+    private suspend fun anthropicComplete(settings: Settings, prompt: String, route: String): String? {
+        val relay = if (settings.aiProvider == AiProvider.HOSTED) {
+            relayHeaders(proStore.entitlement.value, route) ?: error("HTTP 403: not Pro")
+        } else null
+        val baseUrl = if (relay != null) HOSTED_RELAY_URL else settings.aiBaseUrl.ifBlank { ANTHROPIC_DEFAULT_BASE_URL }.trimEnd('/')
         val body = buildJsonObject {
-            put("model", settings.aiModel)
+            put("model", if (relay != null) HOSTED_MODEL_PLACEHOLDER else settings.aiModel)
             put("max_tokens", 1024)
             put("messages", buildJsonArray {
                 add(buildJsonObject {
@@ -230,11 +235,15 @@ class AiCaptureParser(
         }
         val response = http.post("$baseUrl/v1/messages") {
             contentType(ContentType.Application.Json)
-            header("x-api-key", settings.aiApiKey.trim())
             header("anthropic-version", "2023-06-01")
-            // multi-workspace identity-linked keys must name their target workspace
-            settings.aiWorkspaceId.trim().takeIf { it.isNotEmpty() }?.let {
-                header("anthropic-workspace-id", it)
+            if (relay != null) {
+                relay.forEach { (k, v) -> header(k, v) }
+            } else {
+                header("x-api-key", settings.aiApiKey.trim())
+                // multi-workspace identity-linked keys must name their target workspace
+                settings.aiWorkspaceId.trim().takeIf { it.isNotEmpty() }?.let {
+                    header("anthropic-workspace-id", it)
+                }
             }
             setBody(body.toString())
         }

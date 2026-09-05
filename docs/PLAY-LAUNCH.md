@@ -4,15 +4,15 @@ Everything needed to go from a sideloaded APK to a production listing. Items mar
 
 ## 1. Account and policy (owner)
 
-- [ ] Developer profile verified, payments profile created, tax info submitted.
+- [x] Developer profile verified, payments profile created, tax info submitted.
 - [ ] Enrol in the 15% service-fee tier (Play Console → Monetization setup) before the first sale.
-- [ ] Create the app: name **Peggy**, default language en-US, app (not game), free with in-app purchases.
-- [ ] Declarations: Ads = none; News app = no; COVID = no; Government app = no; Financial features = none; Health = none.
-- [ ] Target audience: 13+ (not designed for children). Content rating questionnaire → Everyone.
-- [ ] Data Safety form: use section 4 below verbatim.
-- [ ] Privacy policy URL: `https://doughknee.com/peggy/privacy/` (the page is generated into `site/` from `docs/PRIVACY.md`; publish `site/` at doughknee.com).
-- [ ] Permission declaration for `USE_EXACT_ALARM`: use section 5 below.
-- [ ] Play App Signing: accept Google-managed signing on first upload. Rotate the local keystore password first (it is in the README history) and keep the upload key outside the repo.
+- [x] Create the app: name **Peggy**, default language en-US, app (not game), free with in-app purchases.
+- [x] Declarations: Ads = none; News app = no; COVID = no; Government app = no; Financial features = none; Health = none.
+- [x] Target audience: 13+ (not designed for children). Content rating questionnaire → Everyone.
+- [x] Data Safety form: use section 4 below verbatim.
+- [x] Privacy policy URL: `https://doughknee.com/peggy/privacy/` (the page is generated into `site/` from `docs/PRIVACY.md`; publish `site/` at doughknee.com).
+- [x] Permission declaration for `USE_EXACT_ALARM`: use section 5 below.
+- [x] Play App Signing: accept Google-managed signing on first upload. Rotate the local keystore password first (it is in the README history) and keep the upload key outside the repo.
 - [ ] Set up Real-time Developer Notifications (Pub/Sub topic) when subscriptions ship in v1.9.
 
 ## 2. Testing tracks and timeline

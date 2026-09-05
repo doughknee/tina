@@ -73,6 +73,7 @@ import com.tina.app.resources.ask_error_no_model
 import com.tina.app.resources.ask_error_not_found
 import com.tina.app.resources.ask_error_off
 import com.tina.app.resources.ask_error_rate_limited
+import com.tina.app.resources.ask_error_quota
 import com.tina.app.resources.ask_error_server
 import com.tina.app.resources.ask_error_unauthorized
 import com.tina.app.resources.ask_not_now
@@ -307,6 +308,7 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
                                         com.tina.app.ai.AiError.UNAUTHORIZED -> Res.string.ask_error_unauthorized
                                         com.tina.app.ai.AiError.NOT_FOUND -> Res.string.ask_error_not_found
                                         com.tina.app.ai.AiError.RATE_LIMITED -> Res.string.ask_error_rate_limited
+                                        com.tina.app.ai.AiError.QUOTA -> Res.string.ask_error_quota
                                         com.tina.app.ai.AiError.SERVER -> Res.string.ask_error_server
                                         com.tina.app.ai.AiError.NETWORK -> Res.string.ask_error
                                         com.tina.app.ai.AiError.BAD_REPLY -> Res.string.ask_error_bad_reply

@@ -126,6 +126,7 @@ class AiChat(
     private val http: HttpClient,
     private val settingsRepository: SettingsRepository,
     private val network: com.tina.app.data.NetworkStatus,
+    private val proStore: com.tina.app.pro.ProStore,
 ) {
     /** The reply text; throws [AiException] with the reason the user can act on. */
     suspend fun chat(
@@ -135,13 +136,14 @@ class AiChat(
     ): String {
         val settings = settingsRepository.settings.first()
         if (settings.aiProvider == AiProvider.OFF) throw AiException(AiError.OFF)
-        val model = modelOverride ?: settings.aiModel
+        val hosted = settings.aiProvider == AiProvider.HOSTED
+        val model = if (hosted) HOSTED_MODEL_PLACEHOLDER else modelOverride ?: settings.aiModel
         if (model.isBlank()) throw AiException(AiError.NO_MODEL)
         // Wi-Fi only: hold cloud chat off metered connections
         if (settings.aiWifiOnly && settings.aiProvider != AiProvider.OLLAMA && !network.isUnmetered) throw AiException(AiError.METERED)
         val text = try {
             when (settings.aiProvider) {
-                AiProvider.ANTHROPIC -> anthropic(settings, model, system, messages)
+                AiProvider.ANTHROPIC, AiProvider.HOSTED -> anthropic(settings, model, system, messages)
                 else -> openAi(settings, model, system, messages)
             }
         } catch (e: AiException) {
@@ -200,7 +202,10 @@ class AiChat(
         system: String,
         messages: List<ChatMessage>,
     ): String? {
-        val baseUrl = settings.aiBaseUrl.ifBlank { ANTHROPIC_DEFAULT_BASE_URL }.trimEnd('/')
+        val relay = if (settings.aiProvider == AiProvider.HOSTED) {
+            relayHeaders(proStore.entitlement.value, "ask") ?: throw AiException(AiError.UNAUTHORIZED, "not Pro")
+        } else null
+        val baseUrl = if (relay != null) HOSTED_RELAY_URL else settings.aiBaseUrl.ifBlank { ANTHROPIC_DEFAULT_BASE_URL }.trimEnd('/')
         val body = buildJsonObject {
             put("model", model)
             put("max_tokens", 4096)
@@ -216,14 +221,21 @@ class AiChat(
         }
         val response = http.post("$baseUrl/v1/messages") {
             contentType(ContentType.Application.Json)
-            header("x-api-key", settings.aiApiKey.trim())
             header("anthropic-version", "2023-06-01")
-            settings.aiWorkspaceId.trim().takeIf { it.isNotEmpty() }?.let {
-                header("anthropic-workspace-id", it)
+            if (relay != null) {
+                relay.forEach { (k, v) -> header(k, v) }
+            } else {
+                header("x-api-key", settings.aiApiKey.trim())
+                settings.aiWorkspaceId.trim().takeIf { it.isNotEmpty() }?.let {
+                    header("anthropic-workspace-id", it)
+                }
             }
             setBody(body.toString())
         }
-        if (!response.status.isSuccess()) throw AiException(aiErrorFor(response.status.value), response.bodyAsText().take(200))
+        if (!response.status.isSuccess()) {
+            val text = response.bodyAsText()
+            throw AiException(aiErrorFor(response.status.value, text), text.take(200))
+        }
         val payload = chatJson.parseToJsonElement(response.bodyAsText()).jsonObject
         return payload["content"]?.jsonArray
             ?.firstOrNull { it.jsonObject["type"]?.jsonPrimitive?.content == "text" }

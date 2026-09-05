@@ -119,6 +119,7 @@ import com.tina.app.resources.ai_no_key
 import com.tina.app.resources.ai_privacy_note
 import com.tina.app.resources.ai_provider_anthropic
 import com.tina.app.resources.ai_provider_custom
+import com.tina.app.resources.ai_provider_hosted
 import com.tina.app.resources.ai_provider_off
 import com.tina.app.resources.ai_provider_ollama
 import com.tina.app.resources.ai_provider_openai
@@ -702,7 +703,9 @@ private fun rememberSettingsSections(
         stringResource(Res.string.ai_provider_anthropic),
         stringResource(Res.string.ai_provider_openai),
         stringResource(Res.string.ai_provider_custom),
+        stringResource(Res.string.ai_provider_hosted),
     )
+    val isPro = com.tina.app.pro.rememberIsPro()
     val refineLabels = listOf(
         stringResource(Res.string.refine_auto),
         stringResource(Res.string.refine_suggest),
@@ -1046,7 +1049,12 @@ private fun rememberSettingsSections(
                 keywords = listOf("ollama", "claude", "openai", "model", "llm"),
                 options = providerLabels,
                 selectedIndex = AiProvider.entries.indexOf(settings.aiProvider),
-                onSelect = { viewModel.setAiProvider(AiProvider.entries[it]) },
+                onSelect = {
+                    val chosen = AiProvider.entries[it]
+                    // hosted AI is the Pro feature; the paywall explains it instead of a dead chip
+                    if (chosen == AiProvider.HOSTED && !isPro) onNavigate(SettingsDestination.PRO)
+                    else viewModel.setAiProvider(chosen)
+                },
             ),
             SettingsRow.ButtonGroupRow(
                 id = "refinement",
@@ -1079,7 +1087,7 @@ private fun rememberSettingsSections(
                 id = "aiConfig",
                 title = stringResource(Res.string.ai_model),
                 keywords = listOf("api key", "base url", "endpoint", "workspace"),
-                visible = settings.aiProvider != AiProvider.OFF,
+                visible = settings.aiProvider != AiProvider.OFF && settings.aiProvider != AiProvider.HOSTED,
                 content = { AiConfigCollapse(settings, viewModel, snackbarHostState) },
             ),
         ),

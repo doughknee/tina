@@ -32,6 +32,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 
 private val KEY_PRO_PLAN = stringPreferencesKey("proPlan")
+private val KEY_PRO_TOKEN = stringPreferencesKey("proToken")
 private val TRIAL_PERIOD = Regex("P(\\d+)([DW])")
 private const val CONNECT_TIMEOUT_MS = 8_000L
 private const val TAG = "tina.pro"
@@ -69,7 +70,10 @@ class PlayProStore(
                 return@launch
             }
             // the cache first, so a Pro user with no signal is still Pro
-            store.data.first()[KEY_PRO_PLAN]?.let(ProPlan::fromProductId)?.let { entitlement.value = Entitlement.Pro(it) }
+            val prefs = store.data.first()
+            prefs[KEY_PRO_PLAN]?.let(ProPlan::fromProductId)?.let {
+                entitlement.value = Entitlement.Pro(it, prefs[KEY_PRO_TOKEN] ?: "")
+            }
             val connected = connect()
             Log.d(TAG, "connected=$connected")
             if (connected) {
@@ -134,6 +138,7 @@ class PlayProStore(
         // a failed read keeps the cache; only a successful "nothing" revokes
         if (subs.billingResult.responseCode != ok || inapp.billingResult.responseCode != ok) return
         var plan: ProPlan? = null
+        var token = ""
         var waiting = false
         for (purchase in subs.purchasesList + inapp.purchasesList) {
             when (purchase.purchaseState) {
@@ -143,7 +148,11 @@ class PlayProStore(
                             AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build(),
                         )
                     }
-                    purchase.products.mapNotNull(ProPlan::fromProductId).forEach { plan = better(plan, it) }
+                    purchase.products.mapNotNull(ProPlan::fromProductId).forEach {
+                        val chosen = better(plan, it)
+                        if (chosen !== plan) token = purchase.purchaseToken
+                        plan = chosen
+                    }
                 }
                 Purchase.PurchaseState.PENDING -> waiting = true
             }
@@ -151,8 +160,16 @@ class PlayProStore(
         pending.value = waiting
         Log.d(TAG, "purchases plan=$plan pending=$waiting")
         val found = plan
-        entitlement.value = found?.let { Entitlement.Pro(it) } ?: Entitlement.Free
-        store.edit { if (found == null) it.remove(KEY_PRO_PLAN) else it[KEY_PRO_PLAN] = found.productId }
+        entitlement.value = found?.let { Entitlement.Pro(it, token) } ?: Entitlement.Free
+        store.edit {
+            if (found == null) {
+                it.remove(KEY_PRO_PLAN)
+                it.remove(KEY_PRO_TOKEN)
+            } else {
+                it[KEY_PRO_PLAN] = found.productId
+                it[KEY_PRO_TOKEN] = token
+            }
+        }
     }
 
     /** Lifetime beats a subscription; between subscriptions the longer one is what the user sees. */

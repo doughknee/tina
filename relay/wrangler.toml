@@ -1,0 +1,18 @@
+name = "peggy-relay"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+PACKAGE_NAME = "com.peggy.app"
+
+# Created with `npx wrangler kv namespace create KV`; paste the id it prints.
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_KV_ID"
+
+# Secrets, set with `npx wrangler secret put <NAME>` (never in this file):
+#   ANTHROPIC_API_KEY   the relay's own key, billed to the Peggy account
+#   PLAY_SA_EMAIL       service account email with "View financial data" on the Play app
+#   PLAY_SA_KEY         that account's private_key from its JSON, PEM text
+#   RTDN_SECRET         random string; Pub/Sub pushes to /rtdn?secret=<it>
+#   DEV_TOKEN           optional; a fake purchase token that is always Pro, for `wrangler dev`

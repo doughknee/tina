@@ -466,3 +466,18 @@ Five read-only audits (`docs/audits/`) fed a roadmap (`docs/ROADMAP.md`), a mone
 - The editor had six: every format-toolbar button was 40dp. They are 48dp now and the row scrolls, because nine 48dp targets do not fit a phone's width.
 - Every screen still reports one "Unsupported item type" against the whole window. That is Scanner not understanding a Compose root, not a defect; it appears on every Compose app.
 
+### Hosted AI is the Anthropic client pointed at a relay (v1.9)
+
+- The relay (`relay/`) is a Cloudflare Worker that speaks the Anthropic Messages API. The app's
+  existing Anthropic path is the relay client: `AiProvider.HOSTED` swaps the base URL for the
+  relay and sends the Play purchase token as `x-api-key`, plus `x-peggy-product` and
+  `x-peggy-route`. No new client, no new wire format, and desktop simply has no token.
+- The relay pins the model per route (Sonnet for Ask, Haiku for parse and improve), whatever the
+  client sends, and counts a monthly quota per token in KV: 400 Ask turns on a subscription, 50
+  on lifetime, 3000 light calls for both. Over quota is a 429 with `quota_exceeded`, which the app
+  maps to `AiError.QUOTA` and its own message, distinct from a provider rate limit.
+- Purchase verification is Play's `subscriptionsv2` / `products` API with a service account,
+  cached six hours; a Pub/Sub push to `/rtdn` drops the cache so a refund is honoured at once.
+  `Entitlement.Pro` gained the token, cached alongside the plan so an offline Pro user still has it.
+- Quota counting is read-then-write, not atomic. That is one phone; a Durable Object is the upgrade.
+

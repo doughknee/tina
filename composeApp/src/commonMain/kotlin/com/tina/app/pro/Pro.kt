@@ -24,7 +24,8 @@ sealed interface Entitlement {
     data object Free : Entitlement
 
     /** A free trial is an active subscription as far as the store is concerned; Play ends it. */
-    data class Pro(val plan: ProPlan) : Entitlement
+    /** [token] is the Play purchase token; it is what the relay verifies for hosted AI. */
+    data class Pro(val plan: ProPlan, val token: String = "") : Entitlement
 }
 
 /** One plan as the store prices it for this account, e.g. "$3.99", with the trial its offer carries. */
