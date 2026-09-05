@@ -26,7 +26,8 @@ enum class ContrastMode { STANDARD, MEDIUM, HIGH }
 
 enum class TrashRetention(val days: Int?) { DAYS_7(7), DAYS_30(30), FOREVER(null) }
 
-enum class AiProvider { OFF, OLLAMA, ANTHROPIC, OPENAI, CUSTOM, HOSTED }
+/** Persisted by name, so the order here is only the order of the chips in Settings. */
+enum class AiProvider { OFF, HOSTED, OLLAMA, ANTHROPIC, OPENAI, CUSTOM }
 
 /** AUTO applies refinements silently, SUGGEST computes but waits for the user, MANUAL only runs on demand. */
 enum class AiRefineMode { AUTO, SUGGEST, MANUAL }

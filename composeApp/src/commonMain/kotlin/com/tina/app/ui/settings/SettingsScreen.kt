@@ -703,11 +703,11 @@ private fun rememberSettingsSections(
     }
     val providerLabels = listOf(
         stringResource(Res.string.ai_provider_off),
+        stringResource(Res.string.ai_provider_hosted),
         stringResource(Res.string.ai_provider_ollama),
         stringResource(Res.string.ai_provider_anthropic),
         stringResource(Res.string.ai_provider_openai),
         stringResource(Res.string.ai_provider_custom),
-        stringResource(Res.string.ai_provider_hosted),
     )
     val isPro = com.tina.app.pro.rememberIsPro()
     val refineLabels = listOf(
@@ -1050,7 +1050,7 @@ private fun rememberSettingsSections(
                 id = "provider",
                 title = stringResource(Res.string.set_provider),
                 supporting = stringResource(Res.string.set_provider_sub),
-                keywords = listOf("ollama", "claude", "openai", "model", "llm"),
+                keywords = listOf("ollama", "claude", "openai", "peggy pro", "hosted", "model", "llm"),
                 options = providerLabels,
                 selectedIndex = AiProvider.entries.indexOf(settings.aiProvider),
                 onSelect = {
@@ -1278,7 +1278,7 @@ private fun rememberSettingsSections(
                     is com.tina.app.pro.Entitlement.Pro -> stringResource(Res.string.pro_plan_active, current.plan.label())
                     com.tina.app.pro.Entitlement.Free -> stringResource(Res.string.pro_plan_free)
                 },
-                keywords = listOf("subscription", "upgrade", "premium", "trial", "purchase"),
+                keywords = listOf("subscription", "upgrade", "premium", "trial", "purchase", "hosted ai", "export"),
                 onClick = { onNavigate(SettingsDestination.PRO) },
             ),
         ),
