@@ -87,8 +87,8 @@ android {
         applicationId = "com.peggy.app"
         minSdk = 31
         targetSdk = 36
-        versionCode = 20
-        versionName = "1.9.3"
+        versionCode = 21
+        versionName = "1.9.4"
         // the maintainer's own builds are Pro without a purchase: tina.proOverride=true in local.properties
         val local = Properties().apply {
             rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }

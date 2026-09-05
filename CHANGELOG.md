@@ -2,7 +2,7 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
-## Unreleased
+## v1.9.4 (internal testing, 2026-09-05)
 
 ### Peggy Pro
 - App icons: Settings → Appearance → App icon offers the same eight colours as the theme; the home-screen icon changes in place, no reinstall.
