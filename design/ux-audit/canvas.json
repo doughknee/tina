@@ -1,0 +1,86 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Sort A \u00b7 one row, as promised",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SortB.dc.html",
+      "title": "Sort B \u00b7 when, then done/drop",
+      "x": 490,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "RemindersA.dc.html",
+      "title": "Reminders A \u00b7 card with Not now",
+      "x": 0,
+      "y": 1004,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "RemindersA2.dc.html",
+      "title": "Reminders A \u00b7 after Not now",
+      "x": 490,
+      "y": 1004,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "RemindersB.dc.html",
+      "title": "Reminders B \u00b7 ask at the first timed capture",
+      "x": 980,
+      "y": 1004,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "OnboardingA.dc.html",
+      "title": "Onboarding A \u00b7 one live screen",
+      "x": 0,
+      "y": 2008,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "OnboardingB.dc.html",
+      "title": "Onboarding B \u00b7 three cards, first one live",
+      "x": 490,
+      "y": 2008,
+      "w": 390,
+      "h": 844
+    }
+  ],
+  "annotations": [
+    {
+      "id": "sort-note",
+      "x": 980,
+      "y": 0,
+      "w": 300,
+      "text": "SORT\nToday the rail is Today \u00b7 Someday \u00b7 Tomorrow \u00b7 This week \u00b7 Event \u00b7 Note, scrolling, with no Done and no Drop. Onboarding promises Today, Done, Keep, Drop.\n\nA: one row. Three dates plus Done and Drop as icons. Nothing scrolls; type changes live behind the chevron. Tradeoff: no This week.\n\nB: every answer visible on two lines. Tradeoff: taller cards, fewer per screen.\n\nEither way: one name. The tab says Sort, the sheet and Details say Inbox. Sort everywhere."
+    },
+    {
+      "id": "rem-note",
+      "x": 1470,
+      "y": 1004,
+      "w": 300,
+      "text": "REMINDERS\nToday the card is the third onboarding screen and then sits above every day, forever.\n\nA: the card names the item that needs it and has Not now. After Not now it collapses to one quiet line, gone once granted.\n\nB: no card at all. The first time something is saved with a time, one snackbar asks. Tradeoff: a user who never types a time is never asked, which is correct."
+    },
+    {
+      "id": "onb-note",
+      "x": 980,
+      "y": 2008,
+      "w": 300,
+      "text": "ONBOARDING\nToday: three passive cards, then Start capturing lands on an empty page with the keyboard down.\n\nA: one screen with the real bar, prefilled, chips live. Retype it, see it change, start. The Sort and Reminders cards go: Sort explains itself the first time something has no date, reminders are asked for per B.\n\nB: keep three cards but make the first one live. Safer, longer."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
