@@ -122,23 +122,120 @@ find_ask = page(
     EXTRA,
 )
 
+# ---- v2 · the Peggy tab, and every overlay given a page ----------------------------------
+V2_CSS = """
+    .procard { margin: 16px 16px 0 16px; padding: 16px; border-radius: 20px; background: #475d92; color: #fff; }
+    .procard .h { font-size: 18px; font-weight: 500; } .procard .b { font-size: 14px; line-height: 20px; opacity: .9; margin-top: 4px; }
+    .procard .cta { margin-top: 12px; display: inline-block; background: #fff; color: #475d92; border-radius: 20px; padding: 10px 18px; font-weight: 500; font-size: 14px; }
+    .procard .fine { font-size: 12px; opacity: .8; margin-top: 8px; }
+    .ex { margin: 6px 16px 0 16px; padding: 12px 14px; border-radius: 12px; background: #f4f3fa; font-size: 15px; display: flex; gap: 12px; align-items: center; color: #1a1b20; }
+    .ex .s { color: #475d92; display: flex; }
+    .newrow { margin: 12px 16px 0 16px; padding: 10px 8px 10px 14px; border-radius: 12px; background: #eeedf4; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #44464f; }
+    .newrow b { color: #1a1b20; font-weight: 500; } .newrow .go { margin-left: auto; color: #475d92; display: flex; }
+    .kv { display: flex; justify-content: space-between; padding: 14px 16px; font-size: 15px; } .kv span:last-child { color: #44464f; }
+    .imp { margin: 12px 16px 0 16px; padding: 14px 16px; border-radius: 16px; background: #dae2ff; color: #001a41; }
+    .imp .t { font-weight: 500; font-size: 15px; display: flex; gap: 8px; align-items: center; } .imp .m { font-size: 14px; line-height: 20px; margin-top: 6px; }
+    .plan { margin: 12px 16px 0 16px; padding: 16px; border-radius: 16px; border: 1px solid #c4c6d0; display: flex; justify-content: space-between; align-items: center; }
+    .plan.sel { border: 2px solid #475d92; background: #f4f3fa; }
+    .plan .n { font-size: 16px; font-weight: 500; } .plan .d { font-size: 13px; color: #44464f; margin-top: 2px; } .plan .p { font-size: 18px; font-weight: 500; }
+"""
+
+def nav_peggy(selected):
+    items = [("Plan", "cal"), ("Peggy", "sparkle"), ("Ideas", "lines")]
+    out = ['<div class="nav">']
+    for name, icon in items:
+        cls = ' class="sel"' if name == selected else ""
+        out.append(f'<div{cls}><div class="ind">{SVG[icon]}</div><span>{name}</span></div>')
+    out.append("</div>")
+    return "".join(out)
+
+def peggy_top(sub):
+    return f'<div class="top"><div><div class="h1">Peggy</div><div class="sub">{sub}</div></div><div class="icons">{SVG["gear"]}</div></div>'
+
+# 6 · the Peggy tab for a free user: search works, asking is the pitch, no popup
+peggy_free = page(
+    peggy_top("Search your plans, or ask")
+    + f'<div class="field">{SVG["search"]}<div class="ph">Ask or search</div></div>'
+    + '<div class="section">Try asking</div>'
+    + ''.join(f'<div class="ex"><div class="s">{SVG["sparkle"]}</div>{q}</div>' for q in ["What’s left this week?", "When am I free on Thursday?", "What have I been putting off?"])
+    + '<div class="procard"><div class="h">Peggy Pro answers from your plans</div><div class="b">Ask in plain words, get an answer that knows your week. Plus colour themes, icons and calendar export.</div><div class="cta">Try free for 7 days</div><div class="fine">then $29.99 a year, or $3.99 a month · cancel any time</div></div>'
+    + bar() + nav_peggy("Peggy"),
+    EXTRA + V2_CSS,
+)
+
+# 7 · the Peggy tab for a Pro user, mid-ask: matches above, answer below, same field
+peggy_pro = page(
+    peggy_top("Peggy Pro · 388 asks left this month")
+    + f'<div class="field">{SVG["search"]}<div style="flex:1">what’s left this week</div>{SVG["close"]}</div>'
+    + '<div class="section">Matches</div><div class="card" style="gap:0;padding:4px 0">'
+    + f'<div class="res"><div class="ic"><div style="width:18px;height:18px;border:2px solid #44464f;border-radius:4px"></div></div><div><div class="t">renew passport</div><div class="m">needs a day</div></div></div>'
+    + "</div>"
+    + '<div class="section">Answer</div>'
+    + '<div class="bub-ai" style="margin:8px 16px 0 16px;max-width:none">Light until Thursday. Tomorrow you call the vet at 2 PM, Thursday is the dentist at 3 PM. Two things still need a day: <b>buy a new lamp</b> and <b>renew passport</b>.'
+    '<div class="chips" style="margin-top:10px"><div class="chip">Passport → Wednesday</div><div class="chip">Follow up</div></div></div>'
+    + bar() + nav_peggy("Peggy"),
+    EXTRA + V2_CSS,
+)
+
+# 8 · item detail with Improve inline: the AI rewrite stops being a sheet
+detail = page(
+    f'<div class="top" style="justify-content:flex-start;gap:8px"><div class="iconbtn">{SVG["back"]}</div><div class="h1" style="font-size:22px">call the vet</div></div>'
+    + '<div class="card" style="gap:0;padding:4px 0">'
+    + '<div class="kv"><span>When</span><span>Tomorrow · 2 PM</span></div><div class="kv"><span>Reminder</span><span>5 minutes before</span></div><div class="kv"><span>Repeat</span><span>Never</span></div><div class="kv"><span>Tags</span><span>#dog</span></div>'
+    + "</div>"
+    + f'<div class="imp"><div class="t">{SVG["sparkle"]} Peggy suggests</div><div class="m">Make it an event, 2–2:30 PM, and add “ask about flea treatment” from your Dog stuff note.</div>'
+    '<div class="chips" style="margin-top:10px"><div class="chip" style="background:#fff">Apply</div><div class="chip" style="background:#fff">Not this one</div></div></div>'
+    + '<div class="section">Notes</div><div class="card"><div class="meta" style="color:#74777f">Add a note…</div></div>',
+    EXTRA + V2_CSS,
+)
+
+# 9 · What's new as a row on Plan, not a popup
+plan_new = page(
+    plan_top().replace(SVG["search"], "")
+    + f'<div class="newrow">{SVG["sparkle"]}<span><b>New in 1.9.5</b> · Sort moved onto Plan</span><div class="go">{SVG["chev"]}</div></div>'
+    + f'<div class="need"><div class="n">3</div>need a day<div class="go">Decide {SVG["chev"]}</div></div>'
+    + '<div class="section">Afternoon</div><div class="card" style="gap:0;padding:0">' + item("call the vet", "2 PM") + "</div>"
+    + bar() + nav_peggy("Plan"),
+    EXTRA + V2_CSS,
+)
+
+# 10 · the paywall as a page you are taken to, with a back arrow, never a sheet
+paywall = page(
+    f'<div class="top" style="justify-content:flex-start;gap:8px"><div class="iconbtn">{SVG["back"]}</div><div class="h1" style="font-size:22px">Peggy Pro</div></div>'
+    + '<div class="sub" style="padding:0 16px 8px 16px;font-size:15px;line-height:22px">Ask Peggy about your week, 400 asks a month. Colour themes and app icons. Calendar export.</div>'
+    + '<div class="plan sel"><div><div class="n">Yearly</div><div class="d">7 days free, then $29.99 a year</div></div><div class="p">$2.50<span style="font-size:12px;color:#44464f">/mo</span></div></div>'
+    + '<div class="plan"><div><div class="n">Monthly</div><div class="d">Cancel any time</div></div><div class="p">$3.99</div></div>'
+    + '<div class="plan"><div><div class="n">Lifetime</div><div class="d">Pay once</div></div><div class="p">$49.99</div></div>'
+    + '<div style="padding:20px 16px 0 16px"><div class="filled" style="text-align:center;padding:14px;font-size:16px">Start free trial</div></div>'
+    + '<div class="meta" style="text-align:center;padding-top:10px">Billed by Google Play · Restore purchase</div>',
+    EXTRA + V2_CSS,
+)
+
 files = {
     "Main.dc.html": plan,
     "Sort.dc.html": sort_page,
     "FindEmpty.dc.html": find_empty,
     "FindTyping.dc.html": find_typing,
     "FindAsk.dc.html": find_ask,
+    "PeggyFree.dc.html": peggy_free,
+    "PeggyPro.dc.html": peggy_pro,
+    "Detail.dc.html": detail,
+    "PlanNew.dc.html": plan_new,
+    "Paywall.dc.html": paywall,
 }
-titles = ["Plan · with the Need-a-day row", "Need a day · pushed from Plan", "Find · empty", "Find · typing", "Find · asking"]
+titles = ["Plan · with the Need-a-day row", "Need a day · pushed from Plan", "Find · empty", "Find · typing", "Find · asking",
+          "v2 · Peggy tab, free", "v2 · Peggy tab, Pro", "v2 · Detail with Improve inline", "v2 · What’s new as a row", "v2 · Pro as a page"]
 for name, html in files.items():
     (HERE / name).write_text(html, encoding="utf-8")
 
 W, H, G = 390, 844, 90
 canvas = {
-    "artboards": [{"file": f, "title": t, "x": i * (W + G), "y": 0, "w": W, "h": H} for i, (f, t) in enumerate(zip(files, titles))],
+    "artboards": [{"file": f, "title": t, "x": (i % 5) * (W + G), "y": (i // 5) * (H + 220), "w": W, "h": H} for i, (f, t) in enumerate(zip(files, titles))],
     "annotations": [
         {"id": "shell", "x": 0, "y": -260, "w": 1000,
-         "text": "SHELL: Plan · Find · Ideas, and the bar.\n\nPlan stays as it is. The Sort tab becomes one row at the top of Plan, “3 need a day”, that opens the Sort page (New, Snoozed, Someday; Overdue is already on Plan). Find is one field for two jobs: results as you type, and an Ask Peggy row that turns the query into a conversation. Search and Ask stop being overlays. The bar does Plan and Idea only; Ask leaves the pill. Ideas is unchanged.\n\nGone from the shell: the Sort tab, the Search sheet, the Ask sheet, Ask mode in the bar, the “N to sort” card (the row replaces it)."},
+         "text": "v1 · SHELL: Plan · Find · Ideas, and the bar.\n\nPlan stays as it is. The Sort tab becomes one row at the top of Plan, “3 need a day”, that opens the Sort page (New, Snoozed, Someday; Overdue is already on Plan). Find is one field for two jobs: results as you type, and an Ask Peggy row that turns the query into a conversation. Search and Ask stop being overlays. The bar does Plan and Idea only; Ask leaves the pill. Ideas is unchanged.\n\nGone from the shell: the Sort tab, the Search sheet, the Ask sheet, Ask mode in the bar, the “N to sort” card (the row replaces it)."},
+        {"id": "v2", "x": 0, "y": H + 20, "w": 1100,
+         "text": "v2 · PRO ON THE NAV, NOTHING IN A POPUP\nThe middle tab is Peggy, not Find. Same field, two jobs: search is free and instant, asking is Pro. A free user sees example questions and the offer on the page itself; a Pro user gets matches and the answer under one field. Nothing opens as a sheet.\n\nWhere each overlay went:\n• Suggestions sheet → off by default; when on, a single chip row above the bar.\n• Ask sheet → the Peggy tab.\n• Search sheet → the Peggy tab (free half).\n• Improve sheet → a “Peggy suggests” block inside item detail.\n• Tag picker → tag chips inline in the editor.\n• Paywall sheet → a page with a back arrow, reached from the Peggy tab and Settings.\n• What’s new dialog → one row on Plan that opens a page.\n• Onboarding → the first-capture screen.\nThe bar keeps its chips row (it is the bar, not an overlay) and the Plan/Idea pill; the big toggle row goes."},
     ],
     "launch": {"view": "canvas"},
 }

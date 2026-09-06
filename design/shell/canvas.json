@@ -39,6 +39,46 @@
       "y": 0,
       "w": 390,
       "h": 844
+    },
+    {
+      "file": "PeggyFree.dc.html",
+      "title": "v2 \u00b7 Peggy tab, free",
+      "x": 0,
+      "y": 1064,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "PeggyPro.dc.html",
+      "title": "v2 \u00b7 Peggy tab, Pro",
+      "x": 480,
+      "y": 1064,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Detail.dc.html",
+      "title": "v2 \u00b7 Detail with Improve inline",
+      "x": 960,
+      "y": 1064,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "PlanNew.dc.html",
+      "title": "v2 \u00b7 What\u2019s new as a row",
+      "x": 1440,
+      "y": 1064,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Paywall.dc.html",
+      "title": "v2 \u00b7 Pro as a page",
+      "x": 1920,
+      "y": 1064,
+      "w": 390,
+      "h": 844
     }
   ],
   "annotations": [
@@ -47,7 +87,14 @@
       "x": 0,
       "y": -260,
       "w": 1000,
-      "text": "SHELL: Plan \u00b7 Find \u00b7 Ideas, and the bar.\n\nPlan stays as it is. The Sort tab becomes one row at the top of Plan, \u201c3 need a day\u201d, that opens the Sort page (New, Snoozed, Someday; Overdue is already on Plan). Find is one field for two jobs: results as you type, and an Ask Peggy row that turns the query into a conversation. Search and Ask stop being overlays. The bar does Plan and Idea only; Ask leaves the pill. Ideas is unchanged.\n\nGone from the shell: the Sort tab, the Search sheet, the Ask sheet, Ask mode in the bar, the \u201cN to sort\u201d card (the row replaces it)."
+      "text": "v1 \u00b7 SHELL: Plan \u00b7 Find \u00b7 Ideas, and the bar.\n\nPlan stays as it is. The Sort tab becomes one row at the top of Plan, \u201c3 need a day\u201d, that opens the Sort page (New, Snoozed, Someday; Overdue is already on Plan). Find is one field for two jobs: results as you type, and an Ask Peggy row that turns the query into a conversation. Search and Ask stop being overlays. The bar does Plan and Idea only; Ask leaves the pill. Ideas is unchanged.\n\nGone from the shell: the Sort tab, the Search sheet, the Ask sheet, Ask mode in the bar, the \u201cN to sort\u201d card (the row replaces it)."
+    },
+    {
+      "id": "v2",
+      "x": 0,
+      "y": 864,
+      "w": 1100,
+      "text": "v2 \u00b7 PRO ON THE NAV, NOTHING IN A POPUP\nThe middle tab is Peggy, not Find. Same field, two jobs: search is free and instant, asking is Pro. A free user sees example questions and the offer on the page itself; a Pro user gets matches and the answer under one field. Nothing opens as a sheet.\n\nWhere each overlay went:\n\u2022 Suggestions sheet \u2192 off by default; when on, a single chip row above the bar.\n\u2022 Ask sheet \u2192 the Peggy tab.\n\u2022 Search sheet \u2192 the Peggy tab (free half).\n\u2022 Improve sheet \u2192 a \u201cPeggy suggests\u201d block inside item detail.\n\u2022 Tag picker \u2192 tag chips inline in the editor.\n\u2022 Paywall sheet \u2192 a page with a back arrow, reached from the Peggy tab and Settings.\n\u2022 What\u2019s new dialog \u2192 one row on Plan that opens a page.\n\u2022 Onboarding \u2192 the first-capture screen.\nThe bar keeps its chips row (it is the bar, not an overlay) and the Plan/Idea pill; the big toggle row goes."
     }
   ],
   "launch": {
