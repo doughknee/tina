@@ -62,8 +62,15 @@ const aab = readFileSync(value("aab") ?? AAB);
 const edit = await api("POST", `${API}/edits`, auth);
 console.log(`uploading ${(aab.length / 1e6).toFixed(1)} MB…`);
 const bundle = await api("POST", `${UPLOAD}/edits/${edit.id}/bundles?uploadType=media`,
-  { ...auth, "content-type": "application/octet-stream" }, aab);
-if (bundle.versionCode !== versionCode) die(`bundle is version code ${bundle.versionCode}, gradle says ${versionCode}; rebuild`);
+  { ...auth, "content-type": "application/octet-stream" }, aab, false, true);
+if (bundle.error) {
+  // the same version code is already on Play from an earlier track: this is a promotion, so
+  // the track just points at it; anything else is a real failure
+  if (!/already been used/.test(bundle.error)) die(bundle.error);
+  console.log(`version code ${versionCode} is already on Play; promoting it`);
+} else if (bundle.versionCode !== versionCode) {
+  die(`bundle is version code ${bundle.versionCode}, gradle says ${versionCode}; rebuild`);
+}
 
 const notes = releaseNotes(versionName);
 await api("PUT", `${API}/edits/${edit.id}/tracks/${track}`, { ...auth, "content-type": "application/json" }, JSON.stringify({
@@ -115,9 +122,13 @@ async function accessToken(sa) {
   return (await r.json()).access_token;
 }
 
-async function api(method, url, headers, body, allowEmpty = false) {
+async function api(method, url, headers, body, allowEmpty = false, returnError = false) {
   const r = await fetch(url, { method, headers, body });
   const text = await r.text();
-  if (!r.ok) die(`${method} ${url.replace(API, "").replace(UPLOAD, "")}: ${r.status} ${text.slice(0, 400)}`);
+  if (!r.ok) {
+    const msg = `${method} ${url.replace(API, "").replace(UPLOAD, "")}: ${r.status} ${text.slice(0, 400)}`;
+    if (returnError) return { error: msg };
+    die(msg);
+  }
   return text && !allowEmpty ? JSON.parse(text) : {};
 }

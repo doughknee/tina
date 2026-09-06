@@ -14,7 +14,7 @@ CHANGELOG section, and publishes. Then `git push --follow-tags`.
 |---|---|
 | `node release/publish.mjs internal` | ship the version already in `build.gradle.kts` to internal testing |
 | `… --cut 1.9.4` | bump to 1.9.4 first |
-| `… alpha` | closed testing; Play sends it to review on its own |
+| `… alpha --no-build` | promote the version already on Play to closed testing (Play sends it to review on its own) |
 | `… --no-build` | reuse the bundle already in `composeApp/build/outputs` |
 | `… --status draft` | upload and set the track without publishing |
 | `… --check` | only confirm the service account can see the app and list the tracks |
