@@ -32,7 +32,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Description
@@ -108,7 +107,6 @@ import com.tina.app.data.ItemType
 import com.tina.app.data.Priority
 import com.tina.app.resources.Res
 import com.tina.app.resources.ai_refined
-import com.tina.app.resources.ask_placeholder
 import com.tina.app.resources.capture_idea_body
 import com.tina.app.resources.capture_idea_placeholder
 import com.tina.app.resources.capture_placeholder
@@ -126,7 +124,6 @@ import com.tina.app.resources.action_open
 import com.tina.app.resources.captured
 import com.tina.app.resources.idea_saved
 import com.tina.app.resources.chip_remove
-import com.tina.app.resources.mode_ask
 import com.tina.app.resources.mode_capture
 import com.tina.app.resources.mode_idea
 import com.tina.app.resources.priority_high
@@ -152,18 +149,11 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * The capture field, pinned above the nav bar on every top-level screen so capture is never
- * more than zero taps away. The leading toggle flips it into ask mode, where the same field
- * feeds the Ask sheet instead; that toggle is reset by the shell on start and on every
- * destination change so the fast path can never be left switched off.
+ * more than zero taps away. The leading pill cycles Plan and Idea; asking lives on the Ask tab,
+ * not here, so the fast path is always capture.
  */
 @Composable
 fun CaptureBar(
-    askMode: Boolean,
-    onAskModeChange: (Boolean) -> Unit,
-    /** False when no AI provider is configured: the pill still names the mode but won't flip. */
-    askAvailable: Boolean,
-    onAskSend: (String) -> Unit,
-    askBusy: Boolean,
     snackbarHostState: SnackbarHostState,
     focusRequester: FocusRequester,
     /** The shell shows the suggestions sheet while the empty field has focus. */
@@ -186,12 +176,9 @@ fun CaptureBar(
     val undoText = stringResource(Res.string.undo)
     val refinedText = stringResource(Res.string.ai_refined)
 
-    // a half-typed capture survives a detour into ask mode: the two modes keep separate text
-    var askField by remember { mutableStateOf(TextFieldValue()) }
-    val askInput = askField.text
     var focused by remember { mutableStateOf(false) }
-    val text = if (askMode) askInput else viewModel.text
-    val field = if (askMode) askField else viewModel.fieldValue
+    val text = viewModel.text
+    val field = viewModel.fieldValue
     val motion = rememberAppMotion()
 
     // "Keyboard on open": the only automatic focus; widgets and shortcuts go through CaptureFocus
@@ -221,13 +208,6 @@ fun CaptureBar(
     }
 
     fun send() {
-        if (askMode) {
-            val question = askInput.trim()
-            if (question.isEmpty() || askBusy) return
-            askField = TextFieldValue()
-            onAskSend(question)
-            return
-        }
         val savedIdea = viewModel.ideaMode
         viewModel.save {
             haptic.performHapticFeedback(HapticFeedbackType.Confirm)
@@ -252,7 +232,7 @@ fun CaptureBar(
     val speech = rememberSpeechCapture { spoken ->
         viewModel.onTextChange(if (viewModel.text.isBlank()) spoken else "${viewModel.text} $spoken")
     }
-    val micVisible = !askMode && speech.available && settings.voiceCapture
+    val micVisible = speech.available && settings.voiceCapture
 
     Column(
         Modifier
@@ -269,12 +249,11 @@ fun CaptureBar(
             modifier = Modifier.fillMaxWidth().widthIn(max = 640.dp).heightIn(min = 52.dp),
         ) {
             Row(Modifier.padding(start = 8.dp, end = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                // the mode switch: a labelled pill that morphs shape between Capture and Ask,
-                // so the current mode is readable at a glance and the switch is an obvious button
+                // the mode switch: a labelled pill between Plan and Idea, so the current mode is
+                // readable at a glance and the switch is an obvious button
                 ToggleButton(
-                    checked = askMode,
-                    onCheckedChange = onAskModeChange,
-                    enabled = askAvailable,
+                    checked = viewModel.ideaMode,
+                    onCheckedChange = viewModel::switchIdeaMode,
                     modifier = Modifier.height(40.dp),
                     // one round shape in every state; the morph read as a glitch this close to the edge
                     shapes = ToggleButtonDefaults.shapes(
@@ -289,21 +268,13 @@ fun CaptureBar(
                     contentPadding = PaddingValues(horizontal = 12.dp),
                 ) {
                     Icon(
-                        when {
-                            askMode -> Icons.Outlined.AutoAwesome
-                            viewModel.ideaMode -> Icons.Outlined.Lightbulb
-                            else -> Icons.Outlined.Edit
-                        },
+                        if (viewModel.ideaMode) Icons.Outlined.Lightbulb else Icons.Outlined.Edit,
                         contentDescription = null,
                         Modifier.size(18.dp),
                     )
                     Text(
                         stringResource(
-                            when {
-                                askMode -> Res.string.mode_ask
-                                viewModel.ideaMode -> Res.string.mode_idea
-                                else -> Res.string.mode_capture
-                            },
+                            if (viewModel.ideaMode) Res.string.mode_idea else Res.string.mode_capture,
                         ),
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.padding(start = 6.dp),
@@ -311,15 +282,11 @@ fun CaptureBar(
                 }
 
                 val placeholder = stringResource(
-                    when {
-                        askMode -> Res.string.ask_placeholder
-                        viewModel.ideaMode -> Res.string.capture_idea_placeholder
-                        else -> Res.string.capture_placeholder
-                    },
+                    if (viewModel.ideaMode) Res.string.capture_idea_placeholder else Res.string.capture_placeholder,
                 )
                 BasicTextField(
                     value = field,
-                    onValueChange = { if (askMode) askField = it else viewModel.onFieldChange(it) },
+                    onValueChange = viewModel::onFieldChange,
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 12.dp, vertical = 12.dp)
@@ -374,7 +341,6 @@ fun CaptureBar(
                     FilledIconButton(
                         onClick = ::send,
                         modifier = Modifier.size(40.dp),
-                        enabled = !(askMode && askBusy),
                     ) {
                         Icon(Icons.AutoMirrored.Outlined.Send, stringResource(Res.string.capture_save))
                     }

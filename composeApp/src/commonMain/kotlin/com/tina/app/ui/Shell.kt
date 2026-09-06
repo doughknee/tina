@@ -25,9 +25,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.automirrored.outlined.Notes
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -52,7 +52,6 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -64,10 +63,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.tina.app.LocalSettings
 import com.tina.app.agenda.AgendaScreen
-import com.tina.app.ask.AskSheet
-import com.tina.app.ask.AskViewModel
 import com.tina.app.capture.CaptureViewModel
-import com.tina.app.data.AiProvider
 import com.tina.app.data.OpenAppTo
 import com.tina.app.data.Item
 import com.tina.app.notes.NotesScreen
@@ -98,14 +94,14 @@ import org.koin.compose.viewmodel.koinViewModel
 // Selected nav item keeps the Filled variant (M3 active-state convention).
 enum class TinaTab(val icon: ImageVector, val outlinedIcon: ImageVector, val label: StringResource) {
     AGENDA(Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, Res.string.tab_agenda),
-    ASK(Icons.Filled.Search, Icons.Outlined.Search, Res.string.tab_ask),
+    ASK(Icons.Filled.AutoAwesome, Icons.Outlined.AutoAwesome, Res.string.tab_ask),
     NOTES(Icons.AutoMirrored.Filled.Notes, Icons.AutoMirrored.Outlined.Notes, Res.string.tab_notes),
 }
 
 /**
  * Plan · Ask · Ideas. A tab is a place you go on purpose; Sort is a queue, so it is one row on
- * Plan ("N need a day") that pushes a page, and Search is the Ask tab. Capture is the bar
- * pinned above the nav on every page, so it is zero taps from anywhere.
+ * Plan ("N need a day") that pushes a page, and search and asking are the Ask tab. Capture is
+ * the bar pinned above the nav on every page, so it is zero taps from anywhere.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -115,20 +111,16 @@ fun Shell(
     onOpenNote: (Long) -> Unit,
     onOpenTag: (String) -> Unit,
     onOpenNeedDay: () -> Unit,
+    onOpenAskChat: () -> Unit,
+    onOpenPaywall: () -> Unit,
 ) {
     val settings = LocalSettings.current
-    val askAvailable = settings.aiAskEnabled && settings.aiProvider != AiProvider.OFF
 
     // saved by name; LAST relies on rememberSaveable surviving process death, the others pin a start page
     // SORT is the old Sort tab; a saved one reads as Plan, where its row now lives
     val startTab = if (settings.openAppTo == OpenAppTo.IDEAS) TinaTab.NOTES else TinaTab.AGENDA
     var selectedName by rememberSaveable(settings.openAppTo) { mutableStateOf(startTab.name) }
     val selectedTab = TinaTab.entries.firstOrNull { it.name == selectedName } ?: TinaTab.AGENDA
-    // deliberately not saveable: the bar always comes back in capture mode
-    var askOpen by remember { mutableStateOf(false) }
-    // the Ask overlay; closing it (back, scrim, drag) leaves the bar in ask mode, so back
-    // walks keyboard -> overlay -> page the same way it does for capture
-    var askSheetOpen by remember { mutableStateOf(false) }
     var captureFocused by remember { mutableStateOf(false) }
     // bumped by the search shortcut so the Ask field takes focus even when the tab is already up
     var searchFocusKey by remember { mutableStateOf(0) }
@@ -137,7 +129,6 @@ fun Shell(
     var captureSheetOpen by remember { mutableStateOf(false) }
 
     val captureViewModel: CaptureViewModel = koinViewModel()
-    val askViewModel: AskViewModel = koinViewModel()
     val notesViewModel: NotesViewModel = koinViewModel()
     val searchViewModel: SearchViewModel = koinViewModel()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -162,20 +153,8 @@ fun Shell(
     // the capture sheet rises while the field has focus and stays while there is a draft:
     // starters when empty, parse chips while typing, and it survives the keyboard going away
     val hasDraft = captureViewModel.text.isNotBlank()
-    val suggestionsOpen = !askOpen && (captureSheetOpen || hasDraft)
-    val askVisible = askOpen && askSheetOpen
+    val suggestionsOpen = captureSheetOpen || hasDraft
     var discardPrompt by remember { mutableStateOf(false) }
-
-    // closes the overlay only; the pill stays on Ask until it is tapped back to Plan
-    fun closeAsk() {
-        askSheetOpen = false
-        putKeyboardAway()
-    }
-
-    fun setAskMode(on: Boolean) {
-        askOpen = on && askAvailable
-        askSheetOpen = askOpen
-    }
 
     // reads the view model at call time: this reference gets memoised across recompositions,
     // so a captured `hasDraft` went stale and drags kept seeing an empty field
@@ -190,8 +169,6 @@ fun Shell(
 
     fun showTab(tab: TinaTab) {
         selectedName = tab.name
-        askOpen = false
-        askSheetOpen = false
         captureSheetOpen = false
         putKeyboardAway()
     }
@@ -211,8 +188,6 @@ fun Shell(
     val focusRequested by CaptureFocus.pending.collectAsState()
     LaunchedEffect(focusRequested) {
         if (!focusRequested) return@LaunchedEffect
-        askOpen = false
-        askSheetOpen = false
         captureViewModel.switchIdeaMode(CaptureFocus.idea)
         CaptureFocus.prefill?.let(captureViewModel::prefill)
         captureFocus.requestFocus()
@@ -234,9 +209,8 @@ fun Shell(
         }
     }
 
-    BackHandler(enabled = askVisible && !captureFocused) { closeAsk() }
     // the keyboard takes the first back itself; the next one, with a draft still up, asks
-    BackHandler(enabled = !askOpen && suggestionsOpen && !captureFocused) { dismissCaptureSheet() }
+    BackHandler(enabled = suggestionsOpen && !captureFocused) { dismissCaptureSheet() }
 
     if (discardPrompt) {
         AlertDialog(
@@ -270,7 +244,7 @@ fun Shell(
         modifier = Modifier.imePadding(),
         navigationSuiteItems = {
             TinaTab.entries.forEach { tab ->
-                val selected = selectedTab == tab && !askVisible
+                val selected = selectedTab == tab
                 item(
                     selected = selected,
                     onClick = { showTab(tab) },
@@ -286,23 +260,13 @@ fun Shell(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             bottomBar = {
                 CaptureBar(
-                    askMode = askOpen,
-                    onAskModeChange = ::setAskMode,
-                    askAvailable = askAvailable,
-                    onAskSend = {
-                        askSheetOpen = true
-                        askViewModel.send(it)
-                    },
-                    askBusy = askViewModel.sending,
                     snackbarHostState = snackbarHostState,
                     focusRequester = captureFocus,
                     onFocusChanged = {
                         captureFocused = it
-                        if (it) {
-                            if (askOpen) askSheetOpen = true else captureSheetOpen = true
-                        }
+                        if (it) captureSheetOpen = true
                     },
-                    blendWithSheet = suggestionsOpen || askVisible,
+                    blendWithSheet = suggestionsOpen,
                     onOpenNote = onOpenNote,
                     viewModel = captureViewModel,
                 )
@@ -330,6 +294,8 @@ fun Shell(
                             onOpenSettings = onOpenSettings,
                             onOpenItem = onOpenItem,
                             onOpenTag = onOpenTag,
+                            onOpenAskChat = onOpenAskChat,
+                            onOpenPaywall = onOpenPaywall,
                             focusKey = searchFocusKey,
                             viewModel = searchViewModel,
                         )
@@ -368,16 +334,7 @@ fun Shell(
                     }
                 }
 
-                // Ask: a sheet over the page, with the bar still visible under it in ask mode
-                ShellSheet(
-                    visible = askVisible,
-                    onDismiss = ::closeAsk,
-                    modifier = Modifier.align(Alignment.BottomCenter).fractionHeight(0.72f),
-                ) {
-                    AskSheet(viewModel = askViewModel, snackbarHostState = snackbarHostState)
-                }
-
-                // last, so the celebration draws over whichever sheet is up
+                // last, so the celebration draws over the sheet
                 SaveBurst(trigger = captureViewModel.saveCount, modifier = Modifier.align(Alignment.Center))
             }
         }
@@ -486,10 +443,3 @@ private fun ShellSheet(
 }
 
 private val SHEET_TAIL = 32.dp
-
-/** A sheet that fills a fraction of the height above the keyboard (the shell is already padded for it). */
-private fun Modifier.fractionHeight(fraction: Float): Modifier = layout { measurable, constraints ->
-    val height = (constraints.maxHeight * fraction).toInt().coerceAtLeast(0)
-    val placeable = measurable.measure(constraints.copy(minHeight = height, maxHeight = height))
-    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
-}

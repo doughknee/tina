@@ -6,6 +6,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.AddComment
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Delete
@@ -29,13 +32,17 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -49,14 +56,29 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import com.tina.app.LocalSettings
 import com.tina.app.ai.ANTHROPIC_MODELS
+import com.tina.app.ai.askProvider
+import com.tina.app.pro.rememberEntitlement
 import com.tina.app.ai.ChatRole
 import com.tina.app.ai.ReasoningLevel
 import com.tina.app.data.AiProvider
@@ -80,6 +102,9 @@ import com.tina.app.resources.ask_not_now
 import com.tina.app.resources.ask_pending
 import com.tina.app.resources.ask_pending_deletes
 import com.tina.app.resources.ask_hint
+import com.tina.app.resources.ask_placeholder
+import com.tina.app.resources.ask_send
+import com.tina.app.resources.back
 import com.tina.app.resources.ask_history
 import com.tina.app.resources.ask_history_empty
 import com.tina.app.resources.ask_new_chat
@@ -104,19 +129,23 @@ import com.tina.app.ui.showUndo
 import kotlin.time.Clock
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * Ask is a sheet over whatever you were looking at, not a page: answers stay in context
- * with the day. The input is the shared capture bar in ask mode, so this is header,
- * mode chips and transcript only.
+ * The Ask conversation: a page with a back arrow, pushed from the Ask tab's Follow up. Header,
+ * mode chips, transcript, and its own field at the bottom; the capture bar has no ask mode.
  */
 @OptIn(
     ExperimentalMaterial3Api::class,
     androidx.compose.foundation.ExperimentalFoundationApi::class,
 )
 @Composable
-fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
+fun AskScreen(onBack: () -> Unit, viewModel: AskViewModel = koinViewModel()) {
     val settings = LocalSettings.current
+    val entitlement by rememberEntitlement()
+    // Pro with nothing configured answers through the relay; the label must say so too
+    val provider = askProvider(settings.aiProvider, entitlement)
+    val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     var modelMenuOpen by remember { mutableStateOf(false) }
     val undoWindow = rememberUndoWindow()
@@ -144,12 +173,25 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
         if (viewModel.sending && viewModel.streamingReply.isNotEmpty()) listState.scrollToItem(viewModel.messages.size, Int.MAX_VALUE)
     }
 
-    Column(Modifier.fillMaxSize()) {
+    Scaffold(
+        modifier = Modifier.imePadding(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(Res.string.tab_ask), style = MaterialTheme.typography.titleLargeEmphasized) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(Res.string.back)) }
+                },
+            )
+        },
+        bottomBar = { AskInput(enabled = !viewModel.sending, onSend = viewModel::send) },
+    ) { padding ->
+    Column(Modifier.fillMaxSize().padding(padding)) {
         Row(
             Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val modelLabel = when (settings.aiProvider) {
+            val modelLabel = when (provider) {
                 AiProvider.ANTHROPIC ->
                     ANTHROPIC_MODELS.firstOrNull { it.id == viewModel.effectiveModel(settings.aiModel) }?.label
                         ?: viewModel.effectiveModel(settings.aiModel)
@@ -160,7 +202,7 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
             Box(Modifier.weight(1f)) {
                 TextButton(
                     onClick = { modelMenuOpen = true },
-                    enabled = settings.aiProvider == AiProvider.ANTHROPIC,
+                    enabled = provider == AiProvider.ANTHROPIC,
                     contentPadding = PaddingValues(0.dp),
                 ) {
                     Text(modelLabel, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
@@ -324,21 +366,7 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
                     item {
                         Column {
                             Text(
-                                stringResource(
-                                    when (error) {
-                                        com.tina.app.ai.AiError.OFF -> Res.string.ask_error_off
-                                        com.tina.app.ai.AiError.NO_MODEL -> Res.string.ask_error_no_model
-                                        com.tina.app.ai.AiError.METERED -> Res.string.ask_error_metered
-                                        com.tina.app.ai.AiError.INSECURE_ENDPOINT -> Res.string.ask_error_insecure
-                                        com.tina.app.ai.AiError.UNAUTHORIZED -> Res.string.ask_error_unauthorized
-                                        com.tina.app.ai.AiError.NOT_FOUND -> Res.string.ask_error_not_found
-                                        com.tina.app.ai.AiError.RATE_LIMITED -> Res.string.ask_error_rate_limited
-                                        com.tina.app.ai.AiError.QUOTA -> Res.string.ask_error_quota
-                                        com.tina.app.ai.AiError.SERVER -> Res.string.ask_error_server
-                                        com.tina.app.ai.AiError.NETWORK -> Res.string.ask_error
-                                        com.tina.app.ai.AiError.BAD_REPLY -> Res.string.ask_error_bad_reply
-                                    },
-                                ),
+                                aiErrorText(error),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.error,
                             )
@@ -348,6 +376,7 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
                 }
             }
         }
+    }
     }
 
     if (showHistory) {
@@ -394,6 +423,74 @@ fun AskSheet(viewModel: AskViewModel, snackbarHostState: SnackbarHostState) {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/** Why a question failed, as a sentence; shared with the Answer block on the Ask tab. */
+@Composable
+fun aiErrorText(error: com.tina.app.ai.AiError): String = stringResource(
+    when (error) {
+        com.tina.app.ai.AiError.OFF -> Res.string.ask_error_off
+        com.tina.app.ai.AiError.NO_MODEL -> Res.string.ask_error_no_model
+        com.tina.app.ai.AiError.METERED -> Res.string.ask_error_metered
+        com.tina.app.ai.AiError.INSECURE_ENDPOINT -> Res.string.ask_error_insecure
+        com.tina.app.ai.AiError.UNAUTHORIZED -> Res.string.ask_error_unauthorized
+        com.tina.app.ai.AiError.NOT_FOUND -> Res.string.ask_error_not_found
+        com.tina.app.ai.AiError.RATE_LIMITED -> Res.string.ask_error_rate_limited
+        com.tina.app.ai.AiError.QUOTA -> Res.string.ask_error_quota
+        com.tina.app.ai.AiError.SERVER -> Res.string.ask_error_server
+        com.tina.app.ai.AiError.NETWORK -> Res.string.ask_error
+        com.tina.app.ai.AiError.BAD_REPLY -> Res.string.ask_error_bad_reply
+    },
+)
+
+/** The conversation's own field: Enter or the send button asks; a send in flight disables both. */
+@Composable
+private fun AskInput(enabled: Boolean, onSend: (String) -> Unit) {
+    var text by remember { mutableStateOf("") }
+    fun send() {
+        val q = text.trim()
+        if (q.isEmpty() || !enabled) return
+        text = ""
+        onSend(q)
+    }
+    androidx.compose.material3.Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shape = MaterialTheme.shapes.extraLarge,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Row(Modifier.padding(start = 20.dp, end = 6.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+            val placeholder = stringResource(Res.string.ask_placeholder)
+            BasicTextField(
+                value = text,
+                onValueChange = { text = it },
+                modifier = Modifier.weight(1f).padding(vertical = 8.dp)
+                    .onFocusChanged { com.tina.app.ui.KeyBus.textInputActive = it.isFocused }
+                    .onPreviewKeyEvent { event ->
+                        // physical keyboards: Enter sends, Shift+Enter makes a newline
+                        if (event.key == Key.Enter && event.type == KeyEventType.KeyDown && !event.isShiftPressed) {
+                            send()
+                            true
+                        } else {
+                            false
+                        }
+                    },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                maxLines = 4,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(onSend = { send() }),
+                decorationBox = { inner ->
+                    Box(contentAlignment = Alignment.CenterStart) {
+                        if (text.isEmpty()) Text(placeholder, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        inner()
+                    }
+                },
+            )
+            FilledIconButton(onClick = ::send, enabled = enabled && text.isNotBlank(), modifier = Modifier.size(40.dp)) {
+                Icon(Icons.AutoMirrored.Outlined.Send, stringResource(Res.string.ask_send))
             }
         }
     }
