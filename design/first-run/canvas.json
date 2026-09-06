@@ -1,0 +1,64 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "1 \u00b7 First run",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Typing.dc.html",
+      "title": "2 \u00b7 Typing",
+      "x": 480,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "LandedPlan.dc.html",
+      "title": "3a \u00b7 Dated \u2192 Plan",
+      "x": 960,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "LandedSort.dc.html",
+      "title": "3b \u00b7 Undated \u2192 Sort",
+      "x": 1440,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Everyday.dc.html",
+      "title": "4 \u00b7 A week in",
+      "x": 1920,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Settings.dc.html",
+      "title": "Settings \u203a On screen",
+      "x": 2400,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    }
+  ],
+  "annotations": [
+    {
+      "id": "rule",
+      "x": 0,
+      "y": -220,
+      "w": 900,
+      "text": "THE RULE\nThe default surface is the bar, today\u2019s list and three tabs. Everything else is opt-in in Settings \u203a On screen.\n\nFirst run is one question and a field. What they type decides which page they see first, and that page gets one callout. The page they didn\u2019t land on is never explained; the tab is just there. No prefilled example, no suggestions sheet, no calendar strip, no range control, no reminders card. Reminders are asked for once, as a snackbar, the first time something has a time."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

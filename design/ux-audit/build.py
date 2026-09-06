@@ -56,6 +56,7 @@ SVG = {
     "mic": '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg>',
     "search": '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>',
     "bell": '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4"></path></svg>',
+    "send": '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20l18-8L3 4v6l12 2-12 2z"></path></svg>',
     "close": '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>',
 }
 
@@ -81,12 +82,12 @@ def page(body, extra_css=""):
 """
 
 
-def nav(selected):
+def nav(selected, badge=4):
     items = [("Plan", "cal"), ("Sort", "inbox"), ("Ideas", "lines")]
     out = ['<div class="nav">']
     for name, icon in items:
         cls = ' class="sel"' if name == selected else ""
-        badge = '<span style="position:absolute;margin-left:22px;margin-top:-14px;background:#b3261e;color:#fff;border-radius:8px;font-size:11px;padding:0 5px;line-height:16px">4</span>' if name == "Sort" else ""
+        badge = '<span style="position:absolute;margin-left:22px;margin-top:-14px;background:#b3261e;color:#fff;border-radius:8px;font-size:11px;padding:0 5px;line-height:16px">{badge}</span>' if name == "Sort" and badge else ""
         out.append(f'<div{cls}><div class="ind">{SVG[icon]}{badge}</div><span>{name}</span></div>')
     out.append("</div>")
     return "".join(out)
@@ -222,7 +223,8 @@ files = {
     "OnboardingA.dc.html": onboarding_a,
     "OnboardingB.dc.html": onboarding_b,
 }
-for name, html in files.items():
+if __name__ == "__main__":
+  for name, html in files.items():
     (HERE / name).write_text(html, encoding="utf-8")
 
 W, H, GAP = 390, 844, 100
@@ -246,5 +248,6 @@ canvas = {
     ],
     "launch": {"view": "canvas"},
 }
-(HERE / "canvas.json").write_text(json.dumps(canvas, indent=2), encoding="utf-8")
-print("wrote", len(files), "artboards")
+if __name__ == "__main__":
+    (HERE / "canvas.json").write_text(json.dumps(canvas, indent=2), encoding="utf-8")
+    print("wrote", len(files), "artboards")

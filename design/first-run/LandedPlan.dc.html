@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; color: #1a1b20; background: #f9f9ff; -webkit-font-smoothing: antialiased; }
+    a { color: #475d92; } a:hover { color: #2f4577; }
+    .phone { width: 390px; height: 844px; background: #f9f9ff; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+    .top { display: flex; align-items: center; justify-content: space-between; padding: 44px 16px 8px 16px; }
+    .h1 { font-size: 28px; line-height: 34px; font-weight: 400; }
+    .sub { font-size: 14px; line-height: 20px; color: #44464f; margin-top: 2px; }
+    .icons { display: flex; gap: 14px; color: #44464f; }
+    .seg { display: flex; gap: 6px; padding: 8px 16px 0 16px; }
+    .seg div { flex: 1; text-align: center; height: 40px; line-height: 40px; border-radius: 20px; background: #eeedf4; font-size: 14px; }
+    .seg .on { background: #475d92; color: #fff; font-weight: 500; }
+    .card { background: #f4f3fa; border-radius: 16px; margin: 12px 16px 0 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .title { font-size: 16px; line-height: 24px; }
+    .meta { font-size: 13px; line-height: 18px; color: #44464f; }
+    .chips { display: flex; gap: 8px; align-items: center; }
+    .chip { height: 32px; line-height: 30px; padding: 0 12px; border: 1px solid #c4c6d0; border-radius: 8px; font-size: 14px; font-weight: 500; color: #1a1b20; white-space: nowrap; box-sizing: border-box; }
+    .chip.tonal { background: #dae2ff; border-color: #dae2ff; color: #001a41; }
+    .iconbtn { width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #44464f; }
+    .section { font-size: 13px; font-weight: 500; color: #44464f; padding: 20px 16px 0 16px; display: flex; gap: 8px; align-items: baseline; }
+    .bar { position: absolute; left: 16px; right: 16px; bottom: 92px; height: 56px; border-radius: 28px; background: #e8e7ef; display: flex; align-items: center; padding: 0 12px 0 8px; gap: 10px; box-sizing: border-box; }
+    .pill { height: 40px; padding: 0 14px; border-radius: 20px; background: #dcdce4; color: #44464f; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .bar .hint { flex: 1; color: #44464f; font-size: 17px; }
+    .nav { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: #eeedf4; display: flex; justify-content: space-around; align-items: center; }
+    .nav div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; color: #44464f; width: 80px; }
+    .nav .sel .ind { background: #dae2ff; }
+    .ind { width: 56px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+    .snack { position: absolute; left: 16px; right: 16px; bottom: 160px; background: #2f3036; color: #f2f0f7; border-radius: 4px; padding: 14px 16px; display: flex; justify-content: space-between; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+    .snack b { color: #b8c4ff; font-weight: 500; }
+    .textbtn { color: #475d92; font-weight: 500; font-size: 14px; padding: 10px 12px; border-radius: 20px; }
+    .filled { background: #475d92; color: #fff; font-weight: 500; font-size: 14px; padding: 10px 20px; border-radius: 20px; }
+    .tonalbtn { background: #dae2ff; color: #001a41; font-weight: 500; font-size: 14px; padding: 10px 20px; border-radius: 20px; }
+    .wrap { position: relative; width: 390px; height: 844px; }
+
+    .q { position: absolute; left: 0; right: 0; bottom: 92px; padding: 0 16px; }
+    .callout { margin: 12px 16px 0 16px; padding: 14px 16px; border-radius: 16px; background: #dae2ff; color: #001a41; font-size: 14px; line-height: 20px; display: flex; gap: 12px; align-items: flex-start; }
+    .callout b { display: block; font-weight: 500; margin-bottom: 2px; }
+    .callout .x { margin-left: auto; color: #475d92; }
+    .setrow { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; }
+    .setrow .t { font-size: 16px; } .setrow .s { font-size: 13px; color: #44464f; margin-top: 2px; }
+    .sw { width: 52px; height: 32px; border-radius: 16px; background: #e8e7ef; border: 2px solid #74777f; box-sizing: border-box; position: relative; flex: none; }
+    .sw::after { content: ""; position: absolute; left: 6px; top: 6px; width: 16px; height: 16px; border-radius: 8px; background: #74777f; }
+    .sw.on { background: #475d92; border-color: #475d92; } .sw.on::after { left: 24px; top: 4px; width: 20px; height: 20px; background: #fff; }
+    .dots { display: flex; gap: 6px; justify-content: center; margin-top: 14px; }
+    .dots div { width: 6px; height: 6px; border-radius: 3px; background: #c4c6d0; } .dots .on { background: #475d92; }
+</style>
+</helmet>
+<div class="wrap"><div class="phone">
+<div class="top"><div><div class="h1">Tomorrow</div><div class="sub">Sunday, September 6</div></div><div class="icons"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></div></div><div class="callout"><div><b>Tomorrow at 2 PM</b>Peggy read the day and time from your words. Tap the item to change either.</div><div class="x"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></div></div><div class="section">Afternoon</div><div class="card" style="gap:0;padding:0"><div class="row" style="padding:14px 16px"><div style="display:flex;gap:16px;align-items:center"><div style="width:20px;height:20px;border:2px solid #44464f;border-radius:4px"></div><div><div class="title">call the vet</div><div class="meta">2 PM</div></div></div><div class="iconbtn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div></div></div><div class="bar"><div class="pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4zM13 7l4 4"></path></svg> Plan</div><div class="hint">What’s on your mind?</div><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></div><div class="nav"><div class="sel"><div class="ind"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></div><span>Plan</span></div><div><div class="ind"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4zM4 14h5l1.5 2h3L15 14h5"></path></svg></div><span>Sort</span></div><div><div class="ind"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"></path></svg></div><span>Ideas</span></div></div>
+</div></div>
+</x-dc>
+</body>
+</html>

@@ -14,3 +14,4 @@ site/demo_data.sql
 # Play publishing key for release/publish.mjs
 release/service-account.json
 design/ux-audit/peggy-ux-flows.html
+design/first-run/peggy-first-run.html
