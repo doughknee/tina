@@ -2,6 +2,13 @@
 
 User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; the plan in `docs/ROADMAP.md`.
 
+## Unreleased
+
+### Capture
+- On the Ideas page the bar writes ideas without switching the toggle first.
+- “every Mon Wed” repeats on both days; “next Friday” means the Friday of next week, not a week later; “idea:” or “note:” at the start files a note; a “?” no longer floats away from its word.
+- Dates more than a week out show their weekday (“Fri, Sep 18”), so a wrong week is visible before it is on the calendar.
+
 ## v1.9.4 (internal testing, 2026-09-05)
 
 ### Peggy Pro

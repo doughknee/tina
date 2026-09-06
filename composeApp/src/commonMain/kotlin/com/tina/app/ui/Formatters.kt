@@ -40,7 +40,13 @@ fun dateLabel(date: LocalDate, today: LocalDate): String {
         days in 2..6 -> stringArrayResource(Res.array.weekdays_full)[date.dayOfWeek.isoDayNumber - 1]
         else -> {
             val month = stringArrayResource(Res.array.months_short)[date.month.number - 1]
-            if (date.year == today.year) "$month ${date.day}" else "$month ${date.day}, ${date.year}"
+            // the weekday is what catches "next friday" landing a week late; past ~two months it is noise
+            val weekday = stringArrayResource(Res.array.weekdays_full)[date.dayOfWeek.isoDayNumber - 1].take(3)
+            when {
+                date.year != today.year -> "$month ${date.day}, ${date.year}"
+                days in 7..60 -> "$weekday, $month ${date.day}"
+                else -> "$month ${date.day}"
+            }
         }
     }
 }
@@ -87,6 +93,11 @@ fun recurrenceLabel(rrule: String): String {
         rule.byDay.size == 5 -> stringResource(Res.string.every_weekday_days)
         weekday != null && rule.byDay.size == 1 ->
             stringResource(Res.string.every_weekday, stringArrayResource(Res.array.weekdays_full)[weekday.isoDayNumber - 1])
+        // "every Mon, Wed": naming the days is the only way to see that both were understood
+        weekday != null && rule.byDay.size in 2..4 -> {
+            val names = stringArrayResource(Res.array.weekdays_full)
+            stringResource(Res.string.every_weekday, rule.byDay.sortedBy { it.isoDayNumber }.joinToString(", ") { names[it.isoDayNumber - 1].take(3) })
+        }
         else -> when (rule.freq) {
             com.tina.app.data.RecurrenceRule.Freq.DAILY -> stringResource(Res.string.every_day)
             com.tina.app.data.RecurrenceRule.Freq.WEEKLY -> stringResource(Res.string.every_week)

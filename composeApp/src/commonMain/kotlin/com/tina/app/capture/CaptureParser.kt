@@ -49,7 +49,7 @@ private val RE_EVERY_OTHER = Regex("""\bevery\s+other\s+(day|week|month|year)\b"
 private val RE_EVERY_WEEKDAY_WORD = Regex("""\bevery\s+weekday\b""", RegexOption.IGNORE_CASE)
 private val RE_EVERY_WEEKEND = Regex("""\bevery\s+weekend\b""", RegexOption.IGNORE_CASE)
 private val RE_EVERY_DAYLIST = Regex(
-    """\bevery\s+((?:$WEEKDAYS)(?:\s*(?:,|and|&)\s*(?:$WEEKDAYS))*)\b""",
+    """\bevery\s+((?:$WEEKDAYS)(?:(?:\s*(?:,|and|&)\s*|\s+)(?:$WEEKDAYS))*)\b""",
     RegexOption.IGNORE_CASE,
 )
 private val RE_EVERY_PART_OF_DAY = Regex("""\bevery\s+(morning|afternoon|evening|night)\b""", RegexOption.IGNORE_CASE)
@@ -57,6 +57,7 @@ private val RE_EVERY_ORDINAL = Regex("""\bevery\s+(\d{1,2})(?:st|nd|rd|th)\b""",
 private val RE_EVERY_UNIT = Regex("""\bevery\s+(day|week|month|year)\b""", RegexOption.IGNORE_CASE)
 private val RE_FREQ_WORD = Regex("""\b(daily|weekly|monthly|yearly|annually)\b""", RegexOption.IGNORE_CASE)
 private val RE_WEEKDAY_TOKEN = Regex("""\b($WEEKDAYS)\b""", RegexOption.IGNORE_CASE)
+private val RE_NOTE_PREFIX = Regex("""^(?:idea|note|thought)\s*[:\-]\s*""", RegexOption.IGNORE_CASE)
 
 // ---- duration
 private val RE_DURATION_H = Regex(
@@ -157,7 +158,8 @@ private fun yearOf(token: String): Int? = token.toIntOrNull()?.let { if (it < 10
 private fun IntRange.intersects(other: IntRange): Boolean = first <= other.last && other.first <= last
 
 private fun cleanTitle(text: String): String {
-    val collapsed = text.replace(Regex("""\s+"""), " ").trim().trim(',', ';', '-', ':', ' ')
+    val collapsed = text.replace(Regex("""\s+"""), " ").replace(Regex("""\s+([?!.,;:])"""), "$1")
+        .trim().trim(',', ';', '-', ':', ' ')
     val words = collapsed.split(" ").toMutableList()
     while (words.size > 1 && words.last().lowercase() in TRAILING_CONNECTORS) words.removeAt(words.size - 1)
     while (words.size > 1 && words.first().lowercase() in LEADING_CONNECTORS) words.removeAt(0)
@@ -179,6 +181,17 @@ fun parseCapture(
     raw: String,
     now: LocalDateTime,
     firstDayOfWeek: DayOfWeek = DayOfWeek.MONDAY,
+): ParsedCapture {
+    val prefix = RE_NOTE_PREFIX.find(raw.trim())
+    if (prefix == null) return parseCaptureBody(raw, now, firstDayOfWeek)
+    // "idea: split the bill app" is a note whatever else the words say
+    return parseCaptureBody(raw.trim().removeRange(prefix.range), now, firstDayOfWeek).copy(type = ItemType.NOTE)
+}
+
+private fun parseCaptureBody(
+    raw: String,
+    now: LocalDateTime,
+    firstDayOfWeek: DayOfWeek,
 ): ParsedCapture {
     val input = raw.trim()
     if (input.isEmpty()) return ParsedCapture(title = "", type = ItemType.INBOX)
@@ -443,8 +456,11 @@ fun parseCapture(
     collect(RE_DAY_MONTH) { m -> resolveMonthDay(monthFrom(m.groupValues[2]), m.groupValues[1].toInt(), today, yearOf(m.groupValues[3])) }
     collect(RE_NUMERIC_MD) { m -> resolveMonthDay(m.groupValues[1].toInt(), m.groupValues[2].toInt(), today, yearOf(m.groupValues[3])) }
     collect(RE_WEEKDAY) { m ->
-        val base = nextOccurrence(today, weekdayFrom(m.groupValues[2]))
-        if (m.groupValues[1].startsWith("next", ignoreCase = true)) base.plus(7, DateTimeUnit.DAY) else base
+        val dow = weekdayFrom(m.groupValues[2])
+        if (m.groupValues[1].startsWith("next", ignoreCase = true)) {
+            // the one in next week: on a Saturday, "next friday" is six days away, not thirteen
+            nextOccurrence(nextOccurrence(today, firstDayOfWeek), dow, orSame = true)
+        } else nextOccurrence(today, dow)
     }
     collect(RE_ORDINAL_DAY) { m -> resolveDayOfMonth(m.groupValues[1].toInt(), today) }
 

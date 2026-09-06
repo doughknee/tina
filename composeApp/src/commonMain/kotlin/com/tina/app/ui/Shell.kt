@@ -223,6 +223,10 @@ fun Shell(
         }
     }
 
+    // On Ideas the bar makes ideas; elsewhere it plans. A draft in progress keeps its mode.
+    LaunchedEffect(selectedTab) {
+        if (captureViewModel.text.isBlank()) captureViewModel.switchIdeaMode(selectedTab == TinaTab.NOTES)
+    }
     val focusRequested by CaptureFocus.pending.collectAsState()
     LaunchedEffect(focusRequested) {
         if (!focusRequested) return@LaunchedEffect
