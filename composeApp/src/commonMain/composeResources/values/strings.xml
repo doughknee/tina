@@ -126,14 +126,8 @@
     <string name="event_color">Color</string>
     <string name="color_default">Default</string>
 
-    <string name="reminders_banner_title">Turn on reminders</string>
-    <string name="reminders_banner_body">To ring on time, Peggy needs permission to notify you and to schedule exact alarms.</string>
-    <string name="reminders_banner_for">%1$s can only ring with permission to notify you.</string>
-    <string name="reminders_allow_notifications">Allow notifications</string>
-    <string name="reminders_not_now">Not now</string>
-    <string name="reminders_off">Reminders are off</string>
     <string name="reminders_turn_on">Turn on</string>
-    <string name="reminders_allow_exact">Allow exact alarms</string>
+    <string name="reminders_nudge">Reminders need permission to ring</string>
 
     <string name="search_placeholder">Ask or search</string>
     <string name="search_tags">Tags</string>
@@ -218,12 +212,11 @@
     <string name="note_copy_markdown">Copy as Markdown</string>
     <string name="whats_new_in">What’s new in %1$s</string>
     <string name="whats_new_got_it">Got it</string>
+    <string name="whats_new_see">See</string>
     <string name="dev_whats_new">Show what’s new</string>
-    <string name="dev_whats_new_sub">The upgrade sheet, right now</string>
+    <string name="dev_whats_new_sub">The row on Plan, again</string>
     <string name="note_more">More</string>
     <string name="note_open_tag">Open tag</string>
-    <string name="tag_sheet_title">Tag %1$d ideas</string>
-    <string name="tag_sheet_one">Tags</string>
     <string name="tag_create">Create “#%1$s”</string>
     <string name="tag_new">New tag</string>
     <string name="tag_overview">Overview</string>
@@ -240,7 +233,6 @@
     <string name="capture_placeholder">What’s on your mind?</string>
     <string name="capture_save">Save</string>
     <string name="capture_voice">Voice capture</string>
-    <string name="capture_start">Start with</string>
     <string name="capture_idea_placeholder">What’s the idea?</string>
     <string name="capture_idea_body">Add details…</string>
     <string name="calendar_choose">Calendar view</string>
@@ -252,8 +244,6 @@
     <string name="starter_next_week">Next week</string>
     <string name="starter_every_day">Every day</string>
     <string name="starter_at_9">9 AM</string>
-    <string name="capture_recent">Recent</string>
-    <string name="ai_improve">AI improve</string>
 
     <!-- Settings: sections -->
     <string name="sec_general">General</string>
@@ -351,6 +341,8 @@
     <string name="set_keep_keyboard_sub">Stay in capture after saving</string>
     <string name="set_voice_capture">Voice capture</string>
     <string name="set_voice_capture_sub">Mic button next to the field</string>
+    <string name="set_capture_suggestions">Suggestions</string>
+    <string name="set_capture_suggestions_sub">Recent and starter chips above the bar while it is empty</string>
     <string name="set_widgets">Widgets</string>
     <string name="set_widgets_sub">Today list · capture pill</string>
     <string name="set_undo_window">Undo window</string>
@@ -514,7 +506,8 @@
     <string name="pro_tag">PRO</string>
     <string name="tag_empty">Nothing with this tag yet</string>
     <string name="ai_suggestion_pending">AI suggestion available</string>
-    <string name="improve_title">AI suggestions</string>
+    <string name="improve_title">Peggy suggests</string>
+    <string name="improve_suggest">Suggest</string>
     <string name="improve_loading">Thinking…</string>
     <string name="improve_error">Couldn’t get suggestions</string>
     <string name="improve_retry">Retry</string>

@@ -115,6 +115,7 @@ class SettingsViewModel(
     fun setAutoFocusCapture(v: Boolean) = launchEdit { repository.setAutoFocusCapture(v) }
     fun setKeepKeyboardUp(v: Boolean) = launchEdit { repository.setKeepKeyboardUp(v) }
     fun setVoiceCapture(v: Boolean) = launchEdit { repository.setVoiceCapture(v) }
+    fun setCaptureSuggestions(v: Boolean) = launchEdit { repository.setCaptureSuggestions(v) }
     fun setUndoWindowSeconds(v: Int) = launchEdit { repository.setUndoWindowSeconds(v) }
     fun setMorningStart(v: Int) = launchEdit { repository.setMorningStart(v) }
     fun setAfternoonStart(v: Int) = launchEdit { repository.setAfternoonStart(v) }

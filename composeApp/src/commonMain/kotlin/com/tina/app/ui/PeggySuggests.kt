@@ -7,17 +7,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +57,7 @@ import com.tina.app.resources.improve_loading
 import com.tina.app.resources.improve_none
 import com.tina.app.resources.improve_refine
 import com.tina.app.resources.improve_retry
+import com.tina.app.resources.improve_suggest
 import com.tina.app.resources.improve_title
 import com.tina.app.resources.pr_high
 import com.tina.app.resources.pr_low
@@ -82,12 +86,17 @@ private fun presentFields(p: ImprovePatch): Set<String> = buildSet {
     if (p.reminderOffsetMinutes != null) add(ImproveField.REMINDER)
 }
 
+/**
+ * "Peggy suggests": the Improve flow as a block inside item detail, never a sheet. Idle with one
+ * Suggest button until asked (a background suggestion shows straight away); then the changes as
+ * chips to pick from, clarifying questions on the first round, Refine, and Apply.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImproveSheet(
+fun PeggySuggests(
     item: Item,
     onApply: (updated: Item, original: Item) -> Unit,
-    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val improver: AiImprover = koinInject()
     val scope = rememberCoroutineScope()
@@ -95,14 +104,16 @@ fun ImproveSheet(
     val tz = TimeZone.currentSystemDefault()
     val today = remember { Clock.System.now().toLocalDateTime(tz).date }
 
-    var patch by remember { mutableStateOf(SuggestionCache.patches.value[item.id]) }
-    var loading by remember { mutableStateOf(patch == null) }
-    var error by remember { mutableStateOf(false) }
-    var selected by remember { mutableStateOf(patch?.let(::presentFields) ?: emptySet()) }
-    val answers = remember { mutableStateMapOf<String, String>() }
-    var round by remember { mutableStateOf(1) }
+    var patch by remember(item.id) { mutableStateOf(SuggestionCache.patches.value[item.id]) }
+    var started by remember(item.id) { mutableStateOf(patch != null) }
+    var loading by remember(item.id) { mutableStateOf(false) }
+    var error by remember(item.id) { mutableStateOf(false) }
+    var selected by remember(item.id) { mutableStateOf(patch?.let(::presentFields) ?: emptySet()) }
+    val answers = remember(item.id) { mutableStateMapOf<String, String>() }
+    var round by remember(item.id) { mutableStateOf(1) }
 
     fun load(block: suspend () -> ImprovePatch?) {
+        started = true
         loading = true
         error = false
         scope.launch {
@@ -117,22 +128,20 @@ fun ImproveSheet(
         }
     }
 
-    LaunchedEffect(Unit) {
-        if (patch == null) load { improver.suggest(item) }
-    }
-
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(stringResource(Res.string.improve_title), style = MaterialTheme.typography.titleMediumEmphasized)
+    Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.large, modifier = modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Outlined.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text(stringResource(Res.string.improve_title), style = MaterialTheme.typography.titleMediumEmphasized)
+            }
 
             when {
+                !started -> FilledTonalButton(onClick = { load { improver.suggest(item) } }) {
+                    Text(stringResource(Res.string.improve_suggest))
+                }
                 loading -> Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(vertical = 16.dp),
                 ) {
                     LoadingIndicator(Modifier.size(32.dp))
                     Text(
@@ -197,10 +206,7 @@ fun ImproveSheet(
                             }
                         }
                     }
-                    Row(
-                        Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (round == 1 && p.questions.isNotEmpty()) {
                             OutlinedButton(
                                 onClick = {
@@ -222,7 +228,10 @@ fun ImproveSheet(
                                 val updated = applyImprovePatch(item, p, selected, tz)
                                 SuggestionCache.remove(item.id)
                                 onApply(updated, item)
-                                onDismiss()
+                                // applied: back to the idle block, ready to be asked again
+                                patch = null
+                                started = false
+                                round = 1
                             },
                             enabled = selected.isNotEmpty(),
                         ) {

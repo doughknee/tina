@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -110,8 +109,6 @@ import com.tina.app.resources.ai_refined
 import com.tina.app.resources.capture_idea_body
 import com.tina.app.resources.capture_idea_placeholder
 import com.tina.app.resources.capture_placeholder
-import com.tina.app.resources.capture_recent
-import com.tina.app.resources.capture_start
 import com.tina.app.resources.starter_today
 import com.tina.app.resources.starter_tomorrow
 import com.tina.app.resources.starter_next_week
@@ -129,19 +126,19 @@ import com.tina.app.resources.mode_idea
 import com.tina.app.resources.priority_high
 import com.tina.app.resources.priority_low
 import com.tina.app.resources.priority_medium
+import com.tina.app.resources.reminders_nudge
+import com.tina.app.resources.reminders_turn_on
 import com.tina.app.resources.undo
 import com.tina.app.ui.ConnectedButtonGroup
 import com.tina.app.ui.KeyBus
 import com.tina.app.ui.dateLabel
 import com.tina.app.ui.durationLabel
 import com.tina.app.ui.recurrenceLabel
-import com.tina.app.ui.relativeAge
 import com.tina.app.ui.rememberAppMotion
 import com.tina.app.ui.rememberUndoWindow
 import com.tina.app.ui.showUndo
 import com.tina.app.ui.timeLabel
 import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -156,7 +153,7 @@ import org.jetbrains.compose.resources.stringResource
 fun CaptureBar(
     snackbarHostState: SnackbarHostState,
     focusRequester: FocusRequester,
-    /** The shell shows the suggestions sheet while the empty field has focus. */
+    /** The shell shows the suggestion row (when on) while the empty field has focus. */
     onFocusChanged: (Boolean) -> Unit,
     /** An idea's snackbar offers Open: the note continues in the editor. */
     onOpenNote: (Long) -> Unit = {},
@@ -207,8 +204,14 @@ fun CaptureBar(
         }
     }
 
+    val nudgeText = stringResource(Res.string.reminders_nudge)
+    val nudgeAction = stringResource(Res.string.reminders_turn_on)
+    val requestReminders = com.tina.app.notifications.rememberReminderPermissionRequest()
+    val settingsRepository = org.koin.compose.koinInject<com.tina.app.data.SettingsRepository>()
     fun send() {
         val savedIdea = viewModel.ideaMode
+        // the one in-context ask for reminder permission: the first capture with a time, once
+        val nudge = !savedIdea && requestReminders != null && !settings.reminderNudgeShown && viewModel.effective().time != null
         viewModel.save {
             haptic.performHapticFeedback(HapticFeedbackType.Confirm)
             // Android hides only and drops focus once the keyboard is gone (imeVisible below);
@@ -224,6 +227,10 @@ fun CaptureBar(
                     if (result == SnackbarResult.ActionPerformed) onOpenNote(id)
                 } else if (snackbarHostState.showUndo(capturedText, undoText, undoWindow)) {
                     viewModel.undoLastSave()
+                } else if (nudge) {
+                    settingsRepository.setReminderNudgeShown()
+                    val result = snackbarHostState.showSnackbar(nudgeText, actionLabel = nudgeAction, duration = SnackbarDuration.Long)
+                    if (result == SnackbarResult.ActionPerformed) requestReminders?.invoke()
                 }
             }
         }
@@ -351,35 +358,23 @@ fun CaptureBar(
 }
 
 /**
- * The capture sheet: recents on top, then one-tap starters right above the field. Starters
- * come from the user's own history and the parser's own vocabulary, so a tap either
- * re-captures something familiar or drops in a token the parser understands and shows
- * the resulting chip immediately.
+ * One chip row above the bar while the empty field has focus (Settings → Capture → Suggestions,
+ * off by default): the last three captures, then one-tap starters from the user's own history
+ * and the parser's vocabulary. A recent chip opens the item; a starter drops its token in.
  */
 @Composable
-fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit) {
+fun CaptureSuggestionRow(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit, modifier: Modifier = Modifier) {
     val recent by viewModel.recent.collectAsState()
     val starters by viewModel.starters.collectAsState()
-    val use24h = LocalSettings.current.use24h
-    val now = remember(recent) { Clock.System.now() }
-    val today = remember(recent) { now.toLocalDateTime(TimeZone.currentSystemDefault()).date }
-
-    Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
-        if (recent.isNotEmpty()) {
-            Text(
-                stringResource(Res.string.capture_recent).uppercase(),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp),
-            )
-            recent.take(3).forEach { item ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .clickable { onOpenItem(item) }
-                        .padding(horizontal = 4.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+    Row(
+        modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        recent.take(3).forEach { item ->
+            SuggestionChip(
+                onClick = { onOpenItem(item) },
+                label = { Text(item.title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 160.dp)) },
+                icon = {
                     Icon(
                         when (item.type) {
                             ItemType.TASK -> Icons.Outlined.TaskAlt
@@ -388,79 +383,31 @@ fun CaptureSuggestions(viewModel: CaptureViewModel, onOpenItem: (Item) -> Unit) 
                             ItemType.INBOX -> Icons.Outlined.Inbox
                         },
                         contentDescription = null,
-                        Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        Modifier.size(18.dp),
                     )
-                    Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                        Text(
-                            item.title,
-                            style = MaterialTheme.typography.bodyLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        val schedule = when {
-                            item.type == ItemType.EVENT && item.startAt != null -> {
-                                val start = Instant.fromEpochMilliseconds(item.startAt!!)
-                                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                                listOfNotNull(
-                                    dateLabel(start.date, today),
-                                    if (item.allDay) null else timeLabel(start.time, use24h),
-                                ).joinToString(" ")
-                            }
-                            item.dueLocalDate != null -> dateLabel(item.dueLocalDate!!, today)
-                            else -> null
-                        }
-                        Text(
-                            listOfNotNull(
-                                typeLabel(item.type),
-                                schedule,
-                                relativeAge(now.toEpochMilliseconds() - item.createdAt),
-                            ).joinToString(" · "),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-            }
+                },
+            )
         }
-
-        Text(
-            stringResource(Res.string.capture_start).uppercase(),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 4.dp, top = if (recent.isEmpty()) 0.dp else 12.dp),
-        )
-        Row(
-            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            // things captured more than once: a tap re-captures them
-            starters.titles.forEach { title ->
-                SuggestionChip(
-                    onClick = { viewModel.prefill("$title ") },
-                    label = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    icon = { Icon(Icons.Outlined.Replay, null, Modifier.size(18.dp)) },
-                )
-            }
-            starters.tags.forEach { tag ->
-                SuggestionChip(
-                    onClick = { viewModel.prefill("#$tag ") },
-                    label = { Text("#$tag") },
-                )
-            }
-            // parser tokens: the chip appears under the field the moment one is inserted
-            if (!viewModel.ideaMode) listOf(
-                Res.string.starter_today to "today ",
-                Res.string.starter_tomorrow to "tomorrow ",
-                Res.string.starter_next_week to "next week ",
-                Res.string.starter_every_day to "every day ",
-                Res.string.starter_at_9 to "at 9am ",
-            ).forEach { (label, token) ->
-                SuggestionChip(
-                    onClick = { viewModel.prefill(token) },
-                    label = { Text(stringResource(label)) },
-                )
-            }
+        // things captured more than once: a tap re-captures them
+        starters.titles.forEach { title ->
+            SuggestionChip(
+                onClick = { viewModel.prefill("$title ") },
+                label = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 160.dp)) },
+                icon = { Icon(Icons.Outlined.Replay, null, Modifier.size(18.dp)) },
+            )
+        }
+        starters.tags.forEach { tag ->
+            SuggestionChip(onClick = { viewModel.prefill("#$tag ") }, label = { Text("#$tag") })
+        }
+        // parser tokens: the chip appears under the field the moment one is inserted
+        if (!viewModel.ideaMode) listOf(
+            Res.string.starter_today to "today ",
+            Res.string.starter_tomorrow to "tomorrow ",
+            Res.string.starter_next_week to "next week ",
+            Res.string.starter_every_day to "every day ",
+            Res.string.starter_at_9 to "at 9am ",
+        ).forEach { (label, token) ->
+            SuggestionChip(onClick = { viewModel.prefill(token) }, label = { Text(stringResource(label)) })
         }
     }
 }

@@ -12,10 +12,12 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 - A Pro user no longer has to pick “Peggy hosted” under Parsing & AI before Ask works: with the provider off, Pro asks through the relay.
 - Ask mode is gone from the capture bar. Its pill only switches Plan and Idea.
 - Open to: the Sort choice is gone; a saved one opens Plan.
+- Nothing opens as a pop-up any more. Improve is a “Peggy suggests” block inside an item or event, with a Suggest button; the sparkle in the top bar is gone. The Peggy Pro page is a page with a back arrow, and the keyboard goes away when it opens. After an update, “What’s new in 1.x” is a row on Plan above “need a day” that opens the What’s new page. Tags in the note editor (and for a selection on Ideas) are chips inline, with a field for a new one.
+- Recent and starter suggestions are off by default. Settings → Capture → Suggestions turns them on as one chip row above the bar while the field is empty.
+- The reminders permission card is gone from Plan. The first time something with a time is saved, one snackbar offers to turn reminders on.
 
 ### First run
 - Onboarding is one screen: the real capture field, prefilled with an example, its chips live. Start lands in the app with the keyboard up and the text still there.
-- The reminders permission card names what needs to ring and has Not now. Put away, it folds to one line until granted.
 
 ### Sort
 - Every card answers in one row that never scrolls: Today, Tomorrow, Someday, then Done and Drop. Event and Note moved to the item itself.

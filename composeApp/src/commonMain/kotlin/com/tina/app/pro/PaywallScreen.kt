@@ -77,10 +77,17 @@ fun ProPlan.label(): String = when (this) {
 
 /**
  * The one paywall (MONETIZATION.md §6): three prices, the trial called out, restore, and
- * back as "not now". A settings subpage, never a pop-up.
+ * back as "not now". A pushed page (its own route, and the Pro settings subpage), never a pop-up.
  */
 @Composable
 fun PaywallScreen(onBack: () -> Unit, store: ProStore = koinInject(), http: io.ktor.client.HttpClient = koinInject()) {
+    // pushed from the Ask field mid-typing: the keyboard would otherwise stay up over the prices
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    LaunchedEffect(Unit) {
+        focusManager.clearFocus()
+        keyboard?.hide()
+    }
     val entitlement by store.entitlement.collectAsState()
     val prices by store.prices.collectAsState()
     val pending by store.pending.collectAsState()

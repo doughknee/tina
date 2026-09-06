@@ -86,6 +86,10 @@ data class Settings(
     val undatedToSort: Boolean = true,
     val keepKeyboardUp: Boolean = true,
     val voiceCapture: Boolean = true,
+    /** Recent and starter chips above the bar while the empty field has focus. Off: the bar is just the bar. */
+    val captureSuggestions: Boolean = false,
+    /** The one-time "reminders need permission" snackbar has been shown (device state, not backed up). */
+    val reminderNudgeShown: Boolean = false,
     val undoWindowSeconds: Int = 5,
     // Day sections: minutes from midnight, drive Today's Morning/Afternoon/Evening split
     val morningStartMinutes: Int = 6 * 60,
@@ -155,6 +159,8 @@ private val KEY_QS_TILE = booleanPreferencesKey("quickSettingsTile")
 private val KEY_AUTO_FOCUS_CAPTURE = booleanPreferencesKey("autoFocusCapture")
 private val KEY_KEEP_KEYBOARD = booleanPreferencesKey("keepKeyboardUp")
 private val KEY_VOICE_CAPTURE = booleanPreferencesKey("voiceCapture")
+private val KEY_CAPTURE_SUGGESTIONS = booleanPreferencesKey("captureSuggestions")
+private val KEY_REMINDER_NUDGE_SHOWN = booleanPreferencesKey("reminderNudgeShown")
 private val KEY_UNDO_SECONDS = intPreferencesKey("undoWindowSeconds")
 private val KEY_MORNING = intPreferencesKey("morningStartMinutes")
 private val KEY_AFTERNOON = intPreferencesKey("afternoonStartMinutes")
@@ -180,7 +186,6 @@ private val KEY_TRASH_RETENTION = stringPreferencesKey("trashRetention")
 private val KEY_LAUNCH_AT_LOGIN = booleanPreferencesKey("launchAtLogin")
 private val KEY_CLOSE_TO_TRAY = booleanPreferencesKey("closeToTray")
 private val KEY_ONBOARDING_SEEN = booleanPreferencesKey("onboardingSeen")
-private val KEY_REMINDERS_DISMISSED = booleanPreferencesKey("remindersDismissed")
 private val KEY_UNDATED_TO_SORT = booleanPreferencesKey("undatedToSort")
 private val KEY_LAST_TIME_ZONE = androidx.datastore.preferences.core.stringPreferencesKey("lastTimeZone")
 private val KEY_ASK_CHAT = androidx.datastore.preferences.core.longPreferencesKey("askChatId")
@@ -232,6 +237,8 @@ class SettingsRepository(
             autoFocusCapture = p[KEY_AUTO_FOCUS_CAPTURE] ?: false,
             keepKeyboardUp = p[KEY_KEEP_KEYBOARD] ?: true,
             voiceCapture = p[KEY_VOICE_CAPTURE] ?: true,
+            captureSuggestions = p[KEY_CAPTURE_SUGGESTIONS] ?: false,
+            reminderNudgeShown = p[KEY_REMINDER_NUDGE_SHOWN] ?: false,
             undoWindowSeconds = p[KEY_UNDO_SECONDS] ?: 5,
             morningStartMinutes = p[KEY_MORNING] ?: (6 * 60),
             afternoonStartMinutes = p[KEY_AFTERNOON] ?: (12 * 60),
@@ -302,6 +309,8 @@ class SettingsRepository(
     suspend fun setAutoFocusCapture(enabled: Boolean) = store.edit { it[KEY_AUTO_FOCUS_CAPTURE] = enabled }
     suspend fun setKeepKeyboardUp(enabled: Boolean) = store.edit { it[KEY_KEEP_KEYBOARD] = enabled }
     suspend fun setVoiceCapture(enabled: Boolean) = store.edit { it[KEY_VOICE_CAPTURE] = enabled }
+    suspend fun setCaptureSuggestions(enabled: Boolean) = store.edit { it[KEY_CAPTURE_SUGGESTIONS] = enabled }
+    suspend fun setReminderNudgeShown() = store.edit { it[KEY_REMINDER_NUDGE_SHOWN] = true }
     suspend fun setUndoWindowSeconds(seconds: Int) = store.edit { it[KEY_UNDO_SECONDS] = seconds }
     suspend fun setMorningStart(minutes: Int) = store.edit { it[KEY_MORNING] = minutes }
     suspend fun setAfternoonStart(minutes: Int) = store.edit { it[KEY_AFTERNOON] = minutes }
@@ -333,9 +342,6 @@ class SettingsRepository(
     suspend fun setOnboardingSeen() = store.edit { it[KEY_ONBOARDING_SEEN] = true }
     suspend fun resetOnboarding() = store.edit { it[KEY_ONBOARDING_SEEN] = false }
 
-    /** "Not now" on the reminders permission card: it folds to one line until granted. */
-    val remindersDismissed: Flow<Boolean> = store.data.map { it[KEY_REMINDERS_DISMISSED] ?: false }
-    suspend fun setRemindersDismissed(value: Boolean) = store.edit { it[KEY_REMINDERS_DISMISSED] = value }
 
     /** The zone all-day events were last anchored in; see [syncTimeZone]. */
     suspend fun lastTimeZoneId(): String? = store.data.first()[KEY_LAST_TIME_ZONE]
@@ -375,6 +381,7 @@ class SettingsRepository(
         p[KEY_AUTO_FOCUS_CAPTURE] = s.autoFocusCapture
         p[KEY_KEEP_KEYBOARD] = s.keepKeyboardUp
         p[KEY_VOICE_CAPTURE] = s.voiceCapture
+        p[KEY_CAPTURE_SUGGESTIONS] = s.captureSuggestions
         p[KEY_UNDO_SECONDS] = s.undoWindowSeconds
         p[KEY_MORNING] = s.morningStartMinutes
         p[KEY_AFTERNOON] = s.afternoonStartMinutes

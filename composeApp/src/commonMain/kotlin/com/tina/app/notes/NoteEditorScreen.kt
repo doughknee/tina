@@ -111,7 +111,6 @@ import com.tina.app.resources.note_untitled
 import com.tina.app.resources.note_words
 import com.tina.app.resources.state_off
 import com.tina.app.resources.state_on
-import com.tina.app.resources.tag_sheet_one
 import com.tina.app.ui.ColorSwatchRow
 import com.tina.app.ui.relativeAge
 import kotlin.time.Clock
@@ -365,31 +364,33 @@ fun NoteEditorScreen(
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
             )
 
-            // tags sit at the end of the body flow; the dashed chip adds one
+            // tags sit at the end of the body flow; "+ tag" unfolds the picker inline under them
             FlowRow(
-                Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 96.dp),
+                Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = if (showTags) 4.dp else 96.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 item?.tags.orEmpty().forEach { tag ->
                     AssistChip(onClick = { onOpenTag(tag) }, label = { Text("#$tag") })
                 }
                 AssistChip(
-                    onClick = { showTags = true },
+                    onClick = { showTags = !showTags },
                     label = { Text(stringResource(Res.string.note_add_tag)) },
                     colors = AssistChipDefaults.assistChipColors(labelColor = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
+            AnimatedVisibility(
+                visible = showTags,
+                enter = com.tina.app.ui.expandEnter(),
+                exit = com.tina.app.ui.expandExit(),
+            ) {
+                TagPicker(
+                    tags = allTags,
+                    checked = item?.tags.orEmpty().toSet(),
+                    onToggle = viewModel::setTag,
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 96.dp),
+                )
+            }
         }
-    }
-
-    if (showTags) {
-        TagSheet(
-            title = stringResource(Res.string.tag_sheet_one),
-            tags = allTags,
-            checked = item?.tags.orEmpty().toSet(),
-            onToggle = viewModel::setTag,
-            onDismiss = { showTags = false },
-        )
     }
 }
 

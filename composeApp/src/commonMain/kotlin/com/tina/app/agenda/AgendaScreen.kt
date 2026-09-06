@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -125,6 +126,8 @@ import com.tina.app.resources.horizon_later
 import com.tina.app.resources.inbox_captured
 import com.tina.app.resources.plan_decide
 import com.tina.app.resources.plan_need_a_day
+import com.tina.app.resources.whats_new_in
+import com.tina.app.resources.whats_new_see
 import com.tina.app.resources.months_full
 import com.tina.app.resources.fewer_rows
 import com.tina.app.resources.more_rows
@@ -203,6 +206,9 @@ fun AgendaScreen(
     onOpenNeedDay: () -> Unit,
     onOpenItem: (Item) -> Unit,
     onCaptureForDate: (LocalDate) -> Unit,
+    /** The feature release whose What's new has not been seen yet, or null for no row. */
+    whatsNewVersion: String? = null,
+    onOpenWhatsNew: () -> Unit = {},
     viewModel: AgendaViewModel = koinViewModel(),
 ) {
     val settings = LocalSettings.current
@@ -433,14 +439,6 @@ fun AgendaScreen(
                 }
                 return@Column
             }
-            // the first thing on screen with a time is what the permission is for
-            val timed = ui.groups.asSequence().flatMap { it.rows }
-                .filterIsInstance<AgendaRow.Single>().firstOrNull { it.time != null && !it.done }
-            com.tina.app.notifications.ReminderPermissionBanner(
-                subject = timed?.let { "${it.item.title} at ${timeLabel(it.time!!, settings.use24h)}" },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            )
-
             // a horizontal swipe on the list moves to the next range of the same size
             val swipeThreshold = with(density) { 96.dp.toPx() }
             val swipeModifier = Modifier.pointerInput(granularity) {
@@ -472,6 +470,10 @@ fun AgendaScreen(
             }
 
             LazyColumn(Modifier.fillMaxWidth().weight(1f).then(swipeModifier), state = listState) {
+                // once per feature release, after an update: one row that opens the What's new page
+                whatsNewVersion?.let { version ->
+                    item(key = "whats-new") { WhatsNewRow(version, onOpenWhatsNew, Modifier.animateItem()) }
+                }
                 // Sort is not a tab: this row, under the strip, is the way to the Need-a-day page
                 if (ui.inboxCount > 0) {
                     item(key = "need-day") {
@@ -933,6 +935,36 @@ private fun GroupHeader(group: AgendaGroup, granularity: Granularity, today: Loc
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+}
+
+@Composable
+private fun WhatsNewRow(version: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    // the Need-a-day row's shape in the secondary container, so the two read as one family of rows
+    Surface(
+        onClick = onClick,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = RoundedCornerShape(14.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+    ) {
+        Row(
+            Modifier.defaultMinSize(minHeight = 52.dp).padding(start = 16.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Outlined.NewReleases, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
+            Text(
+                stringResource(Res.string.whats_new_in, version),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.weight(1f).padding(start = 12.dp),
+            )
+            Text(
+                stringResource(Res.string.whats_new_see),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         }
     }
 }
