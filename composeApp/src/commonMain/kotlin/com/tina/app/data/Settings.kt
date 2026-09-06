@@ -180,6 +180,7 @@ private val KEY_TRASH_RETENTION = stringPreferencesKey("trashRetention")
 private val KEY_LAUNCH_AT_LOGIN = booleanPreferencesKey("launchAtLogin")
 private val KEY_CLOSE_TO_TRAY = booleanPreferencesKey("closeToTray")
 private val KEY_ONBOARDING_SEEN = booleanPreferencesKey("onboardingSeen")
+private val KEY_REMINDERS_DISMISSED = booleanPreferencesKey("remindersDismissed")
 private val KEY_UNDATED_TO_SORT = booleanPreferencesKey("undatedToSort")
 private val KEY_LAST_TIME_ZONE = androidx.datastore.preferences.core.stringPreferencesKey("lastTimeZone")
 private val KEY_ASK_CHAT = androidx.datastore.preferences.core.longPreferencesKey("askChatId")
@@ -331,6 +332,10 @@ class SettingsRepository(
     val onboardingSeen: Flow<Boolean> = store.data.map { it[KEY_ONBOARDING_SEEN] ?: false }
     suspend fun setOnboardingSeen() = store.edit { it[KEY_ONBOARDING_SEEN] = true }
     suspend fun resetOnboarding() = store.edit { it[KEY_ONBOARDING_SEEN] = false }
+
+    /** "Not now" on the reminders permission card: it folds to one line until granted. */
+    val remindersDismissed: Flow<Boolean> = store.data.map { it[KEY_REMINDERS_DISMISSED] ?: false }
+    suspend fun setRemindersDismissed(value: Boolean) = store.edit { it[KEY_REMINDERS_DISMISSED] = value }
 
     /** The zone all-day events were last anchored in; see [syncTimeZone]. */
     suspend fun lastTimeZoneId(): String? = store.data.first()[KEY_LAST_TIME_ZONE]

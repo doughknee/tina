@@ -61,7 +61,7 @@
     <string name="date_next_week">Next week</string>
     <string name="date_none">No date</string>
 
-    <string name="inbox">Inbox</string>
+    <string name="inbox">Sort</string>
     <string name="inbox_captured">captured %1$s</string>
     <string name="triage_this_week">This week</string>
     <string name="triage_someday">Someday</string>
@@ -71,6 +71,7 @@
     <string name="triage_keep">Keep</string>
     <string name="triage_drop">Drop</string>
     <string name="sort_new">New</string>
+    <string name="sort_moved">Moved to %1$s</string>
     <string name="sort_overdue">Overdue</string>
     <string name="sort_snoozed">Snoozed</string>
     <string name="sort_someday">Someday</string>
@@ -129,7 +130,11 @@
 
     <string name="reminders_banner_title">Turn on reminders</string>
     <string name="reminders_banner_body">To ring on time, Peggy needs permission to notify you and to schedule exact alarms.</string>
+    <string name="reminders_banner_for">%1$s can only ring with permission to notify you.</string>
     <string name="reminders_allow_notifications">Allow notifications</string>
+    <string name="reminders_not_now">Not now</string>
+    <string name="reminders_off">Reminders are off</string>
+    <string name="reminders_turn_on">Turn on</string>
     <string name="reminders_allow_exact">Allow exact alarms</string>
 
     <string name="search_everything">Search everything</string>
@@ -277,17 +282,10 @@
     <string name="dev_unlocked">Developer options unlocked</string>
     <string name="sec_pro">Peggy Pro</string>
     <string name="onb_skip">Skip</string>
-    <string name="onb_next">Next</string>
-    <string name="onb_start">Start capturing</string>
-    <string name="onb_capture_title">Two seconds from thought to done</string>
-    <string name="onb_capture_body">Type what’s on your mind. Dates, times, repeats and tags are read from the words. No forms, no pickers.</string>
-    <string name="onb_capture_example">“dentist thursday 3pm” → Thursday, 3 PM</string>
-    <string name="onb_sort_title">Sort it later</string>
-    <string name="onb_sort_body">Anything without a date waits on Sort, next to what’s overdue or snoozed. One tap answers each: Today, Done, Keep, Drop. Undo everywhere, no “are you sure?”.</string>
-    <string name="onb_reminders_title">Rings on time</string>
-    <string name="onb_reminders_body">Reminders fire at the exact minute, survive reboots and time zones, and come with Done and Snooze.</string>
-    <string name="onb_notifications_on">Notifications are on</string>
-    <string name="onb_widget_hint">Capture without opening Peggy: add the home-screen widget or the Quick Settings tile.</string>
+    <string name="onb_start">That’s it, start</string>
+    <string name="onb_capture_title">Type it the way you’d say it</string>
+    <string name="onb_capture_body">Dates, times, repeats and tags are read from the words. No forms, no pickers. Try changing it.</string>
+    <string name="onb_capture_example">dentist thursday 3pm</string>
     <string name="pro_title">Peggy Pro</string>
     <string name="pro_plan_free">Free plan</string>
     <string name="pro_plan_active">Pro · %1$s</string>
@@ -545,7 +543,7 @@
     <string name="undo">Undo</string>
     <string name="chip_remove">Remove</string>
 
-    <string name="type_inbox">Inbox</string>
+    <string name="type_inbox">To sort</string>
     <string name="type_task">Task</string>
     <string name="type_event">Event</string>
     <string name="type_note">Note</string>

@@ -437,8 +437,12 @@ fun AgendaScreen(
                 }
                 return@Column
             }
+            // the first thing on screen with a time is what the permission is for
+            val timed = ui.groups.asSequence().flatMap { it.rows }
+                .filterIsInstance<AgendaRow.Single>().firstOrNull { it.time != null && !it.done }
             com.tina.app.notifications.ReminderPermissionBanner(
-                Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                subject = timed?.let { "${it.item.title} at ${timeLabel(it.time!!, settings.use24h)}" },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
             )
 
             // a horizontal swipe on the list moves to the next range of the same size

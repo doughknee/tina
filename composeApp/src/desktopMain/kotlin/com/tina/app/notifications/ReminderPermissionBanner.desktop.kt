@@ -4,4 +4,4 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-actual fun ReminderPermissionBanner(modifier: Modifier) = Unit
+actual fun ReminderPermissionBanner(subject: String?, modifier: Modifier) = Unit

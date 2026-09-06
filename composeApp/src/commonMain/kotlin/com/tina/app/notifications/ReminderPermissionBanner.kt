@@ -8,4 +8,5 @@ import androidx.compose.ui.Modifier
  * Renders nothing when everything is already granted (and always on desktop).
  */
 @Composable
-expect fun ReminderPermissionBanner(modifier: Modifier)
+/** [subject] names what needs to ring ("Dentist at 3 PM") when something on screen does. */
+expect fun ReminderPermissionBanner(subject: String?, modifier: Modifier)

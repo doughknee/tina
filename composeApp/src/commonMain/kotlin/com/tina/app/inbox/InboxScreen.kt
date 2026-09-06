@@ -2,16 +2,19 @@ package com.tina.app.inbox
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Snooze
@@ -49,6 +52,7 @@ import com.tina.app.resources.settings
 import com.tina.app.resources.sort_due
 import com.tina.app.resources.sort_empty
 import com.tina.app.resources.sort_empty_sub
+import com.tina.app.resources.sort_moved
 import com.tina.app.resources.sort_new
 import com.tina.app.resources.sort_overdue
 import com.tina.app.resources.sort_snoozed
@@ -60,8 +64,6 @@ import com.tina.app.resources.tab_sort
 import com.tina.app.resources.triage_done
 import com.tina.app.resources.triage_drop
 import com.tina.app.resources.triage_keep
-import com.tina.app.resources.triage_make_event
-import com.tina.app.resources.triage_make_note
 import com.tina.app.resources.triage_someday
 import com.tina.app.resources.triage_this_week
 import com.tina.app.resources.undo
@@ -90,36 +92,34 @@ private enum class Group(val title: StringResource) {
     SOMEDAY(Res.string.sort_someday),
 }
 
-/** The chips a group offers, in order; the first two double as the swipes. */
+/** The date answers a group offers, in order. Done and Drop sit beside them on every card. */
 private fun chipsFor(group: Group): List<Pair<TriageAction, StringResource>> = when (group) {
-    Group.NEW -> listOf(
+    Group.NEW, Group.OVERDUE -> listOf(
         TriageAction.TODAY to Res.string.date_today,
-        TriageAction.SOMEDAY to Res.string.triage_someday,
-        TriageAction.TOMORROW to Res.string.date_tomorrow,
-        TriageAction.THIS_WEEK to Res.string.triage_this_week,
-        TriageAction.MAKE_EVENT to Res.string.triage_make_event,
-        TriageAction.MAKE_NOTE to Res.string.triage_make_note,
-    )
-    Group.OVERDUE -> listOf(
-        TriageAction.TODAY to Res.string.date_today,
-        TriageAction.DONE to Res.string.triage_done,
         TriageAction.TOMORROW to Res.string.date_tomorrow,
         TriageAction.SOMEDAY to Res.string.triage_someday,
     )
     Group.SNOOZED -> listOf(
-        TriageAction.DONE to Res.string.triage_done,
         TriageAction.KEEP to Res.string.triage_keep,
         TriageAction.TOMORROW to Res.string.date_tomorrow,
     )
     Group.SOMEDAY -> listOf(
         TriageAction.TODAY to Res.string.date_today,
-        TriageAction.THIS_WEEK to Res.string.triage_this_week,
         TriageAction.TOMORROW to Res.string.date_tomorrow,
+        TriageAction.THIS_WEEK to Res.string.triage_this_week,
     )
 }
 
+/** Right swipe is the likeliest answer for the group, left the second. */
+private fun swipesFor(group: Group): Pair<Pair<TriageAction, StringResource>, Pair<TriageAction, StringResource>> = when (group) {
+    Group.NEW -> (TriageAction.TODAY to Res.string.date_today) to (TriageAction.SOMEDAY to Res.string.triage_someday)
+    Group.OVERDUE -> (TriageAction.TODAY to Res.string.date_today) to (TriageAction.DONE to Res.string.triage_done)
+    Group.SNOOZED -> (TriageAction.DONE to Res.string.triage_done) to (TriageAction.KEEP to Res.string.triage_keep)
+    Group.SOMEDAY -> (TriageAction.TODAY to Res.string.date_today) to (TriageAction.THIS_WEEK to Res.string.triage_this_week)
+}
+
 /** Sort: every decision owed, grouped, each a card with one-tap answers. Answering animates it out. */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun InboxScreen(
     onOpenSettings: () -> Unit,
@@ -130,7 +130,6 @@ fun InboxScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
-    val sortedText = stringResource(Res.string.sorted)
     val deletedText = stringResource(Res.string.deleted)
     val undoText = stringResource(Res.string.undo)
     val use24h = LocalSettings.current.use24h
@@ -217,8 +216,15 @@ fun InboxScreen(
                             else stringResource(Res.string.inbox_captured, relativeAge(nowMillis - item.createdAt))
                         }
                     }
-                    val (rightAction, rightLabel) = chips[0]
-                    val (leftAction, leftLabel) = chips[1]
+                    val (right, left) = swipesFor(group)
+                    val (rightAction, rightLabel) = right
+                    val (leftAction, leftLabel) = left
+                    val rightText = stringResource(rightLabel)
+                    val leftText = stringResource(leftLabel)
+                    val rightMessage = triageMessage(rightAction, rightText)
+                    val leftMessage = triageMessage(leftAction, leftText)
+                    val doneText = stringResource(Res.string.triage_done)
+                    val dropText = stringResource(Res.string.triage_drop)
                     SectionCardItem(0, 1, Modifier.padding(bottom = 12.dp).animateItem()) {
                         ItemRow(
                             item = item,
@@ -229,33 +235,35 @@ fun InboxScreen(
                             onRename = { viewModel.rename(item, it) },
                             onOpen = { onOpenItem(item) },
                             // the two-second rule: a swipe answers without hunting for a chip; both are undoable
-                            swipeRight = SwipeAction(iconFor(rightAction), SwipeTone.PRIMARY, stringResource(rightLabel)) {
-                                withUndo(sortedText, { viewModel.triage(item, rightAction) }, viewModel::undoTriage)
+                            swipeRight = SwipeAction(iconFor(rightAction), SwipeTone.PRIMARY, rightText) {
+                                withUndo(rightMessage, { viewModel.triage(item, rightAction) }, viewModel::undoTriage)
                             },
-                            swipeLeft = SwipeAction(iconFor(leftAction), SwipeTone.TERTIARY, stringResource(leftLabel)) {
-                                withUndo(sortedText, { viewModel.triage(item, leftAction) }, viewModel::undoTriage)
+                            swipeLeft = SwipeAction(iconFor(leftAction), SwipeTone.TERTIARY, leftText) {
+                                withUndo(leftMessage, { viewModel.triage(item, leftAction) }, viewModel::undoTriage)
                             },
                             extraContent = {
-                                LazyRow(
-                                    Modifier.padding(bottom = 4.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    items(chips.size) { i ->
-                                        val (action, label) = chips[i]
-                                        SuggestionChip(
-                                            onClick = {
-                                                withUndo(sortedText, { viewModel.triage(item, action) }, viewModel::undoTriage)
-                                            },
-                                            label = { Text(stringResource(label), style = MaterialTheme.typography.labelMedium) },
-                                        )
-                                    }
-                                    if (group == Group.SOMEDAY) {
-                                        item {
+                                // one row, nothing to scroll: the dates, then Done and Drop where the thumb already is
+                                Row(Modifier.fillMaxWidth().padding(bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    FlowRow(
+                                        Modifier.weight(1f),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    ) {
+                                        chips.forEach { (action, label) ->
+                                            val text = stringResource(label)
+                                            val message = triageMessage(action, text)
                                             SuggestionChip(
-                                                onClick = { withUndo(deletedText, { viewModel.delete(item) }, viewModel::undoDelete) },
-                                                label = { Text(stringResource(Res.string.triage_drop), style = MaterialTheme.typography.labelMedium) },
+                                                onClick = { withUndo(message, { viewModel.triage(item, action) }, viewModel::undoTriage) },
+                                                label = { Text(text, style = MaterialTheme.typography.labelMedium) },
                                             )
                                         }
+                                    }
+                                    // 40dp, not the 48dp default: three chips plus both icons must fit one line on a 360dp phone
+                                    IconButton(onClick = { withUndo(doneText, { viewModel.triage(item, TriageAction.DONE) }, viewModel::undoTriage) }, Modifier.size(40.dp)) {
+                                        Icon(Icons.Outlined.Check, doneText)
+                                    }
+                                    IconButton(onClick = { withUndo(deletedText, { viewModel.delete(item) }, viewModel::undoDelete) }, Modifier.size(40.dp)) {
+                                        Icon(Icons.Outlined.Delete, dropText)
                                     }
                                 }
                             },
@@ -265,6 +273,14 @@ fun InboxScreen(
             }
         }
     }
+}
+
+/** What the snackbar says: where it went, not just "Sorted". */
+@Composable
+private fun triageMessage(action: TriageAction, label: String): String = when (action) {
+    TriageAction.DONE -> stringResource(Res.string.triage_done)
+    TriageAction.KEEP -> stringResource(Res.string.sorted)
+    else -> stringResource(Res.string.sort_moved, label)
 }
 
 private fun iconFor(action: TriageAction) = when (action) {

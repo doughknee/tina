@@ -4,6 +4,15 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 
 ## Unreleased
 
+### First run
+- Onboarding is one screen: the real capture field, prefilled with an example, its chips live. Start lands in the app with the keyboard up and the text still there.
+- The reminders permission card names what needs to ring and has Not now. Put away, it folds to one line until granted.
+
+### Sort
+- Every card answers in one row that never scrolls: Today, Tomorrow, Someday, then Done and Drop. Event and Note moved to the item itself.
+- The snackbar says where it went (“Moved to Someday”), not just “Sorted”.
+- Unsorted items are labelled “To sort” instead of “Inbox”.
+
 ### Capture
 - On the Ideas page the bar writes ideas without switching the toggle first.
 - “every Mon Wed” repeats on both days; “next Friday” means the Friday of next week, not a week later; “idea:” or “note:” at the start files a note; a “?” no longer floats away from its word.
