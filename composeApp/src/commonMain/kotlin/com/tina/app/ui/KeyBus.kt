@@ -28,7 +28,7 @@ object KeyBus {
  * "Open capture with the field focused, whatever the setting says" — raised by the
  * quick-capture widget and tile, whose entire purpose is a keyboard-up capture, and by
  * the desktop focus shortcut. State, not an event, so a cold start can't miss it while
- * the UI is still composing; the shell drops ask mode and the capture bar clears it.
+ * the UI is still composing; the capture bar clears it.
  */
 /** An undo raised by a page that is about to close; the shell shows it once it is back on top. */
 class UndoRequest(val message: String, val undo: suspend () -> Unit)

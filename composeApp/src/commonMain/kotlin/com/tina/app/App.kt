@@ -63,6 +63,9 @@ data class TagRoute(val tag: String)
 /** The Sort page, pushed from the "N need a day" row on Plan. */
 data object NeedADayRoute
 
+/** The Ask conversation, pushed from the Ask tab's Follow up. */
+data object AskChatRoute
+
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun App() {
@@ -123,6 +126,9 @@ fun App() {
                             onOpenNote = { id -> push(NoteRoute(id)) },
                             onOpenTag = { tag -> push(TagRoute(tag)) },
                             onOpenNeedDay = { push(NeedADayRoute) },
+                            onOpenAskChat = { push(AskChatRoute) },
+                            // REL-212 gives the paywall its own page; until then it is the settings subpage
+                            onOpenPaywall = { push(SettingsSubRoute(com.tina.app.ui.settings.SettingsDestination.PRO.name)) },
                         )
                     }
                 }
@@ -194,6 +200,9 @@ fun App() {
                             }
                             entry<NeedADayRoute> {
                                 com.tina.app.inbox.InboxScreen(onBack = ::popLast, onOpenItem = ::openItem)
+                            }
+                            entry<AskChatRoute> {
+                                com.tina.app.ask.AskScreen(onBack = ::popLast)
                             }
                             entry<TagRoute> { route ->
                                 com.tina.app.search.TagScreen(

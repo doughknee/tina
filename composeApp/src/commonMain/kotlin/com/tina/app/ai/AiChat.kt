@@ -143,7 +143,9 @@ class AiChat(
         modelOverride: String? = null,
         onDelta: ((String) -> Unit)? = null,
     ): String {
-        val settings = settingsRepository.settings.first()
+        val settings = settingsRepository.settings.first().let {
+            it.copy(aiProvider = askProvider(it.aiProvider, proStore.entitlement.value))
+        }
         if (settings.aiProvider == AiProvider.OFF) throw AiException(AiError.OFF)
         val hosted = settings.aiProvider == AiProvider.HOSTED
         val model = if (hosted) HOSTED_MODEL_PLACEHOLDER else modelOverride ?: settings.aiModel

@@ -8,6 +8,9 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 - The bottom nav is Plan · Ask · Ideas. Sort is no longer a tab: Plan shows one row under the calendar strip, “N need a day · Decide”, that opens the Need a day page. The “N to sort” card is gone; the row replaces it.
 - Need a day lists New, Snoozed and Someday. Overdue stays on Plan.
 - Search is the Ask tab: a full page with the field on top, results as you type. It is free and never gated. Ctrl+F and the search icon on Plan go there.
+- Ask is the Ask tab too. Free: three example questions and the Peggy Pro offer on the page itself (7 days free, then $29.99 a year or $3.99 a month); the examples and the offer open the Pro page. Pro: the subtitle shows asks left this month, typing shows Matches, Enter streams the Answer under them, and Follow up opens the conversation as a page with a back arrow.
+- A Pro user no longer has to pick “Peggy hosted” under Parsing & AI before Ask works: with the provider off, Pro asks through the relay.
+- Ask mode is gone from the capture bar. Its pill only switches Plan and Idea.
 - Open to: the Sort choice is gone; a saved one opens Plan.
 
 ### First run

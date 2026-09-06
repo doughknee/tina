@@ -1,5 +1,6 @@
 package com.tina.app.ai
 
+import com.tina.app.data.AiProvider
 import com.tina.app.pro.Entitlement
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -20,6 +21,14 @@ const val HOSTED_RELAY_URL = "https://relay.doughknee.com"
 
 /** The model field is required by the wire format; the relay replaces it per route. */
 const val HOSTED_MODEL_PLACEHOLDER = "relay"
+
+/**
+ * The provider Ask actually uses: a Pro user who never opened Settings → Parsing & AI has the
+ * provider still OFF, and the Ask tab must answer for them anyway, so Pro fills that in with
+ * the relay. An explicit provider (own key, Ollama) is always respected.
+ */
+fun askProvider(configured: AiProvider, entitlement: Entitlement): AiProvider =
+    if (configured == AiProvider.OFF && entitlement is Entitlement.Pro) AiProvider.HOSTED else configured
 
 /** What the relay needs to know who is asking and for what. Null when the caller is not Pro. */
 fun relayHeaders(entitlement: Entitlement, route: String): Map<String, String>? {
