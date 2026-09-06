@@ -5,7 +5,7 @@ Everything needed to go from a sideloaded APK to a production listing. Items mar
 ## 1. Account and policy (owner)
 
 - [x] Developer profile verified, payments profile created, tax info submitted.
-- [ ] Enrol in the 15% service-fee tier (Play Console → Monetization setup) before the first sale.
+- [x] Enrol in the 15% service-fee tier. Already enrolled (Developer account → Associated developer accounts shows it, checked 2026-09-05).
 - [x] Create the app: name **Peggy**, default language en-US, app (not game), free with in-app purchases.
 - [x] Declarations: Ads = none; News app = no; COVID = no; Government app = no; Financial features = none; Health = none.
 - [x] Target audience: 13+ (not designed for children). Content rating questionnaire → Everyone.
