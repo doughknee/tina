@@ -24,9 +24,9 @@ import kotlinx.datetime.toLocalDateTime
 enum class TriageAction { TODAY, TOMORROW, THIS_WEEK, SOMEDAY, MAKE_EVENT, MAKE_NOTE, DONE, KEEP }
 
 /**
- * Sort: everything that needs a decision, in one place. New captures with no date, tasks
- * that slipped past their day, reminders that were snoozed, and someday items nobody has
- * touched in a month. Every action here is one tap and undoable.
+ * Need a day: everything that needs a decision, in one place. New captures with no date,
+ * reminders that were snoozed, and someday items nobody has touched in a month. Overdue
+ * tasks stay on Plan. Every action here is one tap and undoable.
  */
 class InboxViewModel(private val repository: ItemRepository) : ViewModel() {
     private val tz = TimeZone.currentSystemDefault()
@@ -35,10 +35,6 @@ class InboxViewModel(private val repository: ItemRepository) : ViewModel() {
 
     val decisions: StateFlow<Decisions> = repository.observeDecisions()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Decisions())
-
-    /** The nav badge: how many decisions are owed. */
-    val count: StateFlow<Int> = repository.observeDecisionCount()
-        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     /** One tap, no dialogs: the row leaves the page immediately. */
     fun triage(item: Item, action: TriageAction) {
