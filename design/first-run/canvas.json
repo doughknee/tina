@@ -2,7 +2,7 @@
   "artboards": [
     {
       "file": "Main.dc.html",
-      "title": "1 \u00b7 First run",
+      "title": "A1 \u00b7 First run",
       "x": 0,
       "y": 0,
       "w": 390,
@@ -10,7 +10,7 @@
     },
     {
       "file": "Typing.dc.html",
-      "title": "2 \u00b7 Typing",
+      "title": "A2 \u00b7 Typing",
       "x": 480,
       "y": 0,
       "w": 390,
@@ -18,7 +18,7 @@
     },
     {
       "file": "LandedPlan.dc.html",
-      "title": "3a \u00b7 Dated \u2192 Plan",
+      "title": "A3a \u00b7 Dated \u2192 Plan",
       "x": 960,
       "y": 0,
       "w": 390,
@@ -26,7 +26,7 @@
     },
     {
       "file": "LandedSort.dc.html",
-      "title": "3b \u00b7 Undated \u2192 Sort",
+      "title": "A3b \u00b7 Undated \u2192 Sort",
       "x": 1440,
       "y": 0,
       "w": 390,
@@ -34,7 +34,7 @@
     },
     {
       "file": "Everyday.dc.html",
-      "title": "4 \u00b7 A week in",
+      "title": "A4 \u00b7 A week in",
       "x": 1920,
       "y": 0,
       "w": 390,
@@ -42,9 +42,49 @@
     },
     {
       "file": "Settings.dc.html",
-      "title": "Settings \u203a On screen",
+      "title": "A \u00b7 Settings \u203a On screen",
       "x": 2400,
       "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "ThreadFirst.dc.html",
+      "title": "B1 \u00b7 Thread, first message",
+      "x": 0,
+      "y": 1044,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "ThreadSort.dc.html",
+      "title": "B2 \u00b7 Sort and Ideas inline",
+      "x": 480,
+      "y": 1044,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "ThreadWeek.dc.html",
+      "title": "B3 \u00b7 A week in",
+      "x": 960,
+      "y": 1044,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "FeedFirst.dc.html",
+      "title": "C1 \u00b7 Feed, after two captures",
+      "x": 0,
+      "y": 2088,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "FeedWeek.dc.html",
+      "title": "C2 \u00b7 A week in",
+      "x": 480,
+      "y": 2088,
       "w": 390,
       "h": 844
     }
@@ -55,7 +95,21 @@
       "x": 0,
       "y": -220,
       "w": 900,
-      "text": "THE RULE\nThe default surface is the bar, today\u2019s list and three tabs. Everything else is opt-in in Settings \u203a On screen.\n\nFirst run is one question and a field. What they type decides which page they see first, and that page gets one callout. The page they didn\u2019t land on is never explained; the tab is just there. No prefilled example, no suggestions sheet, no calendar strip, no range control, no reminders card. Reminders are asked for once, as a snackbar, the first time something has a time."
+      "text": "A \u00b7 STRIPPED (same app, less on it)\nThe default surface is the bar, today\u2019s list and three tabs. Everything else is opt-in in Settings \u203a On screen. First run is one question and a field; what they type decides which page they see first, and that page gets one callout."
+    },
+    {
+      "id": "thread",
+      "x": 1440,
+      "y": 1044,
+      "w": 520,
+      "text": "B \u00b7 THREAD (Peggy is a conversation)\nHome is a message thread. You type, Peggy answers with what it did, and Sort happens as chips inside her reply. Today is a pinned card that opens the day view. Ideas are long messages she files.\n\nWhy: a message field cannot be mistaken for a calendar, and every reply is the explanation you gave Jensen by hand.\nCost: a new shell; a thread is poor at showing a week, so Plan survives as a second screen behind the pinned card."
+    },
+    {
+      "id": "feed",
+      "x": 960,
+      "y": 2088,
+      "w": 520,
+      "text": "C \u00b7 ONE FEED (no tabs)\nOne scrolling page: Today, Tomorrow, then Needs a day with the Sort rail inline, then Ideas. The bar at the bottom, no navigation at all.\n\nWhy: the most literal \u201cas simple as possible\u201d, and every component already exists.\nCost: a busy user gets a long page; Sort and Ideas lose their own room."
     }
   ],
   "launch": {

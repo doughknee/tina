@@ -99,6 +99,99 @@ settings = page(
     EXTRA,
 )
 
+# ---- Direction B · Peggy is a thread ---------------------------------------------------
+THREAD_CSS = """
+    .thread { position: absolute; left: 0; right: 0; top: 96px; bottom: 160px; padding: 0 16px; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; }
+    .me { align-self: flex-end; max-width: 78%; background: #475d92; color: #fff; padding: 10px 14px; border-radius: 18px 18px 4px 18px; font-size: 16px; line-height: 22px; }
+    .peg { align-self: flex-start; max-width: 84%; background: #eeedf4; color: #1a1b20; padding: 10px 14px; border-radius: 18px 18px 18px 4px; font-size: 15px; line-height: 21px; }
+    .peg .chips { margin-top: 8px; flex-wrap: wrap; gap: 6px; }
+    .peg .chip { height: 30px; line-height: 28px; font-size: 13px; background: #f9f9ff; }
+    .day { align-self: center; font-size: 12px; color: #74777f; margin: 6px 0; }
+    .pin { margin: 0 16px; padding: 12px 14px; border-radius: 16px; background: #f4f3fa; position: relative; z-index: 1; }
+    .pin .h { font-size: 13px; font-weight: 500; color: #44464f; display: flex; justify-content: space-between; }
+    .pin .l { font-size: 15px; margin-top: 6px; display: flex; gap: 10px; align-items: center; }
+    .pin .l span { color: #44464f; font-size: 13px; }
+"""
+
+def thread_top(pinned):
+    return (f'<div class="top" style="padding-bottom:4px"><div class="h1">Peggy</div><div class="icons">{SVG["search"]}{SVG["gear"]}</div></div>'
+            + (f'<div class="pin"><div class="h"><span>TODAY · Saturday 5</span><span style="color:#475d92">Open ›</span></div>{pinned}</div>' if pinned else ""))
+
+def thread_bar():
+    return f'<div class="bar" style="bottom:24px"><div class="hint" style="padding-left:12px">Message Peggy</div>{SVG["mic"]}</div>'
+
+thread_first = page(
+    thread_top("")
+    + '<div class="thread" style="bottom:100px">'
+    '<div class="day">Today</div>'
+    '<div class="peg">Hi. Tell me one thing you need to do this week, the way you would say it.</div>'
+    '<div class="me">call the vet tomorrow at 2</div>'
+    '<div class="peg"><b>Tomorrow at 2 PM.</b> I read the day and time from your words. I will ring you five minutes before.'
+    '<div class="chips"><div class="chip">Change time</div><div class="chip">No reminder</div></div></div>'
+    '</div>' + thread_bar(),
+    EXTRA + THREAD_CSS,
+)
+
+thread_sort = page(
+    thread_top('<div class="l">☐ call the vet <span>2 PM</span></div>')
+    + '<div class="thread" style="bottom:100px">'
+    '<div class="me">buy a new lamp</div>'
+    '<div class="peg">No day on this one. When?'
+    '<div class="chips"><div class="chip">Today</div><div class="chip">Tomorrow</div><div class="chip">Someday</div><div class="chip">Drop</div></div></div>'
+    '<div class="me">idea: split the bill app</div>'
+    '<div class="peg">Filed under Ideas. Long ones can go on as far as you like.'
+    '<div class="chips"><div class="chip">Open</div></div></div>'
+    '</div>' + thread_bar(),
+    EXTRA + THREAD_CSS,
+)
+
+thread_week = page(
+    thread_top('<div class="l">☐ gym <span>7 AM</span></div><div class="l">☐ call the vet <span>2 PM</span></div><div class="l">☐ pick up parcel</div>')
+    + '<div class="thread" style="bottom:100px">'
+    '<div class="day">Yesterday</div>'
+    '<div class="me">gym every mon wed sat 7am</div>'
+    '<div class="peg"><b>Every Mon, Wed, Sat at 7 AM</b>, starting Monday.</div>'
+    '<div class="day">Today</div>'
+    '<div class="peg">Morning. Three things today, first at 7. <b>buy a new lamp</b> has waited four days.'
+    '<div class="chips"><div class="chip">Today</div><div class="chip">Someday</div><div class="chip">Drop</div></div></div>'
+    '<div class="me">pick up parcel</div>'
+    '<div class="peg">Added to today, no time.</div>'
+    '</div>' + thread_bar(),
+    EXTRA + THREAD_CSS,
+)
+
+# ---- Direction C · one feed, no tabs -----------------------------------------------------
+def feed_top():
+    return f'<div class="top"><div><div class="h1">Peggy</div><div class="sub">Saturday, September 5</div></div><div class="icons">{SVG["search"]}{SVG["gear"]}</div></div>'
+
+def sort_inline(title):
+    return ('<div class="card"><div class="row"><div><div class="title">' + title + '</div><div class="meta">no day yet</div></div></div>'
+            '<div class="row"><div class="chips"><div class="chip">Today</div><div class="chip">Tomorrow</div><div class="chip">Someday</div></div>'
+            f'<div class="chips" style="gap:4px"><div class="iconbtn">{SVG["check"]}</div><div class="iconbtn">{SVG["trash"]}</div></div></div></div>')
+
+def feed_bar():
+    return f'<div class="bar" style="bottom:24px"><div class="pill">{SVG["pen"]} Plan</div><div class="hint">What’s on your mind?</div>{SVG["mic"]}</div>'
+
+feed_first = page(
+    feed_top()
+    + f'<div class="callout"><div><b>Tomorrow at 2 PM</b>Peggy read the day and time from your words.</div><div class="x">{SVG["close"]}</div></div>'
+    + '<div class="section">Tomorrow</div><div class="card" style="gap:0;padding:0">' + item("call the vet", "2 PM") + "</div>"
+    + '<div class="section">Needs a day <span>1</span></div>' + sort_inline("buy a new lamp")
+    + feed_bar(),
+    EXTRA,
+)
+
+feed_week = page(
+    feed_top()
+    + '<div style="position:absolute;left:0;right:0;top:100px;bottom:96px;overflow:hidden">'
+    + '<div class="section" style="padding-top:4px">Today</div><div class="card" style="gap:0;padding:0">' + item("gym", "7 AM · every Mon, Wed, Sat") + '<div style="height:1px;background:#e0e0ea;margin:0 16px"></div>' + item("call the vet", "2 PM") + '<div style="height:1px;background:#e0e0ea;margin:0 16px"></div>' + item("pick up parcel", "") + "</div>"
+    + '<div class="section">Tomorrow</div><div class="card" style="gap:0;padding:0">' + item("dentist", "3 PM") + "</div>"
+    + '<div class="section">Needs a day <span>2</span></div>' + sort_inline("buy a new lamp") + sort_inline("renew passport")
+    + '<div class="section">Ideas <span>1</span></div><div class="card" style="gap:0;padding:0">' + item("split the bill app", "edited yesterday") + "</div></div>"
+    + feed_bar(),
+    EXTRA,
+)
+
 files = {
     "Main.dc.html": first,
     "Typing.dc.html": typing,
@@ -106,19 +199,37 @@ files = {
     "LandedSort.dc.html": landed_sort,
     "Everyday.dc.html": everyday,
     "Settings.dc.html": settings,
+    "ThreadFirst.dc.html": thread_first,
+    "ThreadSort.dc.html": thread_sort,
+    "ThreadWeek.dc.html": thread_week,
+    "FeedFirst.dc.html": feed_first,
+    "FeedWeek.dc.html": feed_week,
 }
 for name, html in files.items():
     (HERE / name).write_text(html, encoding="utf-8")
 
-W, H, G = 390, 844, 90
-titles = ["1 · First run", "2 · Typing", "3a · Dated → Plan", "3b · Undated → Sort", "4 · A week in", "Settings › On screen"]
+W, H, G, R = 390, 844, 90, 200
+rows = [
+    (["Main.dc.html", "Typing.dc.html", "LandedPlan.dc.html", "LandedSort.dc.html", "Everyday.dc.html", "Settings.dc.html"],
+     ["A1 · First run", "A2 · Typing", "A3a · Dated → Plan", "A3b · Undated → Sort", "A4 · A week in", "A · Settings › On screen"]),
+    (["ThreadFirst.dc.html", "ThreadSort.dc.html", "ThreadWeek.dc.html"],
+     ["B1 · Thread, first message", "B2 · Sort and Ideas inline", "B3 · A week in"]),
+    (["FeedFirst.dc.html", "FeedWeek.dc.html"],
+     ["C1 · Feed, after two captures", "C2 · A week in"]),
+]
+artboards = []
+for r, (fs, ts) in enumerate(rows):
+    for i, (f, t) in enumerate(zip(fs, ts)):
+        artboards.append({"file": f, "title": t, "x": i * (W + G), "y": r * (H + R), "w": W, "h": H})
 canvas = {
-    "artboards": [
-        {"file": f, "title": t, "x": i * (W + G), "y": 0, "w": W, "h": H} for i, (f, t) in enumerate(zip(files, titles))
-    ],
+    "artboards": artboards,
     "annotations": [
         {"id": "rule", "x": 0, "y": -220, "w": 900,
-         "text": "THE RULE\nThe default surface is the bar, today’s list and three tabs. Everything else is opt-in in Settings › On screen.\n\nFirst run is one question and a field. What they type decides which page they see first, and that page gets one callout. The page they didn’t land on is never explained; the tab is just there. No prefilled example, no suggestions sheet, no calendar strip, no range control, no reminders card. Reminders are asked for once, as a snackbar, the first time something has a time."},
+         "text": "A · STRIPPED (same app, less on it)\nThe default surface is the bar, today’s list and three tabs. Everything else is opt-in in Settings › On screen. First run is one question and a field; what they type decides which page they see first, and that page gets one callout."},
+        {"id": "thread", "x": 3 * (W + G), "y": H + R, "w": 520,
+         "text": "B · THREAD (Peggy is a conversation)\nHome is a message thread. You type, Peggy answers with what it did, and Sort happens as chips inside her reply. Today is a pinned card that opens the day view. Ideas are long messages she files.\n\nWhy: a message field cannot be mistaken for a calendar, and every reply is the explanation you gave Jensen by hand.\nCost: a new shell; a thread is poor at showing a week, so Plan survives as a second screen behind the pinned card."},
+        {"id": "feed", "x": 2 * (W + G), "y": 2 * (H + R), "w": 520,
+         "text": "C · ONE FEED (no tabs)\nOne scrolling page: Today, Tomorrow, then Needs a day with the Sort rail inline, then Ideas. The bar at the bottom, no navigation at all.\n\nWhy: the most literal “as simple as possible”, and every component already exists.\nCost: a busy user gets a long page; Sort and Ideas lose their own room."},
     ],
     "launch": {"view": "canvas"},
 }
