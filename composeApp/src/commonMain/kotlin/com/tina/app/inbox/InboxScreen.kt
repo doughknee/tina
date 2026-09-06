@@ -49,7 +49,7 @@ import com.tina.app.resources.date_today
 import com.tina.app.resources.date_tomorrow
 import com.tina.app.resources.deleted
 import com.tina.app.resources.inbox_captured
-import com.tina.app.resources.need_day_title
+import com.tina.app.resources.sort_title
 import com.tina.app.resources.sort_empty
 import com.tina.app.resources.sort_empty_sub
 import com.tina.app.resources.sort_moved
@@ -146,7 +146,7 @@ fun InboxScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.need_day_title), style = MaterialTheme.typography.titleLargeEmphasized) },
+                title = { Text(stringResource(Res.string.sort_title), style = MaterialTheme.typography.titleLargeEmphasized) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(Res.string.back))

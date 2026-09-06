@@ -130,6 +130,8 @@ fun Shell(
     // walks keyboard -> overlay -> page the same way it does for capture
     var askSheetOpen by remember { mutableStateOf(false) }
     var captureFocused by remember { mutableStateOf(false) }
+    // bumped by the search shortcut so the Ask field takes focus even when the tab is already up
+    var searchFocusKey by remember { mutableStateOf(0) }
     // opened when the field takes focus, closed only by scrim / handle / back — putting the
     // keyboard away leaves it up, so the starters stay in reach
     var captureSheetOpen by remember { mutableStateOf(false) }
@@ -221,7 +223,10 @@ fun Shell(
         KeyBus.events.collect { command ->
             when (command) {
                 KeyCommand.FOCUS_CAPTURE -> CaptureFocus.request()
-                KeyCommand.SEARCH -> showTab(TinaTab.ASK)
+                KeyCommand.SEARCH -> {
+                    showTab(TinaTab.ASK)
+                    searchFocusKey++
+                }
                 KeyCommand.NEW_ITEM ->
                     if (selectedName == TinaTab.NOTES.name) notesViewModel.createNote(onOpenNote) else CaptureFocus.request()
                 else -> Unit
@@ -313,7 +318,6 @@ fun Shell(
                     when (tab) {
                         TinaTab.AGENDA -> AgendaScreen(
                             onOpenSettings = onOpenSettings,
-                            onOpenSearch = { showTab(TinaTab.ASK) },
                             onOpenNeedDay = onOpenNeedDay,
                             onOpenItem = onOpenItem,
                             onCaptureForDate = { date ->
@@ -325,6 +329,8 @@ fun Shell(
                         TinaTab.ASK -> SearchScreen(
                             onOpenSettings = onOpenSettings,
                             onOpenItem = onOpenItem,
+                            onOpenTag = onOpenTag,
+                            focusKey = searchFocusKey,
                             viewModel = searchViewModel,
                         )
                         TinaTab.NOTES -> NotesScreen(

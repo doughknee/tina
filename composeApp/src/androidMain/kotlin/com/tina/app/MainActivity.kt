@@ -94,6 +94,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // a hardware search key or Ctrl+F on a keyboard lands on the Ask field, as on desktop
+    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        val search = keyCode == android.view.KeyEvent.KEYCODE_SEARCH ||
+            (keyCode == android.view.KeyEvent.KEYCODE_F && event?.isCtrlPressed == true)
+        if (search && !com.tina.app.ui.KeyBus.pageOpen) {
+            com.tina.app.ui.KeyBus.emit(com.tina.app.ui.KeyCommand.SEARCH)
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
     override fun onStart() {
         super.onStart()
         lifecycleScope.launch {

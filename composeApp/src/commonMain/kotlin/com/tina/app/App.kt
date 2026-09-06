@@ -61,7 +61,7 @@ data class NoteRoute(val id: Long)
 data class TagRoute(val tag: String)
 
 /** The Sort page, pushed from the "N need a day" row on Plan. */
-data object NeedDayRoute
+data object NeedADayRoute
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -122,7 +122,7 @@ fun App() {
                             onOpenItem = ::openItem,
                             onOpenNote = { id -> push(NoteRoute(id)) },
                             onOpenTag = { tag -> push(TagRoute(tag)) },
-                            onOpenNeedDay = { push(NeedDayRoute) },
+                            onOpenNeedDay = { push(NeedADayRoute) },
                         )
                     }
                 }
@@ -192,7 +192,7 @@ fun App() {
                                     onOpenTag = { tag -> push(TagRoute(tag)) },
                                 )
                             }
-                            entry<NeedDayRoute> {
+                            entry<NeedADayRoute> {
                                 com.tina.app.inbox.InboxScreen(onBack = ::popLast, onOpenItem = ::openItem)
                             }
                             entry<TagRoute> { route ->

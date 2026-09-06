@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -30,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,9 +64,10 @@ import com.tina.app.data.SettingsRepository
 import com.tina.app.notes.htmlPreview
 import com.tina.app.resources.Res
 import com.tina.app.resources.search_close
-import com.tina.app.resources.search_everything
+import com.tina.app.resources.search_placeholder
 import com.tina.app.resources.search_no_results
 import com.tina.app.resources.search_recent
+import com.tina.app.resources.search_tags
 import com.tina.app.resources.settings
 import com.tina.app.resources.tab_ask
 import com.tina.app.ui.dateLabel
@@ -75,6 +78,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -102,22 +106,37 @@ class SearchViewModel(
         }.sortedByDescending { it.updatedAt }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** Every tag in use, for the chip row under the field. */
+    val tags: StateFlow<List<String>> = repository.observeTagged()
+        .map { items -> items.flatMap { it.tags }.distinct().sorted() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     fun setQuery(value: String) {
         query.value = value
     }
 }
 
-/** The Ask tab: one field on top, results as you type. Search is free and never gated. */
+/**
+ * The Ask tab: one field on top, results as you type. Search is free and never gated.
+ * [focusKey] changes when the search shortcut fires, so the field takes focus again.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(onOpenSettings: () -> Unit, onOpenItem: (Item) -> Unit, viewModel: SearchViewModel) {
+fun SearchScreen(
+    onOpenSettings: () -> Unit,
+    onOpenItem: (Item) -> Unit,
+    onOpenTag: (String) -> Unit,
+    focusKey: Int,
+    viewModel: SearchViewModel,
+) {
     val query by viewModel.query.collectAsState()
     val results by viewModel.results.collectAsState()
+    val tags by viewModel.tags.collectAsState()
     val focus = remember { FocusRequester() }
     val use24h = LocalSettings.current.use24h
     val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(focusKey) {
         withFrameNanos { }
         focus.requestFocus()
     }
@@ -142,8 +161,8 @@ fun SearchScreen(onOpenSettings: () -> Unit, onOpenItem: (Item) -> Unit, viewMod
             ) {
                 Row(Modifier.padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    val placeholder = stringResource(Res.string.search_everything)
-                    val searchLabel = stringResource(Res.string.search_everything)
+                    val placeholder = stringResource(Res.string.search_placeholder)
+                    val searchLabel = stringResource(Res.string.search_placeholder)
                     BasicTextField(
                         value = query,
                         onValueChange = viewModel::setQuery,
@@ -193,6 +212,24 @@ fun SearchScreen(onOpenSettings: () -> Unit, onOpenItem: (Item) -> Unit, viewMod
             }
 
             LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 8.dp)) {
+                if (query.isBlank() && tags.isNotEmpty()) {
+                    item("tags") {
+                        Text(
+                            stringResource(Res.string.search_tags),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                        )
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 24.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(tags, key = { it }) { tag ->
+                                SuggestionChip(onClick = { onOpenTag(tag) }, label = { Text("#$tag") })
+                            }
+                        }
+                    }
+                }
                 if (query.isBlank() && results.isNotEmpty()) {
                     item("recent") {
                         Text(

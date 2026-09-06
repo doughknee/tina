@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -38,7 +39,6 @@ import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Repeat
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ViewWeek
 import androidx.compose.material3.AssistChip
@@ -123,8 +123,8 @@ import com.tina.app.resources.dup_title
 import com.tina.app.resources.duplicate_copies
 import com.tina.app.resources.horizon_later
 import com.tina.app.resources.inbox_captured
-import com.tina.app.resources.need_day_decide
-import com.tina.app.resources.need_day_row
+import com.tina.app.resources.plan_decide
+import com.tina.app.resources.plan_need_a_day
 import com.tina.app.resources.months_full
 import com.tina.app.resources.fewer_rows
 import com.tina.app.resources.more_rows
@@ -133,7 +133,6 @@ import com.tina.app.resources.range_all
 import com.tina.app.resources.range_day
 import com.tina.app.resources.range_month
 import com.tina.app.resources.range_week
-import com.tina.app.resources.search
 import com.tina.app.resources.section_afternoon
 import com.tina.app.resources.section_anytime
 import com.tina.app.resources.section_evening
@@ -201,7 +200,6 @@ private val LocalDate.ym: YearMonth get() = YearMonth(year, month)
 @Composable
 fun AgendaScreen(
     onOpenSettings: () -> Unit,
-    onOpenSearch: () -> Unit,
     onOpenNeedDay: () -> Unit,
     onOpenItem: (Item) -> Unit,
     onCaptureForDate: (LocalDate) -> Unit,
@@ -369,9 +367,6 @@ fun AgendaScreen(
                             },
                             stringResource(Res.string.calendar_choose),
                         )
-                    }
-                    IconButton(onClick = onOpenSearch) {
-                        Icon(Icons.Outlined.Search, stringResource(Res.string.search))
                     }
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Outlined.Settings, stringResource(Res.string.settings))
@@ -944,33 +939,35 @@ private fun GroupHeader(group: AgendaGroup, granularity: Granularity, today: Loc
 
 @Composable
 private fun NeedDayRow(count: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    // design/shell/Main.dc.html: tonal container, 14dp radius, count bubble, "Decide ›"
     Surface(
         onClick = onClick,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        shape = RoundedCornerShape(14.dp),
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
         Row(
-            Modifier.defaultMinSize(minHeight = 56.dp).padding(horizontal = 16.dp),
+            Modifier.defaultMinSize(minHeight = 52.dp).padding(start = 16.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Outlined.Inbox, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Box(
+                Modifier.size(28.dp).background(MaterialTheme.colorScheme.primary, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(count.toString(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimary)
+            }
             Text(
-                stringResource(Res.string.need_day_row, count),
+                stringResource(Res.string.plan_need_a_day),
                 style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.weight(1f).padding(start = 12.dp),
             )
             Text(
-                stringResource(Res.string.need_day_decide),
+                stringResource(Res.string.plan_decide),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(end = 4.dp),
             )
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowForward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         }
     }
 }

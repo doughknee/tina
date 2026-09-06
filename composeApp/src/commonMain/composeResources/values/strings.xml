@@ -4,9 +4,9 @@
     <string name="mode_capture">Plan</string>
     <string name="mode_idea">Idea</string>
     <string name="mode_ask">Ask</string>
-    <string name="need_day_row">%1$d need a day</string>
-    <string name="need_day_decide">Decide</string>
-    <string name="need_day_title">Need a day</string>
+    <string name="plan_need_a_day">need a day</string>
+    <string name="plan_decide">Decide</string>
+    <string name="sort_title">Need a day</string>
     <string name="section_series">Repeating</string>
     <string name="span_day_of">Day %1$d of %2$d</string>
     <string name="duplicate_copies">%1$d copies</string>
@@ -136,7 +136,8 @@
     <string name="reminders_turn_on">Turn on</string>
     <string name="reminders_allow_exact">Allow exact alarms</string>
 
-    <string name="search_everything">Search everything</string>
+    <string name="search_placeholder">Ask or search</string>
+    <string name="search_tags">Tags</string>
     <string name="search_no_results">No matches</string>
     <string name="search_recent">Recent</string>
 
