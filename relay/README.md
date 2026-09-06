@@ -60,8 +60,10 @@ One-time, in this order:
    Create a Pub/Sub topic in the same Google Cloud project, add a **push** subscription with
    endpoint `https://<relay>/rtdn?secret=<RTDN_SECRET>`, and grant
    `google-play-developer-notifications@system.gserviceaccount.com` Publisher on the topic.
-   Until this is wired, a refund or cancellation is honoured within six hours (the cache TTL)
-   instead of immediately.
+   Done 2026-09-05: topic `peggy-rtdn`, push subscription `peggy-rtdn-relay`, both in project
+   `peggy-507718`; Play's test notification reached `/rtdn`. Without it a refund would only be
+   honoured within six hours (the cache TTL). The service account needs *Pub/Sub Admin* (not
+   Pub/Sub **Lite** Admin, which is a different product) on the project to recreate them.
 
 `HOSTED_RELAY_URL` in the app already points there.
 

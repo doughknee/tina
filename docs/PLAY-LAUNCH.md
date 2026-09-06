@@ -13,7 +13,7 @@ Everything needed to go from a sideloaded APK to a production listing. Items mar
 - [x] Privacy policy URL: `https://doughknee.com/peggy/privacy/` (the page is generated into `site/` from `docs/PRIVACY.md`; publish `site/` at doughknee.com).
 - [x] Permission declaration for `USE_EXACT_ALARM`: use section 5 below.
 - [x] Play App Signing: accept Google-managed signing on first upload. Rotate the local keystore password first (it is in the README history) and keep the upload key outside the repo.
-- [ ] Set up Real-time Developer Notifications (Pub/Sub topic) when subscriptions ship in v1.9.
+- [x] Real-time Developer Notifications: topic `projects/peggy-507718/topics/peggy-rtdn`, push subscription `peggy-rtdn-relay` → relay `/rtdn`; enabled in Monetization setup and the test notification reached the relay (2026-09-05).
 
 ## 2. Testing tracks and timeline
 
