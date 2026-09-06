@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; color: #1a1b20; background: #f9f9ff; -webkit-font-smoothing: antialiased; }
+    a { color: #475d92; } a:hover { color: #2f4577; }
+    .phone { width: 390px; height: 844px; background: #f9f9ff; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+    .top { display: flex; align-items: center; justify-content: space-between; padding: 44px 16px 8px 16px; }
+    .h1 { font-size: 28px; line-height: 34px; font-weight: 400; }
+    .sub { font-size: 14px; line-height: 20px; color: #44464f; margin-top: 2px; }
+    .icons { display: flex; gap: 14px; color: #44464f; }
+    .seg { display: flex; gap: 6px; padding: 8px 16px 0 16px; }
+    .seg div { flex: 1; text-align: center; height: 40px; line-height: 40px; border-radius: 20px; background: #eeedf4; font-size: 14px; }
+    .seg .on { background: #475d92; color: #fff; font-weight: 500; }
+    .card { background: #f4f3fa; border-radius: 16px; margin: 12px 16px 0 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .title { font-size: 16px; line-height: 24px; }
+    .meta { font-size: 13px; line-height: 18px; color: #44464f; }
+    .chips { display: flex; gap: 8px; align-items: center; }
+    .chip { height: 32px; line-height: 30px; padding: 0 12px; border: 1px solid #c4c6d0; border-radius: 8px; font-size: 14px; font-weight: 500; color: #1a1b20; white-space: nowrap; box-sizing: border-box; }
+    .chip.tonal { background: #dae2ff; border-color: #dae2ff; color: #001a41; }
+    .iconbtn { width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: #44464f; }
+    .section { font-size: 13px; font-weight: 500; color: #44464f; padding: 20px 16px 0 16px; display: flex; gap: 8px; align-items: baseline; }
+    .bar { position: absolute; left: 16px; right: 16px; bottom: 92px; height: 56px; border-radius: 28px; background: #e8e7ef; display: flex; align-items: center; padding: 0 12px 0 8px; gap: 10px; box-sizing: border-box; }
+    .pill { height: 40px; padding: 0 14px; border-radius: 20px; background: #dcdce4; color: #44464f; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .bar .hint { flex: 1; color: #44464f; font-size: 17px; }
+    .nav { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: #eeedf4; display: flex; justify-content: space-around; align-items: center; }
+    .nav div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; color: #44464f; width: 80px; }
+    .nav .sel .ind { background: #dae2ff; }
+    .ind { width: 56px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+    .snack { position: absolute; left: 16px; right: 16px; bottom: 160px; background: #2f3036; color: #f2f0f7; border-radius: 4px; padding: 14px 16px; display: flex; justify-content: space-between; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+    .snack b { color: #b8c4ff; font-weight: 500; }
+    .textbtn { color: #475d92; font-weight: 500; font-size: 14px; padding: 10px 12px; border-radius: 20px; }
+    .filled { background: #475d92; color: #fff; font-weight: 500; font-size: 14px; padding: 10px 20px; border-radius: 20px; }
+    .tonalbtn { background: #dae2ff; color: #001a41; font-weight: 500; font-size: 14px; padding: 10px 20px; border-radius: 20px; }
+    .wrap { position: relative; width: 390px; height: 844px; }
+
+    .need { margin: 12px 16px 0 16px; padding: 12px 8px 12px 16px; border-radius: 14px; background: #dae2ff; color: #001a41; display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; }
+    .need .n { width: 28px; height: 28px; border-radius: 14px; background: #475d92; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .need .go { margin-left: auto; color: #475d92; display: flex; align-items: center; }
+    .field { margin: 8px 16px 0 16px; height: 56px; border-radius: 28px; background: #e8e7ef; display: flex; align-items: center; padding: 0 16px 0 20px; gap: 12px; font-size: 17px; }
+    .field .ph { color: #74777f; flex: 1; }
+    .res { display: flex; align-items: center; gap: 14px; padding: 12px 16px; }
+    .res .ic { color: #44464f; width: 24px; display: flex; justify-content: center; }
+    .res .t { font-size: 16px; } .res .m { font-size: 13px; color: #44464f; }
+    .res mark { background: #dae2ff; color: inherit; border-radius: 3px; padding: 0 1px; }
+    .askrow { margin: 16px 16px 0 16px; padding: 14px 16px; border-radius: 16px; background: #f4f3fa; display: flex; align-items: center; gap: 12px; }
+    .askrow .t { font-size: 15px; font-weight: 500; } .askrow .m { font-size: 13px; color: #44464f; }
+    .askrow .pro { margin-left: auto; font-size: 11px; font-weight: 600; letter-spacing: .4px; color: #475d92; border: 1px solid #475d92; border-radius: 6px; padding: 2px 6px; }
+    .bub-me { align-self: flex-end; max-width: 80%; background: #475d92; color: #fff; padding: 10px 14px; border-radius: 18px 18px 4px 18px; font-size: 16px; line-height: 22px; }
+    .bub-ai { align-self: flex-start; max-width: 88%; background: #eeedf4; padding: 12px 14px; border-radius: 18px 18px 18px 4px; font-size: 15px; line-height: 22px; }
+    .bub-ai ul { margin: 6px 0 0 0; padding-left: 18px; }
+    .conv { position: absolute; left: 16px; right: 16px; top: 100px; bottom: 164px; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; }
+</style>
+</helmet>
+<div class="wrap"><div class="phone">
+<div class="top"><div class="h1">Find</div><div class="icons"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></div></div><div class="field"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><div class="ph">Search, or ask Peggy</div></div><div class="section">Tags</div><div class="chips" style="padding:8px 16px 0 16px;flex-wrap:wrap"><div class="chip">#home</div><div class="chip">#work</div><div class="chip">#kitchen</div><div class="chip">#car</div></div><div class="section">Recent</div><div class="res"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></div><div><div class="t">passport</div></div></div><div class="res"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"></path></svg></div><div><div class="t">what’s left this week?</div><div class="m">asked yesterday</div></div></div><div class="bar"><div class="pill"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10-10-4-4L4 16v4zM13 7l4 4"></path></svg> Plan</div><div class="hint">What’s on your mind?</div><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg></div><div class="nav"><div><div class="ind"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></div><span>Plan</span></div><div class="sel"><div class="ind"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></div><span>Find</span></div><div><div class="ind"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"></path></svg></div><span>Ideas</span></div></div>
+</div></div>
+</x-dc>
+</body>
+</html>

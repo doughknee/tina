@@ -15,3 +15,4 @@ site/demo_data.sql
 release/service-account.json
 design/ux-audit/peggy-ux-flows.html
 design/first-run/peggy-first-run.html
+design/shell/peggy-shell.html

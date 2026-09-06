@@ -1,0 +1,56 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Plan \u00b7 with the Need-a-day row",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Sort.dc.html",
+      "title": "Need a day \u00b7 pushed from Plan",
+      "x": 480,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "FindEmpty.dc.html",
+      "title": "Find \u00b7 empty",
+      "x": 960,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "FindTyping.dc.html",
+      "title": "Find \u00b7 typing",
+      "x": 1440,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "FindAsk.dc.html",
+      "title": "Find \u00b7 asking",
+      "x": 1920,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    }
+  ],
+  "annotations": [
+    {
+      "id": "shell",
+      "x": 0,
+      "y": -260,
+      "w": 1000,
+      "text": "SHELL: Plan \u00b7 Find \u00b7 Ideas, and the bar.\n\nPlan stays as it is. The Sort tab becomes one row at the top of Plan, \u201c3 need a day\u201d, that opens the Sort page (New, Snoozed, Someday; Overdue is already on Plan). Find is one field for two jobs: results as you type, and an Ask Peggy row that turns the query into a conversation. Search and Ask stop being overlays. The bar does Plan and Idea only; Ask leaves the pill. Ideas is unchanged.\n\nGone from the shell: the Sort tab, the Search sheet, the Ask sheet, Ask mode in the bar, the \u201cN to sort\u201d card (the row replaces it)."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
