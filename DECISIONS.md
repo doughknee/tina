@@ -1,5 +1,28 @@
 # Decisions
 
+## Shell: Plan · Ask · Ideas, nothing in a popup (Sep 2026)
+
+Decided 6 Sep 2026 after a cold demo ("so it's a calendar app"): the pitch that landed was
+"type a sentence, watch it land", so the shell is rebuilt around that and nothing else.
+Mockups: `design/shell` (canvas "Peggy Shell", row 2 is the chosen version).
+
+- **A tab is a place you go on purpose, repeatedly.** Plan and Ideas qualify. Sort does
+  not: it is a queue that interrupts, so it leaves the nav and becomes one row at the top
+  of Plan, "N need a day", that pushes the Sort page. Overdue stays on Plan and leaves
+  the Sort page. The "N to sort" card goes; the row replaces it.
+- **The middle tab is Ask.** One field, two jobs: searching your own data is free and
+  instant; asking is Peggy Pro. A free user sees example questions and the offer on the
+  page itself. That tab is the Pro advertisement; there is no other.
+- **Create is not a tab.** The bar is the create surface at zero taps on every page. It
+  keeps the Plan/Idea pill and the chip row; Ask mode leaves the bar.
+- **Nothing opens as a bottom sheet or dialog.** Search and Ask are the Ask tab. Improve
+  is a "Peggy suggests" block inside item detail. The paywall is a page with a back
+  arrow. What's new is a row on Plan that opens a page. Tags are chips inline in the
+  editor. Suggestions (recent + starters) are off by default and, when on, a single chip
+  row above the bar. Onboarding is the first-capture screen.
+- **Plan stays as it is** (strip, range control, list). It was the part people liked.
+- Search stays free. Do not meter it.
+
 ## Settings rebuild (REL-146, Sep 2026)
 
 - **material3 1.9.0 ships no expressive components.** Probed the artifact directly:
