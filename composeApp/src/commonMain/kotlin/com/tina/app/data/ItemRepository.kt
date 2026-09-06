@@ -42,8 +42,8 @@ class ItemRepository(
         ) { new, overdue, snoozed, someday -> Decisions(new, overdue, snoozed, someday) }
     }
 
-    /** The badge: what is owed now. Someday is a section you scroll to, not a nag. */
-    fun observeDecisionCount(): Flow<Int> = observeDecisions().map { it.urgent }
+    /** The "N need a day" row on Plan: what the Need-a-day page holds. Overdue is already on Plan. */
+    fun observeDecisionCount(): Flow<Int> = observeDecisions().map { it.needDay }
 
     suspend fun snooze(id: Long, untilMillis: Long) = dao.setSnoozedUntil(id, untilMillis)
     suspend fun clearSnooze(id: Long) = dao.setSnoozedUntil(id, null)
@@ -303,6 +303,6 @@ data class Decisions(
     val someday: List<Item> = emptyList(),
 ) {
     val total: Int get() = new.size + overdue.size + snoozed.size + someday.size
-    val urgent: Int get() = new.size + overdue.size + snoozed.size
+    val needDay: Int get() = new.size + snoozed.size + someday.size
     val isEmpty: Boolean get() = total == 0
 }

@@ -1,11 +1,12 @@
 <resources>
     <string name="tab_agenda">Plan</string>
-    <string name="tab_sort">Sort</string>
     <string name="tab_notes">Ideas</string>
     <string name="mode_capture">Plan</string>
     <string name="mode_idea">Idea</string>
     <string name="mode_ask">Ask</string>
-    <string name="inbox_waiting">%1$d to sort</string>
+    <string name="need_day_row">%1$d need a day</string>
+    <string name="need_day_decide">Decide</string>
+    <string name="need_day_title">Need a day</string>
     <string name="section_series">Repeating</string>
     <string name="span_day_of">Day %1$d of %2$d</string>
     <string name="duplicate_copies">%1$d copies</string>
@@ -72,12 +73,10 @@
     <string name="triage_drop">Drop</string>
     <string name="sort_new">New</string>
     <string name="sort_moved">Moved to %1$s</string>
-    <string name="sort_overdue">Overdue</string>
     <string name="sort_snoozed">Snoozed</string>
     <string name="sort_someday">Someday</string>
     <string name="sort_empty">Nothing to decide</string>
     <string name="sort_empty_sub">New captures, overdue tasks, snoozes and somedays show up here</string>
-    <string name="sort_due">due %1$s</string>
     <string name="sort_snoozed_until">snoozed until %1$s</string>
     <string name="sort_untouched">untouched %1$d days</string>
     <string name="set_undated_to_sort">Undated captures go to Sort</string>
@@ -323,7 +322,6 @@
     <string name="set_reduce_motion_system">Following system setting</string>
     <string name="open_to_capture">Plan</string>
     <string name="open_to_today">Plan</string>
-    <string name="open_to_sort">Sort</string>
     <string name="open_to_ideas">Ideas</string>
     <string name="open_to_last">Last screen</string>
     <!-- Settings: Appearance -->

@@ -4,6 +4,12 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 
 ## Unreleased
 
+### Shell
+- The bottom nav is Plan · Ask · Ideas. Sort is no longer a tab: Plan shows one row under the calendar strip, “N need a day · Decide”, that opens the Need a day page. The “N to sort” card is gone; the row replaces it.
+- Need a day lists New, Snoozed and Someday. Overdue stays on Plan.
+- Search is the Ask tab: a full page with the field on top, results as you type. It is free and never gated. Ctrl+F and the search icon on Plan go there.
+- Open to: the Sort choice is gone; a saved one opens Plan.
+
 ### First run
 - Onboarding is one screen: the real capture field, prefilled with an example, its chips live. Start lands in the app with the keyboard up and the text still there.
 - The reminders permission card names what needs to ring and has Not now. Put away, it folds to one line until granted.

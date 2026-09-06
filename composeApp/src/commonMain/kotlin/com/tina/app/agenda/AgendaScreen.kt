@@ -123,7 +123,8 @@ import com.tina.app.resources.dup_title
 import com.tina.app.resources.duplicate_copies
 import com.tina.app.resources.horizon_later
 import com.tina.app.resources.inbox_captured
-import com.tina.app.resources.inbox_waiting
+import com.tina.app.resources.need_day_decide
+import com.tina.app.resources.need_day_row
 import com.tina.app.resources.months_full
 import com.tina.app.resources.fewer_rows
 import com.tina.app.resources.more_rows
@@ -201,7 +202,7 @@ private val LocalDate.ym: YearMonth get() = YearMonth(year, month)
 fun AgendaScreen(
     onOpenSettings: () -> Unit,
     onOpenSearch: () -> Unit,
-    onOpenInbox: () -> Unit,
+    onOpenNeedDay: () -> Unit,
     onOpenItem: (Item) -> Unit,
     onCaptureForDate: (LocalDate) -> Unit,
     viewModel: AgendaViewModel = koinViewModel(),
@@ -476,9 +477,10 @@ fun AgendaScreen(
             }
 
             LazyColumn(Modifier.fillMaxWidth().weight(1f).then(swipeModifier), state = listState) {
+                // Sort is not a tab: this row, under the strip, is the way to the Need-a-day page
                 if (ui.inboxCount > 0) {
-                    item(key = "inbox-entry") {
-                        InboxEntryRow(ui.inboxCount, onOpenInbox, Modifier.animateItem())
+                    item(key = "need-day") {
+                        NeedDayRow(ui.inboxCount, onOpenNeedDay, Modifier.animateItem())
                     }
                 }
                 ui.groups.forEach { group ->
@@ -941,7 +943,7 @@ private fun GroupHeader(group: AgendaGroup, granularity: Granularity, today: Loc
 }
 
 @Composable
-private fun InboxEntryRow(count: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun NeedDayRow(count: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -954,9 +956,15 @@ private fun InboxEntryRow(count: Int, onClick: () -> Unit, modifier: Modifier = 
         ) {
             Icon(Icons.Outlined.Inbox, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Text(
-                stringResource(Res.string.inbox_waiting, count),
+                stringResource(Res.string.need_day_row, count),
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.weight(1f).padding(start = 12.dp),
+            )
+            Text(
+                stringResource(Res.string.need_day_decide),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(end = 4.dp),
             )
             Icon(
                 Icons.AutoMirrored.Outlined.ArrowForward,

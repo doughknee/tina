@@ -13,10 +13,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Inbox
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Snooze
 import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,23 +44,21 @@ import com.tina.app.data.Decisions
 import com.tina.app.data.Item
 import com.tina.app.data.STALE_AFTER_DAYS
 import com.tina.app.resources.Res
+import com.tina.app.resources.back
 import com.tina.app.resources.date_today
 import com.tina.app.resources.date_tomorrow
 import com.tina.app.resources.deleted
 import com.tina.app.resources.inbox_captured
-import com.tina.app.resources.settings
-import com.tina.app.resources.sort_due
+import com.tina.app.resources.need_day_title
 import com.tina.app.resources.sort_empty
 import com.tina.app.resources.sort_empty_sub
 import com.tina.app.resources.sort_moved
 import com.tina.app.resources.sort_new
-import com.tina.app.resources.sort_overdue
 import com.tina.app.resources.sort_snoozed
 import com.tina.app.resources.sort_snoozed_until
 import com.tina.app.resources.sort_someday
 import com.tina.app.resources.sort_untouched
 import com.tina.app.resources.sorted
-import com.tina.app.resources.tab_sort
 import com.tina.app.resources.triage_done
 import com.tina.app.resources.triage_drop
 import com.tina.app.resources.triage_keep
@@ -72,7 +70,6 @@ import com.tina.app.LocalSettings
 import com.tina.app.ui.SectionCardItem
 import com.tina.app.ui.SwipeAction
 import com.tina.app.ui.SwipeTone
-import com.tina.app.ui.dateLabel
 import com.tina.app.ui.relativeAge
 import com.tina.app.ui.rememberUndoWindow
 import com.tina.app.ui.showUndo
@@ -84,17 +81,17 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 private enum class Group(val title: StringResource) {
     NEW(Res.string.sort_new),
-    OVERDUE(Res.string.sort_overdue),
     SNOOZED(Res.string.sort_snoozed),
     SOMEDAY(Res.string.sort_someday),
 }
 
 /** The date answers a group offers, in order. Done and Drop sit beside them on every card. */
 private fun chipsFor(group: Group): List<Pair<TriageAction, StringResource>> = when (group) {
-    Group.NEW, Group.OVERDUE -> listOf(
+    Group.NEW -> listOf(
         TriageAction.TODAY to Res.string.date_today,
         TriageAction.TOMORROW to Res.string.date_tomorrow,
         TriageAction.SOMEDAY to Res.string.triage_someday,
@@ -113,18 +110,20 @@ private fun chipsFor(group: Group): List<Pair<TriageAction, StringResource>> = w
 /** Right swipe is the likeliest answer for the group, left the second. */
 private fun swipesFor(group: Group): Pair<Pair<TriageAction, StringResource>, Pair<TriageAction, StringResource>> = when (group) {
     Group.NEW -> (TriageAction.TODAY to Res.string.date_today) to (TriageAction.SOMEDAY to Res.string.triage_someday)
-    Group.OVERDUE -> (TriageAction.TODAY to Res.string.date_today) to (TriageAction.DONE to Res.string.triage_done)
     Group.SNOOZED -> (TriageAction.DONE to Res.string.triage_done) to (TriageAction.KEEP to Res.string.triage_keep)
     Group.SOMEDAY -> (TriageAction.TODAY to Res.string.date_today) to (TriageAction.THIS_WEEK to Res.string.triage_this_week)
 }
 
-/** Sort: every decision owed, grouped, each a card with one-tap answers. Answering animates it out. */
+/**
+ * Need a day: every decision owed except overdue (that stays on Plan), grouped, each a card with
+ * one-tap answers. Answering animates it out. Pushed from the row on Plan.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun InboxScreen(
-    onOpenSettings: () -> Unit,
+    onBack: () -> Unit,
     onOpenItem: (Item) -> Unit,
-    viewModel: InboxViewModel,
+    viewModel: InboxViewModel = koinViewModel(),
 ) {
     val decisions by viewModel.decisions.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -147,10 +146,10 @@ fun InboxScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.tab_sort), style = MaterialTheme.typography.titleLargeEmphasized) },
-                actions = {
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Outlined.Settings, stringResource(Res.string.settings))
+                title = { Text(stringResource(Res.string.need_day_title), style = MaterialTheme.typography.titleLargeEmphasized) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(Res.string.back))
                     }
                 },
             )
@@ -188,7 +187,6 @@ fun InboxScreen(
 
         val groups = listOf(
             Group.NEW to decisions.new,
-            Group.OVERDUE to decisions.overdue,
             Group.SNOOZED to decisions.snoozed,
             Group.SOMEDAY to decisions.someday,
         ).filter { it.second.isNotEmpty() }
@@ -205,7 +203,6 @@ fun InboxScreen(
                     val chips = chipsFor(group)
                     val timeText = when (group) {
                         Group.NEW -> stringResource(Res.string.inbox_captured, relativeAge(nowMillis - item.createdAt))
-                        Group.OVERDUE -> stringResource(Res.string.sort_due, item.dueLocalDate?.let { dateLabel(it, today) } ?: "")
                         Group.SNOOZED -> stringResource(
                             Res.string.sort_snoozed_until,
                             item.snoozedUntil?.let { timeLabel(Instant.fromEpochMilliseconds(it).toLocalDateTime(tz).time, use24h) } ?: "",

@@ -15,7 +15,6 @@ import com.tina.app.resources.licenses_title
 import com.tina.app.resources.open_to_capture
 import com.tina.app.resources.open_to_ideas
 import com.tina.app.resources.open_to_last
-import com.tina.app.resources.open_to_sort
 import com.tina.app.resources.set_contrast
 import com.tina.app.resources.set_open_app_to
 import com.tina.app.resources.set_undo_window
@@ -42,20 +41,19 @@ fun SettingsSubpageHost(
     when (destination) {
         SettingsDestination.OPEN_APP_TO -> ChoiceSubpage(
             title = stringResource(Res.string.set_open_app_to),
-            // CAPTURE and TODAY are the old names for Plan; a saved one still reads as Plan
+            // CAPTURE and TODAY are the old names for Plan, and SORT the tab that became a row on it;
+            // a saved one still reads as Plan
             options = listOf(
                 stringResource(Res.string.open_to_capture),
-                stringResource(Res.string.open_to_sort),
                 stringResource(Res.string.open_to_ideas),
                 stringResource(Res.string.open_to_last),
             ),
             selectedIndex = when (settings.openAppTo) {
-                OpenAppTo.SORT -> 1
-                OpenAppTo.IDEAS -> 2
-                OpenAppTo.LAST -> 3
+                OpenAppTo.IDEAS -> 1
+                OpenAppTo.LAST -> 2
                 else -> 0
             },
-            onSelect = { viewModel.setOpenAppTo(listOf(OpenAppTo.CAPTURE, OpenAppTo.SORT, OpenAppTo.IDEAS, OpenAppTo.LAST)[it]) },
+            onSelect = { viewModel.setOpenAppTo(listOf(OpenAppTo.CAPTURE, OpenAppTo.IDEAS, OpenAppTo.LAST)[it]) },
             onBack = onBack,
         )
         SettingsDestination.UNDO_WINDOW -> ChoiceSubpage(

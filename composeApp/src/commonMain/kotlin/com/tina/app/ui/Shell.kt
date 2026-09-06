@@ -25,12 +25,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.automirrored.outlined.Notes
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Inbox
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -72,19 +70,17 @@ import com.tina.app.capture.CaptureViewModel
 import com.tina.app.data.AiProvider
 import com.tina.app.data.OpenAppTo
 import com.tina.app.data.Item
-import com.tina.app.inbox.InboxScreen
-import com.tina.app.inbox.InboxViewModel
 import com.tina.app.notes.NotesScreen
 import com.tina.app.notes.NotesViewModel
 import com.tina.app.resources.Res
 import com.tina.app.resources.draft_discard
 import com.tina.app.resources.draft_discard_title
 import com.tina.app.resources.draft_keep
-import com.tina.app.resources.tab_sort
 import com.tina.app.resources.tab_agenda
+import com.tina.app.resources.tab_ask
 import com.tina.app.resources.tab_notes
 import com.tina.app.resources.undo
-import com.tina.app.search.SearchSheet
+import com.tina.app.search.SearchScreen
 import com.tina.app.search.SearchViewModel
 import com.tina.app.ui.capture.CaptureBar
 import com.tina.app.ui.capture.CaptureChips
@@ -102,14 +98,14 @@ import org.koin.compose.viewmodel.koinViewModel
 // Selected nav item keeps the Filled variant (M3 active-state convention).
 enum class TinaTab(val icon: ImageVector, val outlinedIcon: ImageVector, val label: StringResource) {
     AGENDA(Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth, Res.string.tab_agenda),
-    INBOX(Icons.Filled.Inbox, Icons.Outlined.Inbox, Res.string.tab_sort),
+    ASK(Icons.Filled.Search, Icons.Outlined.Search, Res.string.tab_ask),
     NOTES(Icons.AutoMirrored.Filled.Notes, Icons.AutoMirrored.Outlined.Notes, Res.string.tab_notes),
 }
 
 /**
- * The app's three verbs as destinations: plan (Agenda), sort (Inbox), write (Notes).
- * Capture and Ask are modes of the bar pinned above the nav, and Search is a sheet, so none
- * of them takes a slot. The bar sits on every page, so capture is zero taps from anywhere.
+ * Plan · Ask · Ideas. A tab is a place you go on purpose; Sort is a queue, so it is one row on
+ * Plan ("N need a day") that pushes a page, and Search is the Ask tab. Capture is the bar
+ * pinned above the nav on every page, so it is zero taps from anywhere.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -118,16 +114,14 @@ fun Shell(
     onOpenItem: (Item) -> Unit,
     onOpenNote: (Long) -> Unit,
     onOpenTag: (String) -> Unit,
+    onOpenNeedDay: () -> Unit,
 ) {
     val settings = LocalSettings.current
     val askAvailable = settings.aiAskEnabled && settings.aiProvider != AiProvider.OFF
 
     // saved by name; LAST relies on rememberSaveable surviving process death, the others pin a start page
-    val startTab = when (settings.openAppTo) {
-        OpenAppTo.SORT -> TinaTab.INBOX
-        OpenAppTo.IDEAS -> TinaTab.NOTES
-        else -> TinaTab.AGENDA
-    }
+    // SORT is the old Sort tab; a saved one reads as Plan, where its row now lives
+    val startTab = if (settings.openAppTo == OpenAppTo.IDEAS) TinaTab.NOTES else TinaTab.AGENDA
     var selectedName by rememberSaveable(settings.openAppTo) { mutableStateOf(startTab.name) }
     val selectedTab = TinaTab.entries.firstOrNull { it.name == selectedName } ?: TinaTab.AGENDA
     // deliberately not saveable: the bar always comes back in capture mode
@@ -135,7 +129,6 @@ fun Shell(
     // the Ask overlay; closing it (back, scrim, drag) leaves the bar in ask mode, so back
     // walks keyboard -> overlay -> page the same way it does for capture
     var askSheetOpen by remember { mutableStateOf(false) }
-    var searchOpen by remember { mutableStateOf(false) }
     var captureFocused by remember { mutableStateOf(false) }
     // opened when the field takes focus, closed only by scrim / handle / back — putting the
     // keyboard away leaves it up, so the starters stay in reach
@@ -143,10 +136,8 @@ fun Shell(
 
     val captureViewModel: CaptureViewModel = koinViewModel()
     val askViewModel: AskViewModel = koinViewModel()
-    val inboxViewModel: InboxViewModel = koinViewModel()
     val notesViewModel: NotesViewModel = koinViewModel()
     val searchViewModel: SearchViewModel = koinViewModel()
-    val inboxCount by inboxViewModel.count.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val undoText = stringResource(Res.string.undo)
     val undoWindow = rememberUndoWindow()
@@ -169,7 +160,7 @@ fun Shell(
     // the capture sheet rises while the field has focus and stays while there is a draft:
     // starters when empty, parse chips while typing, and it survives the keyboard going away
     val hasDraft = captureViewModel.text.isNotBlank()
-    val suggestionsOpen = !askOpen && !searchOpen && (captureSheetOpen || hasDraft)
+    val suggestionsOpen = !askOpen && (captureSheetOpen || hasDraft)
     val askVisible = askOpen && askSheetOpen
     var discardPrompt by remember { mutableStateOf(false) }
 
@@ -182,18 +173,6 @@ fun Shell(
     fun setAskMode(on: Boolean) {
         askOpen = on && askAvailable
         askSheetOpen = askOpen
-    }
-
-    fun openSearch() {
-        askOpen = false
-        askSheetOpen = false
-        focusManager.clearFocus()
-        searchOpen = true
-    }
-
-    fun closeSearch() {
-        searchOpen = false
-        putKeyboardAway()
     }
 
     // reads the view model at call time: this reference gets memoised across recompositions,
@@ -211,7 +190,6 @@ fun Shell(
         selectedName = tab.name
         askOpen = false
         askSheetOpen = false
-        searchOpen = false
         captureSheetOpen = false
         putKeyboardAway()
     }
@@ -219,7 +197,8 @@ fun Shell(
     LaunchedEffect(sortRequested) {
         if (sortRequested) {
             OpenSortRequests.clear()
-            showTab(TinaTab.INBOX)
+            showTab(TinaTab.AGENDA)
+            onOpenNeedDay()
         }
     }
 
@@ -234,7 +213,6 @@ fun Shell(
         askSheetOpen = false
         captureViewModel.switchIdeaMode(CaptureFocus.idea)
         CaptureFocus.prefill?.let(captureViewModel::prefill)
-        searchOpen = false
         captureFocus.requestFocus()
         CaptureFocus.clear()
     }
@@ -243,7 +221,7 @@ fun Shell(
         KeyBus.events.collect { command ->
             when (command) {
                 KeyCommand.FOCUS_CAPTURE -> CaptureFocus.request()
-                KeyCommand.SEARCH -> openSearch()
+                KeyCommand.SEARCH -> showTab(TinaTab.ASK)
                 KeyCommand.NEW_ITEM ->
                     if (selectedName == TinaTab.NOTES.name) notesViewModel.createNote(onOpenNote) else CaptureFocus.request()
                 else -> Unit
@@ -251,10 +229,9 @@ fun Shell(
         }
     }
 
-    BackHandler(enabled = searchOpen) { closeSearch() }
     BackHandler(enabled = askVisible && !captureFocused) { closeAsk() }
     // the keyboard takes the first back itself; the next one, with a draft still up, asks
-    BackHandler(enabled = !askOpen && !searchOpen && suggestionsOpen && !captureFocused) { dismissCaptureSheet() }
+    BackHandler(enabled = !askOpen && suggestionsOpen && !captureFocused) { dismissCaptureSheet() }
 
     if (discardPrompt) {
         AlertDialog(
@@ -288,20 +265,11 @@ fun Shell(
         modifier = Modifier.imePadding(),
         navigationSuiteItems = {
             TinaTab.entries.forEach { tab ->
-                val selected = selectedTab == tab && !askVisible && !searchOpen
+                val selected = selectedTab == tab && !askVisible
                 item(
                     selected = selected,
                     onClick = { showTab(tab) },
-                    icon = {
-                        BadgedBox(
-                            badge = {
-                                // the nav badge is the "you have things to sort" signal
-                                if (tab == TinaTab.INBOX && inboxCount > 0) Badge { Text(inboxCount.toString()) }
-                            },
-                        ) {
-                            Icon(if (selected) tab.icon else tab.outlinedIcon, contentDescription = null)
-                        }
-                    },
+                    icon = { Icon(if (selected) tab.icon else tab.outlinedIcon, contentDescription = null) },
                     label = { Text(stringResource(tab.label)) },
                 )
             }
@@ -312,30 +280,27 @@ fun Shell(
             contentWindowInsets = WindowInsets(0.dp),
             snackbarHost = { SnackbarHost(snackbarHostState) },
             bottomBar = {
-                // the search sheet has its own field; two stacked fields would fight for the keyboard
-                if (!searchOpen) {
-                    CaptureBar(
-                        askMode = askOpen,
-                        onAskModeChange = ::setAskMode,
-                        askAvailable = askAvailable,
-                        onAskSend = {
-                            askSheetOpen = true
-                            askViewModel.send(it)
-                        },
-                        askBusy = askViewModel.sending,
-                        snackbarHostState = snackbarHostState,
-                        focusRequester = captureFocus,
-                        onFocusChanged = {
-                            captureFocused = it
-                            if (it) {
-                                if (askOpen) askSheetOpen = true else captureSheetOpen = true
-                            }
-                        },
-                        blendWithSheet = suggestionsOpen || askVisible,
-                        onOpenNote = onOpenNote,
-                        viewModel = captureViewModel,
-                    )
-                }
+                CaptureBar(
+                    askMode = askOpen,
+                    onAskModeChange = ::setAskMode,
+                    askAvailable = askAvailable,
+                    onAskSend = {
+                        askSheetOpen = true
+                        askViewModel.send(it)
+                    },
+                    askBusy = askViewModel.sending,
+                    snackbarHostState = snackbarHostState,
+                    focusRequester = captureFocus,
+                    onFocusChanged = {
+                        captureFocused = it
+                        if (it) {
+                            if (askOpen) askSheetOpen = true else captureSheetOpen = true
+                        }
+                    },
+                    blendWithSheet = suggestionsOpen || askVisible,
+                    onOpenNote = onOpenNote,
+                    viewModel = captureViewModel,
+                )
             },
         ) { padding ->
             val motion = rememberAppMotion()
@@ -348,8 +313,8 @@ fun Shell(
                     when (tab) {
                         TinaTab.AGENDA -> AgendaScreen(
                             onOpenSettings = onOpenSettings,
-                            onOpenSearch = ::openSearch,
-                            onOpenInbox = { showTab(TinaTab.INBOX) },
+                            onOpenSearch = { showTab(TinaTab.ASK) },
+                            onOpenNeedDay = onOpenNeedDay,
                             onOpenItem = onOpenItem,
                             onCaptureForDate = { date ->
                                 // a parser-friendly date token keeps capture one flow
@@ -357,10 +322,10 @@ fun Shell(
                                 CaptureFocus.request()
                             },
                         )
-                        TinaTab.INBOX -> InboxScreen(
+                        TinaTab.ASK -> SearchScreen(
                             onOpenSettings = onOpenSettings,
                             onOpenItem = onOpenItem,
-                            viewModel = inboxViewModel,
+                            viewModel = searchViewModel,
                         )
                         TinaTab.NOTES -> NotesScreen(
                             onOpenSettings = onOpenSettings,
@@ -404,21 +369,6 @@ fun Shell(
                     modifier = Modifier.align(Alignment.BottomCenter).fractionHeight(0.72f),
                 ) {
                     AskSheet(viewModel = askViewModel, snackbarHostState = snackbarHostState)
-                }
-
-                // Search: a sheet with its own field, over the page you were on
-                ShellSheet(
-                    visible = searchOpen,
-                    onDismiss = ::closeSearch,
-                    modifier = Modifier.align(Alignment.BottomCenter).fractionHeight(0.88f),
-                ) {
-                    SearchSheet(
-                        viewModel = searchViewModel,
-                        onOpenItem = {
-                            closeSearch()
-                            onOpenItem(it)
-                        },
-                    )
                 }
 
                 // last, so the celebration draws over whichever sheet is up

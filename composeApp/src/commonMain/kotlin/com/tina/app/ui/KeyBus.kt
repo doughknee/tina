@@ -47,7 +47,7 @@ object OpenItemRequests {
     fun clear() { _pending.value = null }
 }
 
-/** A digest tap asks the shell to show the Sort tab. */
+/** A digest tap asks the shell to open the Need-a-day page. */
 object OpenSortRequests {
     private val _pending = MutableStateFlow(false)
     val pending: StateFlow<Boolean> = _pending
