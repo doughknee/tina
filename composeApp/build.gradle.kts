@@ -160,8 +160,18 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+// the What's new page reads the release notes straight from CHANGELOG.md, shipped as a resource
+val changelogDir = layout.buildDirectory.dir("generated/changelog")
+val copyChangelog by tasks.registering(Copy::class) {
+    from(rootDir.resolve("CHANGELOG.md"))
+    into(changelogDir.map { it.dir("files") })
+}
+
 compose.resources {
     packageOfResClass = "com.tina.app.resources"
+    // per target, not commonMain: a custom directory replaces the source set's default one
+    customDirectory("androidMain", copyChangelog.map { changelogDir.get() })
+    customDirectory("desktopMain", copyChangelog.map { changelogDir.get() })
 }
 
 compose.desktop {

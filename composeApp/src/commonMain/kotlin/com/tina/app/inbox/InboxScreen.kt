@@ -195,6 +195,12 @@ fun InboxScreen(
             Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(top = 4.dp, bottom = 16.dp),
         ) {
+            // the first capture had no date: say why it is here, once
+            if (com.tina.app.ui.FirstCapture.callout == com.tina.app.ui.FirstCapture.Landing.NeedADay) {
+                item(key = "first-capture") {
+                    com.tina.app.ui.FirstCaptureCallout(com.tina.app.ui.FirstCapture.Landing.NeedADay, today, Modifier.animateItem())
+                }
+            }
             groups.forEach { (group, list) ->
                 item(key = "header-${group.name}") {
                     SortHeader(stringResource(group.title), list.size, Modifier.animateItem())

@@ -1,42 +1,63 @@
 package com.tina.app.ui.settings
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import com.tina.app.resources.Res
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+
 /**
- * One entry per feature release, newest first: the version's major.minor and one paragraph.
- * The Settings subpage lists all of them; the upgrade sheet shows the first one whose version
- * matches the running build. Keep the first entry's version equal to the build's major.minor.
+ * What's new is CHANGELOG.md, shipped as a resource at build time (build.gradle.kts
+ * `copyChangelog`), so release notes are written once. The page shows the running feature
+ * release: every `## vX.Y.z` section for the build's major.minor, newest first, plus
+ * `## Unreleased` when the build carries one (dev builds; a cut release never does).
  */
-val WHATS_NEW: List<Pair<String, String>> = listOf(
-    "1.9" to
-        "Peggy Pro is on sale. Pick \"Peggy Pro\" as the AI provider and Ask, parsing and Improve " +
-            "work with no key to set up: 400 Ask turns a month on a subscription, 50 on lifetime, and " +
-            "your own key still works whenever you like.",
-    "1.8" to
-        "Ideas rebuilt: cards that read like notes, checklists you can tick from the card, a pinned " +
-            "section, a tag rail, long-press selection, sort and layout, a paper-like editor, and a tag " +
-            "page that gathers notes, tasks and events. Sort became the decisions page. Capture " +
-            "understands far more phrasings. Widgets, quiet hours, and undo everywhere.",
-    "1.7" to
-        "Repeating reminders ring every time, backups carry everything, your AI key is " +
-            "encrypted, Ask asks before big changes, Peggy Pro groundwork, and a real icon.",
-    "1.6" to
-        "Swipe triage on Sort, the settings hub, series editing, empty states and a " +
-            "quick-settings tile for ideas.",
-    "1.5" to
-        "Pages named for what you do there, Idea mode for notes, one calendar for every " +
-            "zoom level, search as a sheet, and a smoother keyboard.",
-    "1.4" to
-        "Agenda, Library and Ask; capture from anywhere; Day / Week / Month / All with " +
-            "repeats rolled up and completed per day.",
-    "1.3.1" to
-        "The keyboard no longer opens with the app, the composer moved to the " +
-            "bottom, and pages slide instead of zooming.",
-    "1.3" to
-        "Grouped and searchable settings, Trash with restore, tag manager, " +
-            "daily summaries, app lock, auto-backup.",
-    "1.2" to "Chat with your data, optional write access, saved conversations, browsable tags.",
-    "1.1" to "Ollama / Claude / OpenAI refinement, AI improve, and the Material 3 redesign.",
-    "1.0" to "Capture, Today, Calendar, Notes, reminders, widgets, backup.",
-)
+@OptIn(ExperimentalResourceApi::class)
+@Composable
+fun rememberWhatsNew(): List<Pair<String, String>>? {
+    val entries by produceState<List<Pair<String, String>>?>(null) {
+        value = whatsNewEntries(Res.readBytes("files/CHANGELOG.md").decodeToString(), appVersionName())
+    }
+    return entries
+}
+
+/**
+ * The (heading, text) entries the page renders: each `### Heading` inside a matching section
+ * becomes "version · Heading" over its bullets; bullets before any heading sit under the version.
+ * Mirrors the section cut in release/lib.mjs: bullets kept, bold stripped.
+ */
+fun whatsNewEntries(changelog: String, versionName: String): List<Pair<String, String>> {
+    val feature = featureVersion(versionName)
+    val entries = mutableListOf<Pair<String, String>>()
+    var version: String? = null
+    var heading: String? = null
+    val bullets = mutableListOf<String>()
+    fun flush() {
+        val v = version ?: return
+        if (bullets.isEmpty()) return
+        entries += (heading?.let { "$v · $it" } ?: v) to bullets.joinToString("\n")
+        bullets.clear()
+    }
+    for (raw in changelog.lineSequence()) {
+        val line = raw.trim()
+        when {
+            line.startsWith("## ") -> {
+                flush()
+                heading = null
+                val title = line.removePrefix("## ").substringBefore(" (").trim()
+                version = when {
+                    title == "Unreleased" -> title
+                    title.startsWith("v") && featureVersion(title.drop(1)) == feature -> title.drop(1)
+                    else -> null
+                }
+            }
+            line.startsWith("### ") -> { flush(); heading = line.removePrefix("### ").trim() }
+            line.startsWith("- ") && version != null -> bullets += "• " + line.removePrefix("- ").replace("**", "")
+        }
+    }
+    flush()
+    return entries
+}
 
 /** "1.8.2-dev" → "1.8": the feature release a build belongs to. */
 fun featureVersion(versionName: String): String =

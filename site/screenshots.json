@@ -16,7 +16,7 @@
     {
       "id": "plan-day",
       "file": "plan-day.png",
-      "alt": "The Plan tab showing one day, split into Morning and Afternoon, with an appointment at 9 AM and lunch at 1 PM.",
+      "alt": "The Plan tab showing one day, with a “2 need a day” row under the calendar strip, then Morning and Afternoon with an appointment at 9 AM and lunch at 1 PM.",
       "caption": "Today, in the order it happens."
     },
     {
@@ -32,10 +32,16 @@
       "caption": "A month at a glance."
     },
     {
-      "id": "sort",
-      "file": "sort.png",
-      "alt": "The Sort tab grouping items into New, Overdue and Snoozed, each row offering Today, Someday, Tomorrow and This week.",
-      "caption": "Every open decision, with the answer one tap away."
+      "id": "need-a-day",
+      "file": "need-a-day.png",
+      "alt": "The Need a day page listing captures without a date, snoozed items and somedays, each card offering Today, Tomorrow and Someday.",
+      "caption": "Everything that still needs a day, with the answer one tap away."
+    },
+    {
+      "id": "ask",
+      "file": "ask.png",
+      "alt": "The Ask tab: one field on top, with example questions such as what is left this week underneath.",
+      "caption": "Search your own plans for free, or ask them a question."
     },
     {
       "id": "ideas",

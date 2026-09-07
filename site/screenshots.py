@@ -50,7 +50,15 @@ class Device:
     def restart(self):
         self.sh("am", "force-stop", self.package)
         self.sh("monkey", "-p", self.package, "-c", "android.intent.category.LAUNCHER", "1")
-        time.sleep(6)
+        # a fixed sleep missed the launch on a loaded host: wait until the app is the one in front
+        for _ in range(60):
+            time.sleep(2)
+            front = [l for l in self.sh("dumpsys", "activity", "activities").splitlines() if "ResumedActivity" in l]
+            if front and all(self.package + "/" in l for l in front):
+                break
+        else:
+            raise SystemExit(f"{self.package} never came to the front")
+        time.sleep(4)
 
     def nodes(self, tries=4):
         """The accessibility dump, retried: it comes back empty while the screen is animating."""
@@ -126,9 +134,12 @@ def shot_capture(d):
     d.tap_on(text="Day")
     calendar(d, False)
     d.tap_on(contains="What’s on your mind")
-    d.type("dentist thursday 3pm")
+    text = "dentist thursday 3pm"
+    d.type(text)
     time.sleep(2.5)
     d.shot("capture")
+    # the draft survives a restart and its sheet would cover the next shot: clear it
+    d.sh("input", "keyevent", *(["67"] * (len(text) + 4)))
 
 
 def shot_plan_day(d):
@@ -149,9 +160,18 @@ def shot_calendar(d):
     d.shot("calendar")
 
 
-def shot_sort(d):
-    d.tap_on(text="Sort")
-    d.shot("sort")
+def shot_need_day(d):
+    d.tap_on(text="Day")
+    calendar(d, False)
+    # the "N need a day · Decide" row under the strip; Sort is a page, not a tab
+    d.tap_on(contains="need a day", settle=2.5)
+    d.shot("need-a-day")
+
+
+def shot_ask(d):
+    d.tap_on(text="Ask")
+    d.key(4, settle=2)  # the field takes focus; put the keyboard away so the page shows
+    d.shot("ask")
 
 
 def shot_ideas(d):
@@ -180,7 +200,8 @@ SHOTS = [
     ("plan-day", shot_plan_day),
     ("plan-week", shot_plan_week),
     ("calendar", shot_calendar),
-    ("sort", shot_sort),
+    ("need-a-day", shot_need_day),
+    ("ask", shot_ask),
     ("ideas", shot_ideas),
     ("editor", shot_editor),
     ("tag", shot_tag),

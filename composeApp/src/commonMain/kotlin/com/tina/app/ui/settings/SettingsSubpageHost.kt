@@ -98,7 +98,7 @@ fun SettingsSubpageHost(
         SettingsDestination.WHATS_NEW -> InfoSubpage(
             title = stringResource(Res.string.whats_new_title),
             onBack = onBack,
-            entries = com.tina.app.ui.settings.WHATS_NEW.map { (version, text) -> version to text },
+            entries = rememberWhatsNew().orEmpty(),
         )
         SettingsDestination.TAGS -> com.tina.app.ui.settings.subpages.TagManagerScreen(onBack = onBack)
         SettingsDestination.PRO -> com.tina.app.pro.PaywallScreen(onBack = onBack)

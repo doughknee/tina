@@ -61,7 +61,6 @@
     <string name="date_next_week">Next week</string>
     <string name="date_none">No date</string>
 
-    <string name="inbox">Sort</string>
     <string name="inbox_captured">captured %1$s</string>
     <string name="triage_this_week">This week</string>
     <string name="triage_someday">Someday</string>
@@ -75,14 +74,14 @@
     <string name="sort_snoozed">Snoozed</string>
     <string name="sort_someday">Someday</string>
     <string name="sort_empty">Nothing to decide</string>
-    <string name="sort_empty_sub">New captures, overdue tasks, snoozes and somedays show up here</string>
+    <string name="sort_empty_sub">Captures without a day, snoozes and somedays wait here. Overdue stays on Plan</string>
     <string name="sort_snoozed_until">snoozed until %1$s</string>
     <string name="sort_untouched">untouched %1$d days</string>
-    <string name="set_undated_to_sort">Undated captures go to Sort</string>
-    <string name="set_undated_to_sort_sub">Off: they land on today’s list instead</string>
+    <string name="set_undated_to_sort">Undated captures need a day</string>
+    <string name="set_undated_to_sort_sub">They wait on the Need a day page. Off: they land on today’s list instead</string>
 
     <string name="deleted">Deleted</string>
-    <string name="sorted">Sorted</string>
+    <string name="sorted">Kept</string>
     <string name="delete">Delete</string>
     <string name="mark_done">Mark done</string>
     <string name="row_rename">Rename</string>
@@ -271,10 +270,19 @@
     <string name="dev_unlocked">Developer options unlocked</string>
     <string name="sec_pro">Peggy Pro</string>
     <string name="onb_skip">Skip</string>
-    <string name="onb_start">That’s it, start</string>
-    <string name="onb_capture_title">Type it the way you’d say it</string>
-    <string name="onb_capture_body">Dates, times, repeats and tags are read from the words. No forms, no pickers. Try changing it.</string>
-    <string name="onb_capture_example">dentist thursday 3pm</string>
+    <string name="onb_start">Start</string>
+    <string-array name="onb_questions">
+        <item>What do you need to do this week?</item>
+        <item>Anything you keep forgetting?</item>
+        <item>What’s on your mind?</item>
+    </string-array>
+    <string name="dismiss">Dismiss</string>
+    <string name="first_plan_on">%1$s.</string>
+    <string name="first_plan_at">%1$s at %2$s.</string>
+    <string name="first_plan_body">Peggy read the day and time from your words.</string>
+    <string name="first_plan_body_date">Peggy read the day from your words.</string>
+    <string name="first_need_day_title">No date, so it waits here.</string>
+    <string name="first_need_day_body">One tap decides.</string>
     <string name="pro_title">Peggy Pro</string>
     <string name="pro_plan_free">Free plan</string>
     <string name="pro_plan_active">Pro · %1$s</string>
@@ -362,8 +370,8 @@
     <string name="set_quiet_hours_sub">Reminders due in this window ring when it ends</string>
     <string name="set_quiet_start">Quiet from</string>
     <string name="set_quiet_end">Quiet until</string>
-    <string name="set_inbox_reminder">Sort reminder</string>
-    <string name="set_inbox_reminder_sub">When something has waited on Sort for %1$d days</string>
+    <string name="set_inbox_reminder">Need-a-day reminder</string>
+    <string name="set_inbox_reminder_sub">When something has needed a day for %1$d days</string>
     <string name="set_sound">Sound &amp; vibration</string>
     <string name="set_sound_sub">Android notification settings</string>
     <!-- Settings: AI -->
