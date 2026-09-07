@@ -571,19 +571,26 @@ def landing(shots):
       ("From anywhere.", "The widget, the quick-settings tile and the share sheet all reach the same field.")],
      extra=parse)}
 
-{row(figure(shots['sort']), "Sort", "Decide later, in one place",
-     "Anything you capture without a date waits on Sort, next to what is overdue, what you snoozed and what you said someday to. It is the only list that ever asks you for a decision.",
-     [("One tap per answer.", "Today, Tomorrow, This week, Someday, Done."),
-      ("A badge you can trust.", "It counts what is new, overdue or snoozed, and never nags you about someday."),
-      ("Undo on everything.", "Including emptying the bin.")],
-     flip=True)}
-
 {row(f'<div class="pair">{figure(shots["plan-day"])}{figure(shots["plan-week"])}</div>', "Plan",
      "Your day, in the order it happens",
-     "Morning, afternoon, evening, and a place for things with no set time. Zoom out to a week, a month, or everything at once.",
+     "Morning, afternoon, evening, and a place for things with no set time. Zoom out to a week, a month, or everything at once. One row at the top counts what still needs a day.",
      [("Habits stay one row.", "A daily task shows as a single line with the week's progress, not seven copies."),
       ("Reminders that ring.", "On the exact minute, after a reboot, and after you land in another time zone."),
-      ("A month at a glance.", "Dots mark the days with something on them.")])}
+      ("A month at a glance.", "Dots mark the days with something on them.")],
+     flip=True)}
+
+{row(figure(shots['need-a-day']), "Need a day", "Decide later, in one place",
+     "Anything you capture without a date waits here, next to what you snoozed and what you said someday to. It is the only page that ever asks you for a decision, and it is one tap from Plan.",
+     [("One tap per answer.", "Today, Tomorrow, Someday, Done, Drop."),
+      ("A count you can trust.", "The row on Plan counts what is new or snoozed, and never nags you about someday."),
+      ("Undo on everything.", "Including emptying the bin.")])}
+
+{row(figure(shots['ask']), "Ask", "Your plans, asked a question",
+     "Search is the same field and it is free: type, and your own tasks, events and notes match as you type. Ask a question and Peggy answers from what you have written, with your own AI key or Peggy Pro.",
+     [("Search stays free.", "Matches appear as you type, on the phone, with no network."),
+      ("Answers from your data.", "“What is left this week?” reads your plan, not the internet."),
+      ("Your key or Peggy Pro.", "Bring your own Claude, OpenAI or Ollama, or subscribe and skip the setup.")],
+     flip=True)}
 
 {row(f'<div class="pair">{figure(shots["ideas"])}{figure(shots["editor"])}</div>', "Ideas",
      "Notes that keep their shape",
@@ -738,7 +745,7 @@ def og_image():
             im.paste(ic, (86, 96), ic)
     d.text((86, 268), "Peggy", font=font(104), fill=(255, 255, 255))
     d.text((86, 396), "Two seconds from thought to done.", font=font(46, False), fill=(226, 229, 255))
-    d.text((86, 470), "Capture · Sort · Plan · Ideas", font=font(34, False), fill=(196, 202, 250))
+    d.text((86, 470), "Capture · Plan · Ask · Ideas", font=font(34, False), fill=(196, 202, 250))
     d.text((86, 540), "doughknee.com/peggy", font=font(30, False), fill=(176, 184, 245))
     im.save(SITE / "peggy" / "og.png", optimize=True)
 

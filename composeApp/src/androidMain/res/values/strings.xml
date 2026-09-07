@@ -9,11 +9,11 @@
     <string name="reminder_channel_desc">Task and event reminders</string>
     <string name="lock_prompt">Unlock to continue</string>
     <string name="digest_channel_name">Daily summaries</string>
-    <string name="digest_channel_desc">Morning agenda, overdue nudge and inbox reminders</string>
+    <string name="digest_channel_desc">Morning agenda, overdue nudge and need-a-day reminders</string>
     <string name="digest_agenda_title">Today</string>
     <string name="digest_overdue_title">%1$d overdue</string>
-    <string name="digest_inbox_title">%1$d waiting in your inbox</string>
-    <string name="digest_inbox_body">Tap to triage them</string>
+    <string name="digest_inbox_title">%1$d need a day</string>
+    <string name="digest_inbox_body">Tap to decide</string>
     <string name="action_done">Done</string>
     <string name="action_snooze_10">Snooze 10 min</string>
     <string name="action_snooze_60">Snooze 1 hour</string>

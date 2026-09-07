@@ -32,14 +32,14 @@ Recruit testers from the app's own audience: a short post in r/androidapps, r/pr
 ## 3. Store listing
 
 **App name**: Peggy
-**Short description (≤80)**: Capture anything in two seconds. Plan, sort, and remember, all on your device.
+**Short description (≤80)**: Type it the way you’d say it. A sentence becomes a task, an event or a note.
 **Full description**:
 
 > Peggy is the fastest way to get a thought out of your head and into the right place.
 >
 > Type "call sam tomorrow at 3" and it's a task on Thursday at 3 PM. "lunch with jess friday noon for an hour" is an event. "gym every weekday" repeats. Ideas become notes. Nothing needs a form, a date picker, or a decision.
 >
-> **Plan** shows your day, week, month, or everything, with repeats rolled up so a daily habit is one line, not thirty. **Sort** empties your inbox with a swipe: right for today, left for someday. **Ideas** keeps your notes in a rich editor. **Ask** lets you talk to your own data with your own AI key, or with Peggy Pro.
+> **Plan** shows your day, week, month, or everything, with repeats rolled up so a daily habit is one line, not thirty. Anything without a date waits on **Need a day**, one tap from Plan, where one tap decides. **Ask** searches your own plans for free and answers questions about them with your own AI key, or with Peggy Pro. **Ideas** keeps your notes in a rich editor.
 >
 > Everything lives on your phone. No account. No cloud. Export a backup whenever you like. Undo everywhere instead of "are you sure?" dialogs.
 >

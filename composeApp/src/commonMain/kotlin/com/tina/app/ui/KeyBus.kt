@@ -71,3 +71,26 @@ object CaptureFocus {
     }
     fun clear() { _pending.value = false }
 }
+
+/**
+ * Where the first capture went, so the shell can land there once onboarding is gone and the
+ * page can show its one callout. Set by the first-run screen, navigated once by the shell,
+ * and the callout stays up until dismissed (in memory only: a restart is a fresh start).
+ */
+object FirstCapture {
+    sealed interface Landing {
+        data class Plan(val date: kotlinx.datetime.LocalDate, val time: kotlinx.datetime.LocalTime?) : Landing
+        data object NeedADay : Landing
+        data object Ideas : Landing
+    }
+    private val _pending = MutableStateFlow<Landing?>(null)
+    val pending: StateFlow<Landing?> = _pending
+    var callout: Landing? by androidx.compose.runtime.mutableStateOf(null)
+        private set
+    fun request(landing: Landing) {
+        callout = landing
+        _pending.value = landing
+    }
+    fun consume() { _pending.value = null }
+    fun dismissCallout() { callout = null }
+}

@@ -243,7 +243,8 @@ private fun whatsNewPending(settingsRepository: SettingsRepository, onboardingSe
     // remembered: a fresh map() per recomposition restarts the collection, and that recomposes again
     val seenFlow = remember(settingsRepository) { settingsRepository.settings.map { it.whatsNewSeen } }
     val seen by seenFlow.collectAsState(initial = null)
-    if (com.tina.app.ui.settings.WHATS_NEW.none { it.first == current }) return null
+    // the page is empty until the notes are read; a release with no notes shows no row
+    if (com.tina.app.ui.settings.rememberWhatsNew().isNullOrEmpty()) return null
     // null until the store answers, so an existing user never sees the row flash
     val seenVersion = seen ?: return null
     // a fresh install (cards still to show) just records this release

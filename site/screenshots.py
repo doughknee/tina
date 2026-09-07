@@ -149,9 +149,17 @@ def shot_calendar(d):
     d.shot("calendar")
 
 
-def shot_sort(d):
-    d.tap_on(text="Sort")
-    d.shot("sort")
+def shot_need_day(d):
+    d.tap_on(text="Day")
+    calendar(d, False)
+    # the "N need a day · Decide" row under the strip; Sort is a page, not a tab
+    d.tap_on(contains="need a day", settle=2.5)
+    d.shot("need-a-day")
+
+
+def shot_ask(d):
+    d.tap_on(text="Ask")
+    d.shot("ask")
 
 
 def shot_ideas(d):
@@ -180,7 +188,8 @@ SHOTS = [
     ("plan-day", shot_plan_day),
     ("plan-week", shot_plan_week),
     ("calendar", shot_calendar),
-    ("sort", shot_sort),
+    ("need-a-day", shot_need_day),
+    ("ask", shot_ask),
     ("ideas", shot_ideas),
     ("editor", shot_editor),
     ("tag", shot_tag),

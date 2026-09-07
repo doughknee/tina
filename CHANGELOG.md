@@ -4,30 +4,21 @@ User-facing changes per release. Engineering rationale lives in `DECISIONS.md`; 
 
 ## Unreleased
 
-### Shell
-- The bottom nav is Plan · Ask · Ideas. Sort is no longer a tab: Plan shows one row under the calendar strip, “N need a day · Decide”, that opens the Need a day page. The “N to sort” card is gone; the row replaces it.
-- Need a day lists New, Snoozed and Someday. Overdue stays on Plan.
-- Search is the Ask tab: a full page with the field on top, results as you type. It is free and never gated. Ctrl+F and the search icon on Plan go there.
-- Ask is the Ask tab too. Free: three example questions and the Peggy Pro offer on the page itself (7 days free, then $29.99 a year or $3.99 a month); the examples and the offer open the Pro page. Pro: the subtitle shows asks left this month, typing shows Matches, Enter streams the Answer under them, and Follow up opens the conversation as a page with a back arrow.
-- A Pro user no longer has to pick “Peggy hosted” under Parsing & AI before Ask works: with the provider off, Pro asks through the relay.
-- Ask mode is gone from the capture bar. Its pill only switches Plan and Idea.
-- Open to: the Sort choice is gone; a saved one opens Plan.
-- Nothing opens as a pop-up any more. Improve is a “Peggy suggests” block inside an item or event, with a Suggest button; the sparkle in the top bar is gone. The Peggy Pro page is a page with a back arrow, and the keyboard goes away when it opens. After an update, “What’s new in 1.x” is a row on Plan above “need a day” that opens the What’s new page. Tags in the note editor (and for a selection on Ideas) are chips inline, with a field for a new one.
-- Recent and starter suggestions are off by default. Settings → Capture → Suggestions turns them on as one chip row above the bar while the field is empty.
+### The shell: Plan · Ask · Ideas
+- Peggy is now built around one thing: type a sentence, watch it land. The bottom nav is Plan · Ask · Ideas, and nothing opens as a pop-up any more.
+- **First run** is the capture field and nothing else. A question in the field changes every few seconds (“What do you need to do this week?”). Whatever you type lands where it belongs, with one callout that says why: something with a day or a time lands on Plan on that day (“Tomorrow at 2 PM. Peggy read the day and time from your words.”); something with no date lands on the Need a day page (“No date, so it waits here. One tap decides.”); “idea:” lands on Ideas. Skip goes straight to the app.
+- **Sort is no longer a tab.** Plan shows one row under the calendar strip, “N need a day · Decide”, that opens the Need a day page: New, Snoozed and Someday, each card answering in one row (Today, Tomorrow, Someday, then Done and Drop). Overdue stays on Plan. The “N to sort” card is gone; the row replaces it.
+- **Search is the Ask tab**: a full page with the field on top, results as you type. It is free and never gated. Ctrl+F and the search icon on Plan go there.
+- **Ask is the Ask tab too.** Free: three example questions and the Peggy Pro offer on the page itself (7 days free, then $29.99 a year or $3.99 a month). Pro: the subtitle shows asks left this month, typing shows Matches, Enter streams the Answer under them, and Follow up opens the conversation as a page. A Pro user no longer has to pick “Peggy hosted” under Parsing & AI first.
+- **The capture bar** keeps its Plan/Idea pill; Ask mode is gone from it. On Ideas it writes ideas without switching first. Recent and starter suggestions are off by default; Settings → Capture → Suggestions turns them on as one chip row above the bar.
+- **Pages, not pop-ups.** Improve is a “Peggy suggests” block inside an item, with a Suggest button. The Peggy Pro page has a back arrow. Tags in the note editor are chips inline. After an update, “What’s new in 1.x” is a row on Plan that opens the What’s new page, which now shows this release’s notes, these very ones.
 - The reminders permission card is gone from Plan. The first time something with a time is saved, one snackbar offers to turn reminders on.
-
-### First run
-- Onboarding is one screen: the real capture field, prefilled with an example, its chips live. Start lands in the app with the keyboard up and the text still there.
-
-### Sort
-- Every card answers in one row that never scrolls: Today, Tomorrow, Someday, then Done and Drop. Event and Note moved to the item itself.
-- The snackbar says where it went (“Moved to Someday”), not just “Sorted”.
-- Unsorted items are labelled “To sort” instead of “Inbox”.
+- Copy caught up with the shell: nothing says Sort tab or inbox any more. The “Sort reminder” digest is the “Need-a-day reminder” (“3 need a day · Tap to decide”), the undated-captures setting reads “Undated captures need a day”, and Open to no longer offers Sort.
 
 ### Capture
-- On the Ideas page the bar writes ideas without switching the toggle first.
 - “every Mon Wed” repeats on both days; “next Friday” means the Friday of next week, not a week later; “idea:” or “note:” at the start files a note; a “?” no longer floats away from its word.
 - Dates more than a week out show their weekday (“Fri, Sep 18”), so a wrong week is visible before it is on the calendar.
+- The snackbar after a decision says where it went (“Moved to Someday”, “Kept”), not just “Sorted”.
 
 ## v1.9.4 (internal testing, 2026-09-05)
 

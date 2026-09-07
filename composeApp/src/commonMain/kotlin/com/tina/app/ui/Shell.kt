@@ -180,6 +180,18 @@ fun Shell(
     LaunchedEffect(selectedTab) {
         if (captureViewModel.text.isBlank()) captureViewModel.switchIdeaMode(selectedTab == TinaTab.NOTES)
     }
+    // the first capture lands where it went: Plan on its day, the Need a day page, or Ideas
+    val agendaViewModel: com.tina.app.agenda.AgendaViewModel = koinViewModel()
+    val firstLanding by FirstCapture.pending.collectAsState()
+    LaunchedEffect(firstLanding) {
+        when (val landing = firstLanding) {
+            null -> return@LaunchedEffect
+            is FirstCapture.Landing.Plan -> { showTab(TinaTab.AGENDA); agendaViewModel.select(landing.date) }
+            FirstCapture.Landing.NeedADay -> { showTab(TinaTab.AGENDA); onOpenNeedDay() }
+            FirstCapture.Landing.Ideas -> showTab(TinaTab.NOTES)
+        }
+        FirstCapture.consume()
+    }
     val focusRequested by CaptureFocus.pending.collectAsState()
     LaunchedEffect(focusRequested) {
         if (!focusRequested) return@LaunchedEffect

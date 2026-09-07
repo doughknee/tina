@@ -470,6 +470,10 @@ fun AgendaScreen(
             }
 
             LazyColumn(Modifier.fillMaxWidth().weight(1f).then(swipeModifier), state = listState) {
+                // the first capture's callout, on the day it landed, until dismissed
+                (com.tina.app.ui.FirstCapture.callout as? com.tina.app.ui.FirstCapture.Landing.Plan)?.let { landing ->
+                    item(key = "first-capture") { com.tina.app.ui.FirstCaptureCallout(landing, today, Modifier.animateItem()) }
+                }
                 // once per feature release, after an update: one row that opens the What's new page
                 whatsNewVersion?.let { version ->
                     item(key = "whats-new") { WhatsNewRow(version, onOpenWhatsNew, Modifier.animateItem()) }
