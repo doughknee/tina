@@ -31,7 +31,7 @@ PendingIntent: `getBroadcast`, requestCode `itemId.toInt()`, action `ACTION_FIRE
 
 - Manifest declares `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `RECEIVE_BOOT_COMPLETED`. `USE_EXACT_ALARM` is **not** declared.
 - `targetSdk 36`: `SCHEDULE_EXACT_ALARM` is denied by default, so every fresh install runs on inexact alarms until the user finds the banner on the agenda screen and opens special access.
-- The banner (`ReminderPermissionBanner.android.kt`) requests `POST_NOTIFICATIONS` and deep-links to `ACTION_REQUEST_SCHEDULE_EXACT_ALARM`; it re-checks on resume but **never reschedules** — alarms armed before the grant stay inexact until the next cold start.
+- The permission ask (`ReminderPermission.android.kt`, one snackbar after the first timed capture) requests `POST_NOTIFICATIONS` and deep-links to `ACTION_REQUEST_SCHEDULE_EXACT_ALARM`; it **never reschedules** — alarms armed before the grant stay inexact until the next cold start.
 - Not used: `setAlarmClock()` (Doze-exempt, no permission needed), battery-optimisation prompt, full-screen intent.
 
 ## 3. Digests
@@ -49,7 +49,7 @@ PendingIntent: `getBroadcast`, requestCode `itemId.toInt()`, action `ACTION_FIRE
 **P0**
 1. Recurring tasks never re-remind (`Reminders.kt:31-38`, `ReminderReceiver.kt:71`).
 2. Exact alarms off by default on the shipped target SDK (`AndroidManifest.xml:8`, `AndroidReminderScheduler.kt:48`).
-3. Granting the permission does not upgrade existing alarms (`ReminderPermissionBanner.android.kt:57-60`).
+3. Granting the permission does not upgrade existing alarms (`ReminderPermission.android.kt`).
 4. No time-zone / DST reschedule (no `TIMEZONE_CHANGED` receiver).
 5. App update loses reminders until next launch (no `MY_PACKAGE_REPLACED` receiver).
 6. Tapping a reminder does not open the item (`ReminderReceiver.kt:100-105`, `Digests.kt:178-183`).

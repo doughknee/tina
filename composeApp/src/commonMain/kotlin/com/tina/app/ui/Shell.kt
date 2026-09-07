@@ -82,7 +82,7 @@ import com.tina.app.ui.capture.CaptureBar
 import com.tina.app.ui.capture.CaptureChips
 import com.tina.app.ui.capture.CaptureModeToggle
 import com.tina.app.ui.capture.IdeaBody
-import com.tina.app.ui.capture.CaptureSuggestions
+import com.tina.app.ui.capture.CaptureSuggestionRow
 import com.tina.app.ui.capture.SaveBurst
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
@@ -113,6 +113,9 @@ fun Shell(
     onOpenNeedDay: () -> Unit,
     onOpenAskChat: () -> Unit,
     onOpenPaywall: () -> Unit,
+    /** The feature release whose What's new row Plan should show, or null. */
+    whatsNewVersion: String? = null,
+    onOpenWhatsNew: () -> Unit = {},
 ) {
     val settings = LocalSettings.current
 
@@ -124,9 +127,6 @@ fun Shell(
     var captureFocused by remember { mutableStateOf(false) }
     // bumped by the search shortcut so the Ask field takes focus even when the tab is already up
     var searchFocusKey by remember { mutableStateOf(0) }
-    // opened when the field takes focus, closed only by scrim / handle / back — putting the
-    // keyboard away leaves it up, so the starters stay in reach
-    var captureSheetOpen by remember { mutableStateOf(false) }
 
     val captureViewModel: CaptureViewModel = koinViewModel()
     val notesViewModel: NotesViewModel = koinViewModel()
@@ -150,26 +150,21 @@ fun Shell(
     fun putKeyboardAway() {
         if (com.tina.app.ui.settings.Platform.isAndroid) keyboard?.hide() else focusManager.clearFocus()
     }
-    // the capture sheet rises while the field has focus and stays while there is a draft:
-    // starters when empty, parse chips while typing, and it survives the keyboard going away
+    // the draft sheet: parse chips (or the idea body) while there is text, and it survives the
+    // keyboard going away. An empty field opens nothing; suggestions, when on, are one chip row
+    // above the bar (DECISIONS.md → "nothing in a popup")
     val hasDraft = captureViewModel.text.isNotBlank()
-    val suggestionsOpen = captureSheetOpen || hasDraft
+    val suggestionsVisible = settings.captureSuggestions && captureFocused && !hasDraft
     var discardPrompt by remember { mutableStateOf(false) }
 
     // reads the view model at call time: this reference gets memoised across recompositions,
     // so a captured `hasDraft` went stale and drags kept seeing an empty field
     fun dismissCaptureSheet() {
-        if (captureViewModel.text.isNotBlank()) {
-            discardPrompt = true
-        } else {
-            captureSheetOpen = false
-            putKeyboardAway()
-        }
+        if (captureViewModel.text.isNotBlank()) discardPrompt = true else putKeyboardAway()
     }
 
     fun showTab(tab: TinaTab) {
         selectedName = tab.name
-        captureSheetOpen = false
         putKeyboardAway()
     }
     val sortRequested by OpenSortRequests.pending.collectAsState()
@@ -210,7 +205,7 @@ fun Shell(
     }
 
     // the keyboard takes the first back itself; the next one, with a draft still up, asks
-    BackHandler(enabled = suggestionsOpen && !captureFocused) { dismissCaptureSheet() }
+    BackHandler(enabled = hasDraft && !captureFocused) { dismissCaptureSheet() }
 
     if (discardPrompt) {
         AlertDialog(
@@ -221,7 +216,6 @@ fun Shell(
                 TextButton(onClick = {
                     discardPrompt = false
                     captureViewModel.discard()
-                    captureSheetOpen = false
                     putKeyboardAway()
                 }) { Text(stringResource(Res.string.draft_discard)) }
             },
@@ -259,17 +253,19 @@ fun Shell(
             contentWindowInsets = WindowInsets(0.dp),
             snackbarHost = { SnackbarHost(snackbarHostState) },
             bottomBar = {
-                CaptureBar(
-                    snackbarHostState = snackbarHostState,
-                    focusRequester = captureFocus,
-                    onFocusChanged = {
-                        captureFocused = it
-                        if (it) captureSheetOpen = true
-                    },
-                    blendWithSheet = suggestionsOpen,
-                    onOpenNote = onOpenNote,
-                    viewModel = captureViewModel,
-                )
+                Column {
+                    AnimatedVisibility(visible = suggestionsVisible) {
+                        CaptureSuggestionRow(captureViewModel, onOpenItem, Modifier.padding(bottom = 4.dp))
+                    }
+                    CaptureBar(
+                        snackbarHostState = snackbarHostState,
+                        focusRequester = captureFocus,
+                        onFocusChanged = { captureFocused = it },
+                        blendWithSheet = hasDraft,
+                        onOpenNote = onOpenNote,
+                        viewModel = captureViewModel,
+                    )
+                }
             },
         ) { padding ->
             val motion = rememberAppMotion()
@@ -284,6 +280,8 @@ fun Shell(
                             onOpenSettings = onOpenSettings,
                             onOpenNeedDay = onOpenNeedDay,
                             onOpenItem = onOpenItem,
+                            whatsNewVersion = whatsNewVersion,
+                            onOpenWhatsNew = onOpenWhatsNew,
                             onCaptureForDate = { date ->
                                 // a parser-friendly date token keeps capture one flow
                                 captureViewModel.prefill("${date.month.number}/${date.day} ")
@@ -309,7 +307,7 @@ fun Shell(
                 }
 
                 ShellSheet(
-                    visible = suggestionsOpen,
+                    visible = hasDraft,
                     onDismiss = ::dismissCaptureSheet,
                     modifier = Modifier.align(Alignment.BottomCenter),
                     // it rose on its own and then rose again with the keyboard: two motions for one tap
@@ -317,16 +315,12 @@ fun Shell(
                 ) {
                     Column {
                         AnimatedContent(
-                            targetState = captureViewModel.text.isBlank(),
+                            targetState = captureViewModel.ideaMode,
                             transitionSpec = { motion.fadeSwap() },
                             label = "capture-sheet",
-                        ) { empty ->
-                            when {
-                                empty -> CaptureSuggestions(captureViewModel, onOpenItem)
-                                captureViewModel.ideaMode ->
-                                    IdeaBody(captureViewModel, Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp))
-                                else -> CaptureChips(captureViewModel, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
-                            }
+                        ) { idea ->
+                            if (idea) IdeaBody(captureViewModel, Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp))
+                            else CaptureChips(captureViewModel, Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
                         }
                         // last, right above the field: the sheet is bottom-anchored, so this is the one
                         // spot that stays put however many recents are above it

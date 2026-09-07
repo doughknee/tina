@@ -10,7 +10,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Schedule
@@ -61,7 +60,6 @@ import com.tina.app.data.Item
 import com.tina.app.data.ItemType
 import com.tina.app.data.Priority
 import com.tina.app.resources.Res
-import com.tina.app.resources.ai_improve
 import com.tina.app.resources.back
 import com.tina.app.resources.cancel
 import com.tina.app.resources.delete
@@ -115,7 +113,6 @@ fun DetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
-    var showImprove by remember { mutableStateOf(false) }
     val improvedText = stringResource(Res.string.improve_applied)
     val undoText = stringResource(Res.string.undo)
     val aiEnabled = LocalSettings.current.aiProvider != com.tina.app.data.AiProvider.OFF
@@ -132,11 +129,6 @@ fun DetailScreen(
                     }
                 },
                 actions = {
-                    if (aiEnabled) {
-                        IconButton(onClick = { showImprove = true }) {
-                            Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_improve))
-                        }
-                    }
                     val deletedText = stringResource(Res.string.deleted)
                     IconButton(onClick = { viewModel.delete(deletedText, onDeleted = onBack) }) {
                         Icon(Icons.Outlined.Delete, stringResource(Res.string.delete))
@@ -147,24 +139,19 @@ fun DetailScreen(
         },
     ) { padding ->
         val current = item ?: return@Scaffold
-        if (showImprove) {
-            com.tina.app.ui.ImproveSheet(
-                item = current,
-                onApply = { updated, original ->
-                    viewModel.applyImprovement(updated)
-                    scope.launch {
-                        if (snackbarHostState.showUndo(improvedText, undoText, undoWindow)) {
-                            viewModel.applyImprovement(original)
-                        }
-                    }
-                },
-                onDismiss = { showImprove = false },
-            )
-        }
         DetailContent(
             item = current,
             viewModel = viewModel,
             onOpenTag = onOpenTag,
+            // the "Peggy suggests" block, with the undo the sheet used to offer
+            onApplySuggestion = if (!aiEnabled) null else { updated, original ->
+                viewModel.applyImprovement(updated)
+                scope.launch {
+                    if (snackbarHostState.showUndo(improvedText, undoText, undoWindow)) {
+                        viewModel.applyImprovement(original)
+                    }
+                }
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
@@ -180,6 +167,8 @@ private fun DetailContent(
     item: Item,
     viewModel: DetailViewModel,
     onOpenTag: (String) -> Unit = {},
+    /** Null when AI is off: no block at all rather than a dead one. */
+    onApplySuggestion: ((updated: Item, original: Item) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val tz = TimeZone.currentSystemDefault()
@@ -201,6 +190,8 @@ private fun DetailContent(
             modifier = Modifier.fillMaxWidth().sharedItemTitle(item.id),
             textStyle = MaterialTheme.typography.titleLargeEmphasized,
         )
+
+        onApplySuggestion?.let { com.tina.app.ui.PeggySuggests(item, onApply = it) }
 
         ConnectedButtonGroup(
             count = ItemType.entries.size,

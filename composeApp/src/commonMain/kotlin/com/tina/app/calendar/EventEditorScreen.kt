@@ -22,7 +22,6 @@ import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Remove
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.AlertDialog
@@ -93,7 +92,6 @@ import com.tina.app.resources.reminder_at_time
 import com.tina.app.resources.reminder_hour_before
 import com.tina.app.resources.reminder_min_before
 import com.tina.app.resources.reminder_off
-import com.tina.app.resources.ai_improve
 import com.tina.app.resources.improve_applied
 import com.tina.app.resources.repeat_custom
 import com.tina.app.resources.undo
@@ -138,7 +136,6 @@ fun EventEditorScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val undoWindow = rememberUndoWindow()
     val scope = rememberCoroutineScope()
-    var showImprove by remember { mutableStateOf(false) }
     val improvedText = stringResource(Res.string.improve_applied)
     val undoText = stringResource(Res.string.undo)
     val aiEnabled = LocalSettings.current.aiProvider != com.tina.app.data.AiProvider.OFF
@@ -155,11 +152,6 @@ fun EventEditorScreen(
                     }
                 },
                 actions = {
-                    if (aiEnabled) {
-                        IconButton(onClick = { showImprove = true }) {
-                            Icon(Icons.Outlined.AutoAwesome, stringResource(Res.string.ai_improve))
-                        }
-                    }
                     val deletedText = stringResource(Res.string.deleted)
                     IconButton(onClick = { viewModel.delete(deletedText, onDeleted = onBack) }) {
                         Icon(Icons.Outlined.Delete, stringResource(Res.string.delete))
@@ -170,23 +162,18 @@ fun EventEditorScreen(
         },
     ) { padding ->
         val current = item ?: return@Scaffold
-        if (showImprove) {
-            com.tina.app.ui.ImproveSheet(
-                item = current,
-                onApply = { updated, original ->
-                    viewModel.applyImprovement(updated)
-                    scope.launch {
-                        if (snackbarHostState.showUndo(improvedText, undoText, undoWindow)) {
-                            viewModel.applyImprovement(original)
-                        }
-                    }
-                },
-                onDismiss = { showImprove = false },
-            )
-        }
         EventEditorContent(
             item = current,
             viewModel = viewModel,
+            // the "Peggy suggests" block, with the undo the sheet used to offer
+            onApplySuggestion = if (!aiEnabled) null else { updated, original ->
+                viewModel.applyImprovement(updated)
+                scope.launch {
+                    if (snackbarHostState.showUndo(improvedText, undoText, undoWindow)) {
+                        viewModel.applyImprovement(original)
+                    }
+                }
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
@@ -198,7 +185,13 @@ fun EventEditorScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EventEditorContent(item: Item, viewModel: EventEditorViewModel, modifier: Modifier = Modifier) {
+private fun EventEditorContent(
+    item: Item,
+    viewModel: EventEditorViewModel,
+    /** Null when AI is off: no block at all rather than a dead one. */
+    onApplySuggestion: ((updated: Item, original: Item) -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
     val tz = TimeZone.currentSystemDefault()
     val use24h = LocalSettings.current.use24h
     val today = remember { Clock.System.now().toLocalDateTime(tz).date }
@@ -220,6 +213,8 @@ private fun EventEditorContent(item: Item, viewModel: EventEditorViewModel, modi
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.typography.titleLargeEmphasized,
         )
+
+        onApplySuggestion?.let { com.tina.app.ui.PeggySuggests(item, onApply = it) }
 
         Row(
             Modifier

@@ -277,6 +277,8 @@ import com.tina.app.resources.set_undo_window_sub
 import com.tina.app.resources.set_version
 import com.tina.app.resources.set_voice_capture
 import com.tina.app.resources.set_voice_capture_sub
+import com.tina.app.resources.set_capture_suggestions
+import com.tina.app.resources.set_capture_suggestions_sub
 import com.tina.app.resources.set_whats_new
 import com.tina.app.resources.set_widgets
 import com.tina.app.resources.set_widgets_sub
@@ -927,6 +929,14 @@ private fun rememberSettingsSections(
                 keywords = listOf("mic", "dictate", "speech"),
                 checked = settings.voiceCapture,
                 onCheckedChange = viewModel::setVoiceCapture,
+            ),
+            SettingsRow.Switch(
+                id = "captureSuggestions",
+                title = stringResource(Res.string.set_capture_suggestions),
+                supporting = stringResource(Res.string.set_capture_suggestions_sub),
+                keywords = listOf("recent", "starters", "chips"),
+                checked = settings.captureSuggestions,
+                onCheckedChange = viewModel::setCaptureSuggestions,
             ),
             SettingsRow.Navigation(
                 id = "widgets",

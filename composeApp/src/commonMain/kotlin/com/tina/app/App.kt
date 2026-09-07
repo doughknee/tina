@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.map
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.zIndex
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -33,8 +31,6 @@ import com.tina.app.data.Item
 import com.tina.app.data.ItemType
 import com.tina.app.data.Settings
 import com.tina.app.data.SettingsRepository
-import com.tina.app.resources.whats_new_got_it
-import com.tina.app.resources.whats_new_in
 import com.tina.app.detail.DetailScreen
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -65,6 +61,9 @@ data object NeedADayRoute
 
 /** The Ask conversation, pushed from the Ask tab's Follow up. */
 data object AskChatRoute
+
+/** The one paywall, pushed from the Ask tab's offer and examples; also the Pro settings subpage. */
+data object PaywallRoute
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -111,6 +110,7 @@ fun App() {
             // assume seen until the store answers, so an existing user never sees the cards flash
             val onboardingSeen by settingsRepository.onboardingSeen.collectAsState(initial = true)
             val appScope = androidx.compose.runtime.rememberCoroutineScope()
+            val whatsNewPending = whatsNewPending(settingsRepository, onboardingSeen)
             val motion = rememberAppMotion()
             Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                 // shared-element rows need an animated scope; a still AnimatedContent provides one
@@ -127,14 +127,17 @@ fun App() {
                             onOpenTag = { tag -> push(TagRoute(tag)) },
                             onOpenNeedDay = { push(NeedADayRoute) },
                             onOpenAskChat = { push(AskChatRoute) },
-                            // REL-212 gives the paywall its own page; until then it is the settings subpage
-                            onOpenPaywall = { push(SettingsSubRoute(com.tina.app.ui.settings.SettingsDestination.PRO.name)) },
+                            onOpenPaywall = { push(PaywallRoute) },
+                            whatsNewVersion = whatsNewPending,
+                            onOpenWhatsNew = {
+                                whatsNewPending?.let { appScope.launch { settingsRepository.setWhatsNewSeen(it) } }
+                                push(SettingsSubRoute(com.tina.app.ui.settings.SettingsDestination.WHATS_NEW.name))
+                            },
                         )
                     }
                 }
                 // after the shell, so it takes back presses first
                 BackHandler(enabled = pagesVisible && pages.size == 1) { pagesVisible = false }
-                WhatsNewOnUpgrade(settingsRepository, onboardingSeen)
                 if (!onboardingSeen) {
                     // above the pages too, so Developer options can show it from inside Settings
                     Box(Modifier.fillMaxSize().zIndex(1f)) {
@@ -204,6 +207,9 @@ fun App() {
                             entry<AskChatRoute> {
                                 com.tina.app.ask.AskScreen(onBack = ::popLast)
                             }
+                            entry<PaywallRoute> {
+                                com.tina.app.pro.PaywallScreen(onBack = ::popLast)
+                            }
                             entry<TagRoute> { route ->
                                 com.tina.app.search.TagScreen(
                                     tag = route.tag,
@@ -227,40 +233,23 @@ fun App() {
 
 
 /**
- * Once per feature release, after an update: the top What's new entry as a sheet. A fresh
- * install records the current release silently, so only upgrades see it. Developer options
- * clear the record to show it again.
+ * Once per feature release, after an update: the release whose What's new row Plan should show,
+ * or null. A fresh install records the current release silently, so only upgrades see the row.
+ * Tapping the row records it; Developer options clear the record to show it again.
  */
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-private fun WhatsNewOnUpgrade(settingsRepository: SettingsRepository, onboardingSeen: Boolean) {
+private fun whatsNewPending(settingsRepository: SettingsRepository, onboardingSeen: Boolean): String? {
     val current = com.tina.app.ui.settings.featureVersion(com.tina.app.ui.settings.appVersionName())
-    val seen by settingsRepository.settings.map { it.whatsNewSeen }.collectAsState(initial = null)
-    val scope = androidx.compose.runtime.rememberCoroutineScope()
-    val entry = com.tina.app.ui.settings.WHATS_NEW.firstOrNull { it.first == current } ?: return
-    val seenVersion = seen ?: return
-    // the store has answered: a fresh install (cards still to show) just records this release
+    // remembered: a fresh map() per recomposition restarts the collection, and that recomposes again
+    val seenFlow = remember(settingsRepository) { settingsRepository.settings.map { it.whatsNewSeen } }
+    val seen by seenFlow.collectAsState(initial = null)
+    if (com.tina.app.ui.settings.WHATS_NEW.none { it.first == current }) return null
+    // null until the store answers, so an existing user never sees the row flash
+    val seenVersion = seen ?: return null
+    // a fresh install (cards still to show) just records this release
     if (!onboardingSeen) {
         androidx.compose.runtime.LaunchedEffect(seenVersion) { if (seenVersion != current) settingsRepository.setWhatsNewSeen(current) }
-        return
+        return null
     }
-    if (seenVersion == current) return
-    androidx.compose.material3.ModalBottomSheet(onDismissRequest = { scope.launch { settingsRepository.setWhatsNewSeen(current) } }) {
-        androidx.compose.foundation.layout.Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
-            androidx.compose.material3.Text(
-                org.jetbrains.compose.resources.stringResource(com.tina.app.resources.Res.string.whats_new_in, entry.first),
-                style = MaterialTheme.typography.headlineSmall,
-            )
-            androidx.compose.material3.Text(
-                entry.second,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 12.dp, bottom = 20.dp),
-            )
-            androidx.compose.material3.Button(
-                onClick = { scope.launch { settingsRepository.setWhatsNewSeen(current) } },
-                modifier = Modifier.align(androidx.compose.ui.Alignment.End),
-            ) { androidx.compose.material3.Text(org.jetbrains.compose.resources.stringResource(com.tina.app.resources.Res.string.whats_new_got_it)) }
-        }
-    }
+    return current.takeIf { it != seenVersion }
 }

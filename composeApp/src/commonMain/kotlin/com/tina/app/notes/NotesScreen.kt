@@ -116,7 +116,6 @@ import com.tina.app.resources.search
 import com.tina.app.resources.search_close
 import com.tina.app.resources.settings
 import com.tina.app.resources.tab_notes
-import com.tina.app.resources.tag_sheet_title
 import com.tina.app.resources.undo
 import com.tina.app.ui.ColorSwatchRow
 import com.tina.app.ui.ConnectedButtonGroup
@@ -149,7 +148,7 @@ fun NotesScreen(
     var searching by remember { mutableStateOf(false) }
     var sortSheet by remember { mutableStateOf(false) }
     var colorSheet by remember { mutableStateOf(false) }
-    var tagSheet by remember { mutableStateOf(false) }
+    var tagPicker by remember { mutableStateOf(false) }
     val selectionMode = selection.isNotEmpty()
     val snackbarHostState = remember { SnackbarHostState() }
     val undoWindow = rememberUndoWindow()
@@ -193,7 +192,7 @@ fun NotesScreen(
                         actions = {
                             IconButton(onClick = viewModel::pinSelected) { Icon(Icons.Outlined.PushPin, stringResource(Res.string.note_pin)) }
                             IconButton(onClick = { colorSheet = true }) { Icon(Icons.Outlined.Palette, stringResource(Res.string.notes_color)) }
-                            IconButton(onClick = { tagSheet = true }) { Icon(Icons.Outlined.Label, stringResource(Res.string.notes_label)) }
+                            IconButton(onClick = { tagPicker = !tagPicker }) { Icon(Icons.Outlined.Label, stringResource(Res.string.notes_label)) }
                             IconButton(onClick = viewModel::deleteSelected) { Icon(Icons.Outlined.Delete, stringResource(Res.string.delete)) }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -255,6 +254,17 @@ fun NotesScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
+            // the selection's tag picker is a block above the grid, not a sheet; gone with the selection
+            if (tagPicker && selectionMode) {
+                val selected = ui.all.filter { it.id in selection }
+                val common = selected.map { it.tags.toSet() }.reduceOrNull { a, b -> a intersect b }.orEmpty()
+                TagPicker(
+                    tags = allTags,
+                    checked = common,
+                    onToggle = viewModel::tagSelected,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
             if (!searching && ui.tags.isNotEmpty()) {
                 TagRail(
                     tags = ui.tags,
@@ -292,17 +302,6 @@ fun NotesScreen(
                 }
             }
         }
-    }
-    if (tagSheet) {
-        val selected = ui.all.filter { it.id in selection }
-        val common = selected.map { it.tags.toSet() }.reduceOrNull { a, b -> a intersect b }.orEmpty()
-        TagSheet(
-            title = stringResource(Res.string.tag_sheet_title, selected.size),
-            tags = allTags,
-            checked = common,
-            onToggle = viewModel::tagSelected,
-            onDismiss = { tagSheet = false },
-        )
     }
 }
 
